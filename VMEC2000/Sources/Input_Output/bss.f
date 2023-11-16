@@ -2,6 +2,7 @@
      1               br, bphi, bz)
       USE vmec_main
       USE realspace
+      USE vsvd, ONLY: torflux_edge => torflux
       IMPLICIT NONE
 C-----------------------------------------------
 C   D u m m y   A r g u m e n t s

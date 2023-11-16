@@ -1,5 +1,8 @@
       SUBROUTINE read_indata(in_file, iunit, ier_flag)
       USE vmec_main
+#ifdef _FLOW
+     1              , machsq => bcrit
+#endif
       USE vmec_input, ONLY: bloat, ncurr
       USE vmec_params
       USE vacmod
@@ -17,28 +20,23 @@ C-----------------------------------------------
       INTEGER :: ireadseq, iosnml
 C-----------------------------------------------
       iunit = indata0+rank
+      CALL safe_open (iunit, ireadseq, in_file, 'old', 'formatted')
+      IF (ireadseq .ne. 0) THEN
+         WRITE (6, '(3a,i4)') ' In VMEC, error opening input file: ',
+     1   TRIM(in_file), '. Iostat = ', ireadseq
+         ier_flag = input_error_flag
+         RETURN
+      ENDIF
 
-      IF (ier_flag /= imas_read_flag) THEN
-         CALL safe_open (iunit, ireadseq, in_file, 'old', 'formatted')
-         IF (ireadseq .ne. 0) THEN
-            WRITE (6, '(3a,i4)') ' In VMEC, error opening input file: ',
-     1      TRIM(in_file), '. Iostat = ', ireadseq
-            ier_flag = input_error_flag
-            RETURN
-         ENDIF
+      CALL read_namelist (iunit, iosnml, 'indata')
+      IF (iosnml .ne. 0) THEN
+         WRITE (6, '(a,i4)') 
+     1   ' In VMEC, indata NAMELIST error: iostat = ', iosnml
+         ier_flag = input_error_flag
+         RETURN
+      ENDIF
 
-         CALL read_namelist (iunit, iosnml, 'indata')
-         IF (iosnml .ne. 0) THEN
-            WRITE (6, '(a,i4)') 
-     1      ' In VMEC, indata NAMELIST error: iostat = ', iosnml
-            ier_flag = input_error_flag
-            RETURN
-         ENDIF
-
-         CALL read_namelist (iunit, iosnml, 'mseprofile')
-      ELSE
-         ier_flag = norm_term_flag
-      END IF
+      CALL read_namelist (iunit, iosnml, 'mseprofile')
 
       IF (lrecon .and. itse.le.0 .and. imse.le.0) lrecon = .false.
       IF (lfreeb .and. mgrid_file.eq.'NONE') lfreeb = .false.

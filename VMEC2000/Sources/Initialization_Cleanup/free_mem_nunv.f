@@ -12,6 +12,8 @@ C-----------------------------------------------
      1    DEALLOCATE (bsubu0, rbsq, dbsq, stat=istat1)
 #ifdef _ANIMEC
       IF (ALLOCATED(pperp_ns)) DEALLOCATE(pperp_ns)
+#elif defined _FLOW
+      IF (ALLOCATED(prot_ns)) DEALLOCATE(prot_ns)
 #endif
       IF (ALLOCATED(rmn_bdy))
      1    DEALLOCATE (rmn_bdy, zmn_bdy, stat=istat2)

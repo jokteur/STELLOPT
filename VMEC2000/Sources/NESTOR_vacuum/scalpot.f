@@ -18,9 +18,8 @@ C-----------------------------------------------
 C-----------------------------------------------
       CALL second0(tonscal)
 
-      IF (.NOT.ALLOCATED(amatsav)) THEN
-         STOP 'AMATSAV: Allocation error in scalpot'
-      END IF
+      IF (.NOT.ALLOCATED(amatsav))
+     1   STOP 'AMATSAV: Allocation error in scalpot'
 
       ALLOCATE (grpmn(nuv3*mnpd2), stat=ip)
       IF (ip .NE. 0) STOP 'GRPMN: Allocation error in scalpot'
@@ -44,7 +43,7 @@ C-----------------------------------------------
          istore_max = MIN(64,nuv3)
 
          ALLOCATE (green(nuv), gstore(nuv), greenp(nuv,istore_max),
-     &             stat=ip)
+     1             stat=ip)
          IF (ip .NE. 0) STOP 'Allocation error in scalpot'
 !         bvecsav = bvec   !Save in fouri now
          gstore  = 0
@@ -54,14 +53,14 @@ C-----------------------------------------------
 !        NOTE: SOURCE IS THE RHS OF EQ.(3.2), KERNEL IS THE LHS OF EQ (3.2).
 !        IP IS THE INDEX OF THE PRIMED VARIABLE MESH.
 !
-         istart = nuv3min - 1
+         istart = nuv3min-1 
 
          !SKS: Have to parallelize over ip since arrays computed in
          !surface.f like rzb2, z1b, etc but used in green.f are
          !known only within [nuv3min, nuv3max].
 
          PRIMED: DO ip = nuv3min, nuv3max
-            istore = 1 + MOD(ip-nuv3min,istore_max)
+           istore = 1 + MOD(ip-nuv3min,istore_max)
 !
 !        COMPUTE DIFFERENCE BETWEEN THE EXACT AND ANALYTIC GREENS FUNCTION AND GRADIENT 
 !        [FIRST TERMS IN EQ.(2.14, 2.16)].
@@ -72,14 +71,14 @@ C-----------------------------------------------
 !        THE FOURIER TRANSFORM OVER THE PRIMED MESH IS "BUILT-UP" BY MULTIPLE CALLS TO FOURP
 !        WITHIN THIS LOOP. 
 !
-            CALL greenf (green, greenp(1,istore), ip)
+           CALL greenf (green, greenp(1,istore), ip)
 
 
 !        PERFORM INTEGRAL (SUM) OVER PRIMED MESH OF NON-SINGULAR SOURCE TERM 
 !        [(h-hsing)(u,v,u',v') == bexni(ip)*green(u,v; ip) in Eq. 2.16]
 !        AND STORE IT - FOR UNPRIMED MESH VALUES - IN GSTORE
 
-            gstore = gstore + bexni(ip)*green
+           gstore = gstore + bexni(ip)*green
 
 !
 !        PERFORM FOURIER INTEGRAL OF GRADIENT KERNEL (GREENP) OVER THE UNPRIMED MESH
@@ -87,17 +86,18 @@ C-----------------------------------------------
 !        - COMPUTED IN ANALYT - WHICH HAS THE APPROPRIATE SIN, COS FACTORS ALREADY)
 !
 
-            IF (istore.EQ.istore_max .OR. ip.EQ.nuv3max) THEN
-               CALL fourp (grpmn, greenp, istore, istart, ip, ndim)
-            END IF
+           IF (istore.EQ.istore_max .OR. ip.EQ.nuv3max)
+     1        CALL fourp (grpmn, greenp, istore, istart, ip, ndim)
 
          END DO PRIMED
 
          CALL second0(ton)
+#if defined(SKS)
          IF (vlactive) THEN
-            CALL MPI_Allreduce(MPI_IN_PLACE, gstore, SIZE(gstore),
-     &                         MPI_REAL8, MPI_SUM, VAC_COMM, MPI_ERR)
+           CALL MPI_Allreduce(MPI_IN_PLACE,gstore,SIZE(gstore),
+     1                        MPI_REAL8,MPI_SUM,VAC_COMM, MPI_ERR)
          END IF
+#endif
          CALL second0(toff)
          allreduce_time = allreduce_time + (toff - ton)
          timer_vac(tallr) = timer_vac(tallr) + (toff-ton)
@@ -106,28 +106,30 @@ C-----------------------------------------------
 !        AND SOURCE (GSTORE) OVER UNPRIMED MESH IN EQ. 2.16
 !
          CALL fouri (grpmn, gstore, amatrix, amatsav, bvec, 
-     &               bvecsav, ndim)
+     1               bvecsav, ndim)
          DEALLOCATE (green, greenp, gstore)
 
-      END IF
+       ENDIF
 
-      DEALLOCATE (grpmn, stat=ip)
+       DEALLOCATE (grpmn, stat=ip)
 
-      amatrix = amatsav
+       amatrix = amatsav
 
 !
 !     FINAL REDUCTION OVER VAC_COMM DONE ONCE HERE
 !
-      CALL second0(ton)
-      IF (vlactive) THEN
-         CALL MPI_Allreduce(MPI_IN_PLACE, bvec, SIZE(bvec), MPI_REAL8,
-     &                      MPI_SUM, VAC_COMM, MPI_ERR)
-      END IF
+       CALL second0(ton)
+#if defined(SKS)
+       IF (vlactive) THEN
+         CALL MPI_Allreduce(MPI_IN_PLACE,bvec,SIZE(bvec),MPI_REAL8,
+     1                      MPI_SUM,VAC_COMM,MPI_ERR)
+       END IF
+#endif
+       CALL second0(toff)
+       allreduce_time = allreduce_time + (toff - ton)
+       timer_vac(tanar) = timer_vac(tanar) + (toff-ton)
 
-      CALL second0(toff)
-      allreduce_time = allreduce_time + (toff - ton)
-      timer_vac(tanar) = timer_vac(tanar) + (toff-ton)
-
-      scalpot_time = scalpot_time + (tonscal - toff)
+       scalpot_time = scalpot_time + (tonscal - toff)
 
       END SUBROUTINE scalpot
+

@@ -14,7 +14,6 @@ C-----------------------------------------------
      2  jmin2 = (/ 1,2,(2,ink=2,mpold) /),        !starting js(m) values for which R,Z are evolved
      3  jlam  = (/ 2,2,(2,ink=2,mpold) /)         !starting js(m) values for which Lambda is evolved
 
-!  Besure to update werror in fileout.f when adding more error flags.
       INTEGER, PARAMETER :: norm_term_flag=0, bad_jacobian_flag=1, 
      1                      more_iter_flag=2, 
      2                      jac75_flag=4, input_error_flag=5,
@@ -24,12 +23,10 @@ C-----------------------------------------------
      6                      successful_term_flag=11, !ftol force criterion has been met
      7                      bsub_bad_js1_flag=12,
      8                      r01_bad_value_flag=13,
-     9                      arz_bad_value_flag=14,
-     1                      imas_read_flag=15
+     9                      arz_bad_value_flag=14
       INTEGER, PARAMETER :: restart_flag=1, readin_flag=2,
      1                      timestep_flag=4,output_flag=8, 
-     2                      cleanup_flag=16, reset_jacdt_flag=32,
-     3                      imasrun_flag = 64
+     2                      cleanup_flag=16, reset_jacdt_flag=32
     
       REAL(rprec), PARAMETER :: pdamp = 0.05_dp  
       CHARACTER(LEN=*), PARAMETER :: version_ = '9.0'

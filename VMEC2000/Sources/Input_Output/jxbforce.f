@@ -2,6 +2,8 @@
      1   bsubsv, gsqrt, bsq, itheta, izeta, brho, sigma_an, ier_flag 
 #ifdef _ANIMEC
      2  ,pp1, pp2, ppar, onembc
+#elif defined _FLOW
+     2  ,pp1, pp2, prot, protrsq
 #endif
      3                   )
       USE safe_open_mod
@@ -13,6 +15,9 @@
 #ifdef _ANIMEC
      2                      ,pp3 
       USE fbal, ONLY: bimax_ppargrad
+#elif defined _FLOW
+     2                      ,pp3
+      USE fbal, ONLY: prot_grad
 #endif
 #ifdef NETCDF
       USE ezcdf
@@ -27,6 +32,8 @@
      1  bsupu, bsupv, bsq, gsqrt, sigma_an
 #ifdef _ANIMEC
      2 ,ppar, onembc
+#elif defined _FLOW
+     2 ,prot, protrsq
 #endif
       REAL(rprec), DIMENSION(ns,nznt,0:1), TARGET, INTENT(inout) ::
      1  bsubu, bsubv
@@ -34,6 +41,8 @@
       REAL(rprec), DIMENSION(ns,nznt), INTENT(out) ::
      1  itheta, brho, izeta
 #ifdef _ANIMEC
+     1 ,pp1, pp2
+#elif defined _FLOW
      1 ,pp1, pp2
 #endif
       REAL(rprec), DIMENSION(ns,nznt,0:1) :: bsubsu, bsubsv
@@ -81,6 +90,9 @@
       CHARACTER(LEN=100) :: jxbout_file
       CHARACTER(LEN=100) :: legend(13)
       LOGICAL :: lprint_flag
+#ifdef _FLOW
+      REAL(dp) :: eps
+#endif
 !-----------------------------------------------
 #ifdef NETCDF
       CHARACTER(LEN=*), PARAMETER ::
@@ -361,6 +373,9 @@
 #ifdef _ANIMEC
       CALL bimax_ppargrad(pp1, pp2, gsqrt, ppar, onembc, pres, 
      1                    phot,tpotb)
+#elif defined _FLOW
+      CALL prot_grad(pp1, pp2, gsqrt, prot, protrsq) 
+      eps = EPSILON(eps)
 #endif
 
 !     SKIPS Bsubs Correction - uses Bsubs from metric elements
@@ -382,11 +397,21 @@
          brho(js,:) = ohs*
      1   ( bsupu1(:)*(bsubu(js+1,:,0) - bsubu(js,:,0))
      2   + bsupv1(:)*(bsubv(js+1,:,0) - bsubv(js,:,0)))
-     3   + (pres(js+1) - pres(js))*ohs*jxb(:)
+#ifdef _FLOW
+!WAC Next two/four lines of brho contain pressure gradient with rotation
+!     3   + ohs*(log(pres(js+1)/(pres(js)+eps)) * pp2(js,:)
+!     4   +      log(rotfot(js+1)/(rotfot(js)+eps)) * pp1(js,:))
+     3   +two*ohs*((pres(js+1)-pres(js)) / (pres(js+1)+pres(js)+eps)
+     4   * pp2(js,:)
+     5   +   (rotfot(js+1)-rotfot(js)) / (rotfot(js+1)+rotfot(js)+eps)
+     6   * pp1(js,:))
+#else
+     7   + + (pres(js+1) - pres(js))*ohs*jxb(:)
 #ifdef _ANIMEC
 !WAC Last two lines of brho contain hot particle parallel pressure gradients
-     4   + ohs*((pres(js+1)*phot(js+1) - pres(js)*phot(js)) * pp2(js,:)
-     5   +      (tpotb(js+1)           - tpotb(js)      ) * pp1(js,:))
+     8   + ohs*((pres(js+1)*phot(js+1) - pres(js)*phot(js)) * pp2(js,:)
+     9   +      (tpotb(js+1)           - tpotb(js)      ) * pp1(js,:))
+#endif
 #endif
 !
 !     SUBTRACT FLUX-SURFACE AVERAGE FORCE BALANCE FROM brho, OTHERWISE
@@ -582,23 +607,28 @@
       avforce=0; aminfor=0; amaxfor=0
       dnorm1 = twopi*twopi
 
+#ifdef _ANIMEC
+      pp3(:nrzt) = one
+      CALL bimax_ppargrad(pp1, pp2, pp3, ppar, onembc, pres, 
+     1                    phot, tpotb)
+#elif defined _FLOW
+      pp3(:nrzt) = one
+      CALL prot_grad(pp1, pp2, pp3, prot, protrsq) 
+#endif
+
       DO js = 2, ns1
          ovp = two/(vp(js+1) + vp(js))/dnorm1
          tjnorm = ovp*signgs
-         sqgb2(:nznt) = sigma_an(js+1,:)*gsqrt(js+1,:)*
-     1                  (bsq(js+1,:)- pres(js+1))
-     2                + sigma_an(js,:)*gsqrt(js,:)    *
-     3                  (bsq(js,:) - pres(js))
 #ifdef _ANIMEC
          sqgb2(:nznt) = sigma_an(js+1,:nznt)*gsqrt(js+1,:nznt)
      1                * bsq(js+1,:nznt)
      2                + sigma_an(js  ,:nznt)*gsqrt(js  ,:nznt)
      3                * bsq(js  ,:nznt)
 #elif defined _FLOW
-!         sqgb2(:nznt) = sigma_an(js+1,:nznt)*gsqrt(js+1,:nznt)
-!     1                * (bsq(js+1,:nznt)-prot(js+1,:nznt))
-!     2                + sigma_an(js  ,:nznt)*gsqrt(js  ,:nznt)
-!     3                * (bsq(js  ,:nznt)-prot(js  ,:nznt))
+         sqgb2(:nznt) = sigma_an(js+1,:nznt)*gsqrt(js+1,:nznt)
+     1                * (bsq(js+1,:nznt)-prot(js+1,:nznt))
+     2                + sigma_an(js  ,:nznt)*gsqrt(js  ,:nznt)
+     3                * (bsq(js  ,:nznt)-prot(js  ,:nznt))
 #else
          sqgb2(:nznt) = sigma_an(js+1,:nznt)*gsqrt(js+1,:nznt)
      1                * (bsq(js+1,:nznt)-pres(js+1))
@@ -608,12 +638,26 @@
 !        TAKE THIS OUT: MAY BE POORLY CONVERGED AT THIS POINT....
 !         IF (ANY(sqgb2(:nznt)*signgs .le. zero)) 
 !     1       STOP ' SQGB2 <= 0 in JXBFORCE'
-         pprime(:) = ohs*(pres(js+1)-pres(js))/mu0              !dp/ds here
+
+#ifdef _FLOW
+!WAC Next two/four lines of pprime contain pressure gradient with rotation
+         pprime(:nznt) =               !dp/ds at fixed R here
+!     1      ohs*(log(pres(js+1)/(pres(js)+eps)) * pp2(js,:)
+!     2   +       log(rotfot(js+1)/(rotfot(js)+eps)) * pp1(js,:)) / mu0
+     1     two*ohs*((pres(js+1)-pres(js)) / (pres(js+1)+pres(js)+eps)
+     2   * pp2(js,:)
+     3   +    (rotfot(js+1)-rotfot(js)) / (rotfot(js+1)+rotfot(js)+eps)
+     4   * pp1(js,:)
+     5       ) / mu0
+         
+#else
+         pprime(:nznt) = ohs*(pres(js+1)-pres(js))/mu0               !dp/ds here
 #ifdef _ANIMEC
 !WAC  Last two lines of 'pprime' contain the hot particle parallel pressure
-     1 + ohs*((pres(js+1)*phot(js+1) - pres(js)*phot(js))*pp2(js,:nznt) 
-     2 +      (tpotb(js+1)           - tpotb(js)      )  *pp1(js,:nznt))
-     3  / mu0
+     3 + ohs*((pres(js+1)*phot(js+1) - pres(js)*phot(js))*pp2(js,:nznt) 
+     4 +      (tpotb(js+1)           - tpotb(js)      )  *pp1(js,:nznt))
+     5  / mu0
+#endif
 #endif
          kperpu(:nznt) = p5*(bsubv(js+1,:nznt,0) + bsubv(js,:nznt,0))*
      1                       pprime(:)/sqgb2

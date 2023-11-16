@@ -3,16 +3,19 @@
 #ifdef _ANIMEC
      2                ,tau_an, sigma_an, ppar, pperp, onembc, pbprim,
      3                 ppprim, densit
+#elif defined _FLOW
+     4                ,prot, protrsq, prprim
 #endif
-     4                 )
+     5                 )
 ! ... from SPH 2009-10-05; changes for modB sine-harmonics included
-      USE vmec_input, ONLY: ns_array, ftol_array, lwouttxt, lnyquist
+      USE vmec_input, ONLY: ns_array, ftol_array, lwouttxt
       USE vmec_params
       USE vmec_main
       USE vmercier
       USE vmec_persistent
       USE vparams, p5 => cp5, two => c2p0
       USE vac_persistent
+      USE vsvd
       USE vspline
       USE xstuff
       USE vmec_io
@@ -33,14 +36,23 @@
       USE ezcdf
       USE read_wout_mod, ONLY: Compute_Currents,
 	1  vn_version, vn_extension, vn_mgrid,
-     1  vn_magen, vn_therm, vn_gam, vn_maxr, vn_minr, vn_maxz, vn_fp,
+     1  vn_magen, 
+#IFDEF _ANIMEC
+     &   vn_wpar, vn_bcrit,
+#ELSE
+     &   vn_therm,
+#ENDIF
+     &   vn_gam, vn_maxr, vn_minr, vn_maxz, vn_fp,
+#IFDEF _FLOW
+     &   vn_machsq,
+#ENDIF
      2  vn_radnod, vn_polmod, vn_tormod, vn_maxmod, vn_maxit, vn_actit,
      3  vn_asym, vn_recon, vn_free, vn_error, vn_aspect, vn_beta, 
      4  vn_pbeta, vn_tbeta, vn_abeta, vn_b0, vn_rbt0, vn_maxmod_nyq,
      5  vn_rbt1, vn_sgs, vn_lar, vn_modB, vn_ctor, vn_amin, vn_Rmaj, 
      5  vn_potsin, vn_potcos, vn_maxpot, vn_xmpot, vn_xnpot,             !diagno/extender output (SPH071414)
-     6  vn_vol, vn_mse, vn_thom, vn_ac, vn_ai, vn_am, vn_rfp, 
-     6  vn_pmass_type, vn_pcurr_type, vn_piota_type,
+     6  vn_vol, vn_mse, vn_thom, vn_ac, vn_ai, vn_am, vn_ah, vn_atuname,  
+     6  vn_rfp, vn_pmass_type, vn_pcurr_type, vn_piota_type,
      6  vn_am_aux_s, vn_am_aux_f, vn_ac_aux_s, vn_ac_aux_f, 
      6  vn_ai_aux_s, vn_ai_aux_f, 
      6  vn_ftolv, vn_fsqr, vn_fsqz, vn_fsql,
@@ -48,7 +60,16 @@
      7  vn_racc, vn_zacs, vn_racs, vn_zacc, vn_iotaf, vn_qfact,
      8  vn_presf, vn_phi, vn_phipf, vn_jcuru, vn_jcurv, vn_iotah,
      8  vn_chi, vn_chipf, 
-     9  vn_mass, vn_presh, vn_betah, vn_buco, vn_bvco, vn_vp, vn_specw, 
+#IFDEF _FLOW
+     &  vn_bucof, vn_bvcof, 
+#ENDIF
+     9  vn_mass, 
+#IFDEF _FLOW
+     &  vn_pmap,  vn_omega, vn_tpotb, vn_presh,  vn_rotfot, 
+#ELSE
+     &  vn_presh,
+#ENDIF
+     &  vn_betah, vn_buco, vn_bvco, vn_vp, vn_specw, 
      A  vn_phip, vn_jdotb, vn_bdotb, vn_overr, vn_bgrv, vn_merc, 
      B  vn_mshear, vn_mwell, vn_mcurr, vn_mgeo, vn_equif, vn_fsq, 
      C  vn_wdot, vn_extcur, vn_curlab, vn_rmnc, vn_zmns, vn_lmns,  
@@ -57,6 +78,15 @@
      F  vn_bmns, vn_bsubumns, vn_bsubvmns, vn_bsubsmnc, vn_bsupumns, 
      G  vn_bsupvmns, vn_rbc, vn_zbs, vn_rbs, vn_zbc,
      H  ln_version, ln_extension, ln_mgrid,
+#ifdef _ANIMEC
+     &  vn_pparmnc, vn_ppermnc, vn_hotdmnc, vn_pbprmnc, vn_ppprmnc, 
+     &  vn_sigmnc, vn_taumnc, 
+     &  vn_pparmns, vn_ppermns, vn_hotdmns, vn_pbprmns, vn_ppprmns, 
+     &  vn_sigmns, vn_taumns, 
+#elif defined _FLOW
+     &  vn_protmnc, vn_protrsqmnc, vn_prprmnc, 
+     &  vn_protmns, vn_protrsqmns, vn_prprmns, 
+#endif
 
      &  vn_bsubumnc_sur, vn_bsubvmnc_sur,                      !MRC 10-15-15
      &  vn_bsupumnc_sur, vn_bsupvmnc_sur,
@@ -64,7 +94,17 @@
      &  vn_bsupumns_sur, vn_bsupvmns_sur,
      &  vn_currumnc, vn_currumns, vn_currvmnc, vn_currvmns,    !MRC 8-12-16
 
-     1  ln_magen, ln_therm, ln_gam, ln_maxr, ln_minr, ln_maxz, ln_fp,
+
+     1   ln_magen, 
+#IFDEF _ANIMEC
+     &   ln_wpar, ln_bcrit,
+#ELSE
+     &   ln_therm,
+#ENDIF
+     &   ln_gam, ln_maxr, ln_minr, ln_maxz, ln_fp,
+#IFDEF _FLOW
+     &   ln_machsq,
+#ENDIF
      2  ln_radnod, ln_polmod, ln_tormod, ln_maxmod, ln_maxit, ln_actit,
      2  ln_maxpot, ln_potsin, ln_potcos,
      3  ln_asym, ln_recon, ln_free, ln_error, ln_aspect, ln_beta, 
@@ -77,7 +117,16 @@
      7  ln_am_aux_s, ln_am_aux_f, ln_ac_aux_s, ln_ac_aux_f, 
      7  ln_ai_aux_s, ln_ai_aux_f, ln_chi, ln_chipf, 
      8  ln_presf, ln_phi, ln_phipf, ln_jcuru, ln_jcurv, ln_iotah,
-     9  ln_mass, ln_presh, ln_betah, ln_buco, ln_bvco, ln_vp, ln_specw, 
+#IFDEF _FLOW
+     &  ln_bucof, ln_bvcof, 
+#ENDIF
+     9  ln_mass, 
+#IFDEF _FLOW
+     &  ln_pmap,  ln_omega, ln_tpotb, ln_presh,  ln_rotfot, 
+#ELSE
+     &  ln_presh,
+#ENDIF
+     &  ln_betah, ln_buco, ln_bvco, ln_vp, ln_specw, 
      A  ln_vol, ln_phip, ln_jdotb, ln_bdotb, ln_bgrv, ln_merc, 
      B  ln_mshear, ln_mwell, ln_mcurr, ln_mgeo, ln_equif, ln_fsq, 
      C  ln_wdot, ln_extcur, ln_curlab, ln_rmnc, ln_zmns, ln_lmns, 
@@ -85,6 +134,15 @@
      E  ln_bsupumnc, ln_bsupvmnc, ln_rmns, ln_zmnc, ln_lmnc, ln_gmns,
      F  ln_bmns, ln_bsubumns, ln_bsubvmns, ln_bsubsmnc, ln_bsupumns, 
      G  ln_bsupvmns, ln_rbc, ln_zbs, ln_rbs, ln_zbc,
+#ifdef _ANIMEC
+     &  ln_pparmnc, ln_ppermnc, ln_hotdmnc, ln_pbprmnc, ln_ppprmnc, 
+     &  ln_sigmnc, ln_taumnc, 
+     &  ln_pparmns, ln_ppermns, ln_hotdmns, ln_pbprmns, ln_ppprmns, 
+     &  ln_sigmns, ln_taumns, 
+#elif defined _FLOW
+     &  ln_protmnc, ln_protrsqmnc, ln_prprmnc,
+     &  ln_protmns, ln_protrsqmns, ln_prprmns, 
+#endif
 
      &  ln_bsubumnc_sur, ln_bsubvmnc_sur,          !MRC 10-15-15
      &  ln_bsupumnc_sur, ln_bsupvmnc_sur,
@@ -110,6 +168,9 @@
      2  ,tau_an, ppar, pperp, onembc, sigma_an
       REAL(dp), DIMENSION(ns,nznt), INTENT(out) ::
      1   densit, pbprim, ppprim
+#elif defined _FLOW
+     3  ,prot, protrsq
+      REAL(dp), DIMENSION(ns,nznt), INTENT(out) :: prprim
 #endif
       REAL(dp) :: qfact(ns)
       LOGICAL :: lwrite
@@ -117,6 +178,7 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
       REAL(dp), PARAMETER :: c1p5 = 1.5_dp
+      LOGICAL :: lnyquist = .FALSE.                               !=false, suppress nyquist stuff
 #ifdef NETCDF
       CHARACTER(LEN=*), PARAMETER, DIMENSION(1) ::
      1             r1dim = (/'radius'/), mn1dim = (/'mn_mode'/),
@@ -131,7 +193,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: j, js, jlk, mn, lk, iasym,
+      INTEGER :: j, js, jlk, mn, lk, iasym, ireconstruct,
      1           m, n, k, iwout0, n1, nwout, istat, i, indx1(1),
      2           mnmax_nyq0, mnyq0, nnyq0, nwout2   ! nwout2 by J.Geiger
      3          ,isgn, js2, nfort      !for diagno 1.5
@@ -139,6 +201,8 @@
      1            presfactor, ftolx1, d_bsupumn, d_bsupvmn   ! diagno 1.5
 #ifdef _ANIMEC
      2              ,hotdam, omtbc, optbc, pdh, pmh, pde, pme, eps
+#elif defined _FLOW
+     3              ,pdh, pmh, pde, pme, eps
 #endif
       REAL(dp), POINTER, DIMENSION(:,:) :: rmnc, rmns, zmns, 
      1   zmnc, lmns, lmnc
@@ -152,6 +216,10 @@
      5   sigmns  , taumns  , pparmns , ppermns , pbprmns , ppprmns
       REAL(dp), DIMENSION(:,:), ALLOCATABLE :: sigma_ana, tau_ana,
      1                      ppara, pperpa, pbprima, ppprima, densita     
+#elif defined _FLOW
+     6  ,protmnc  , protrsqmnc ,prprmnc ,protmns ,protrsqmns ,prprmns
+      REAL(dp), DIMENSION(:,:), ALLOCATABLE :: prota, protrsqa
+     7                                           ,prprima
 #endif
       REAL(dp), DIMENSION(mnmax) :: rmnc1, zmns1, lmns1,
      1   rmns1, zmnc1, lmnc1, bmodmn, bmodmn1
@@ -159,6 +227,8 @@
      1   bsubumn, bsubvmn, bsubsmn, bsupumn, bsupvmn
 #ifdef _ANIMEC
      2  ,sigmn  , taumn  , pparmn , ppermn , pbprmn , ppprmn , hotdmn
+#elif defined _FLOW
+     3  ,protmn , protrsqmn , prprmn
 #endif
       REAL(dp), DIMENSION(:), ALLOCATABLE :: bsubumnc_sur  !MRC 10-15-15
       REAL(dp), DIMENSION(:), ALLOCATABLE :: bsubvmnc_sur
@@ -173,6 +243,7 @@
 
       CHARACTER(LEN=120) :: wout_file, wout2_file         ! wout2_file by J.Geiger
       CHARACTER(LEN=120) :: fort_file   ! fort_file for diagno 1.5
+      CHARACTER(LEN=20) :: vversion_string   ! fort_file for diagno 1.5
       REAL(dp), DIMENSION(:), ALLOCATABLE :: xfinal
       REAL(dp), DIMENSION(:), POINTER ::   xm_nyq0, xn_nyq0
 !     ELIMINATE THESE EVENTUALLY
@@ -183,6 +254,7 @@
       INTEGER :: nmin0     ! J Geiger:   Added for diagno-file
 
 !-----------------------------------------------
+
       CALL second0 (twouton)
 !
 !  Pointer assignments for storage arrays
@@ -225,8 +297,10 @@
      3   sigmn(mnmax_nyq0)  ,
      4   taumn(mnmax_nyq0)  , pparmn(mnmax_nyq0) , ppermn(mnmax_nyq0) ,
      5   pbprmn(mnmax_nyq0) , ppprmn(mnmax_nyq0) , hotdmn(mnmax_nyq0) ,
+#elif defined _FLOW
+     7   protmn(mnmax_nyq0)  ,protrsqmn(mnmax_nyq0) ,prprmn(mnmax_nyq0),
 #endif
-     6   stat=istat)
+     8   stat=istat)
 
       IF (lfreeb) THEN        !MRC 10-15-15
          ALLOCATE (bsubua_sur(nzeta*ntheta2), bsubva_sur(nzeta*ntheta2))
@@ -248,12 +322,15 @@
      3          bsupvmnc(mnmax_nyq0,ns), 
      4          currumnc(mnmax_nyq0,ns), currvmnc(mnmax_nyq0,ns),
 #ifdef _ANIMEC
-     5          sigmnc(mnmax_nyq0,ns)  ,
-     6          taumnc(mnmax_nyq0,ns)  , pparmnc(mnmax_nyq0,ns) ,
-     7          ppermnc(mnmax_nyq0,ns) , pbprmnc(mnmax_nyq0,ns) ,
-     8          ppprmnc(mnmax_nyq0,ns) , hotdmnc(mnmax_nyq0,ns) ,
+     4          sigmnc(mnmax_nyq0,ns)  ,
+     5          taumnc(mnmax_nyq0,ns)  , pparmnc(mnmax_nyq0,ns) ,
+     6          ppermnc(mnmax_nyq0,ns) , pbprmnc(mnmax_nyq0,ns) ,
+     7          ppprmnc(mnmax_nyq0,ns) , hotdmnc(mnmax_nyq0,ns) ,
+#elif defined _FLOW
+     8          protmnc(mnmax_nyq0,ns) , protrsqmnc(mnmax_nyq0,ns) ,
+     9          prprmnc(mnmax_nyq0,ns) ,
 #endif
-     9          stat=istat)
+     A          stat=istat)
       IF (lasym) THEN
       ALLOCATE (gmns(mnmax_nyq0,ns), bmns(mnmax_nyq0,ns),
      1          bsubumns(mnmax_nyq0,ns), bsubvmns(mnmax_nyq0,ns),
@@ -265,12 +342,18 @@
      5          taumns(mnmax_nyq0,ns)  , pparmns(mnmax_nyq0,ns) ,
      6          ppermns(mnmax_nyq0,ns) , pbprmns(mnmax_nyq0,ns) ,
      7          ppprmns(mnmax_nyq0,ns) , hotdmns(mnmax_nyq0,ns) ,
+#elif defined _FLOW
+     8          protmns(mnmax_nyq0,ns) , protrsqmns(mnmax_nyq0,ns) ,
+     9          prprmns(mnmax_nyq0,ns) ,
 #endif
-     8          stat=istat)
+     A          stat=istat)
 #ifdef _ANIMEC
       ALLOCATE (sigma_ana(ns,nznt) ,tau_ana(ns,nznt) ,densita(ns,nznt),
      1          ppara(ns,nznt)     ,pperpa(ns,nznt)  ,pbprima(ns,nznt),
      2          ppprima(ns,nznt), stat=istat)
+#elif defined _FLOW
+      ALLOCATE (prota(ns,nznt) ,protrsqa(ns,nznt) ,prprima(ns,nznt),
+     1          stat=istat)
 #endif
       END IF
       IF (istat .ne. 0) STOP 'Error allocating arrays in VMEC WROUT'
@@ -295,28 +378,56 @@
       END IF
       wout_file = version_
       READ (wout_file, *) vversion
+#ifdef _ANIMEC 
+      Write( vversion_string, '(i2)' )  NINT(vversion)
+      vversion_string = trim(vversion_string) // trim('_ANIMEC')
+#elif defined _FLOW
+      Write( vversion_string, '(i2)' )  NINT(vversion)
+      vversion_string = trim(vversion_string) // trim('_FLOW')
+#endif
 
 #ifdef NETCDF
       wout_file = 'wout_' // TRIM(input_extension) // '.nc'
       CALL cdf_open(nwout,wout_file,'w',iwout0)
       IF (iwout0 .ne. 0) STOP 'Error opening wout.nc file VMEC WROUT'
+
+      IF (.not. lrecon) THEN
+         itse = 0
+         imse2 = 0
+      END IF
       
 !================================
 ! Define Variables
 !================================
 !  Scalars 
+#ifdef _ANIMEC 
+      CALL cdf_define(nwout, vn_version, vversion_string)
+#elif defined _FLOW
+      CALL cdf_define(nwout, vn_version, vversion_string)
+#else
       CALL cdf_define(nwout, vn_version, vversion)
+#endif
       CALL cdf_define(nwout, vn_extension, input_extension)
       CALL cdf_define(nwout, vn_mgrid, mgrid_file)
       CALL cdf_define(nwout, vn_pcurr_type, pcurr_type)
       CALL cdf_define(nwout, vn_pmass_type, pmass_type)
       CALL cdf_define(nwout, vn_piota_type, piota_type)
       CALL cdf_define(nwout, vn_magen, wb)
+#IFDEF _ANIMEC
+      CALL cdf_define(nwout, vn_wpar, wpar)
+      CALL cdf_define(nwout, vn_bcrit, bcrit)
+      CALL cdf_setatt(nwout, vn_bcrit, ln_bcrit)
+#ELSE
       CALL cdf_define(nwout, vn_therm, wp)
+#ENDIF
       CALL cdf_define(nwout, vn_gam, gamma)
       CALL cdf_define(nwout, vn_maxr, rmax_surf)
       CALL cdf_define(nwout, vn_minr, rmin_surf)
       CALL cdf_define(nwout, vn_maxz, zmax_surf)
+#IFDEF _FLOW
+      CALL cdf_define(nwout, vn_machsq, bcrit)
+      CALL cdf_setatt(nwout, vn_machsq, ln_machsq)
+#ENDIF
       CALL cdf_define(nwout, vn_fp, nfp)
       CALL cdf_define(nwout, vn_radnod, ns)
       CALL cdf_define(nwout, vn_polmod, mpol)
@@ -349,6 +460,11 @@
       CALL cdf_define(nwout, vn_fsql, fsql)
       CALL cdf_define(nwout, vn_fsqr, fsqr)
       CALL cdf_define(nwout, vn_fsqz, fsqz)
+
+      IF (lrecon) THEN
+         CALL cdf_define(nwout, vn_mse, imse2)
+         CALL cdf_define(nwout, vn_thom, itse)
+      END IF
 
       CALL cdf_define(nwout, vn_nextcur, nextcur)
       CALL cdf_define(nwout, vn_extcur, extcur(1:nextcur), 
@@ -400,6 +516,12 @@
       j = SIZE(ai)-1
       CALL cdf_define(nwout, vn_ai, ai(0:j),
      1                dimname=(/'preset'/))
+      j = SIZE(ac)-1
+      CALL cdf_define(nwout, vn_ah, ah(0:j),
+     1                dimname=(/'preset'/))
+      j = SIZE(ai)-1
+      CALL cdf_define(nwout, vn_atuname, at(0:j),
+     1                dimname=(/'preset'/))
      
       j = SIZE(am_aux_s)
       CALL cdf_define(nwout, vn_am_aux_s, am_aux_s(1:j),
@@ -430,7 +552,7 @@
 
       CALL cdf_define(nwout, vn_qfact, qfact(1:ns), 
      1                dimname=r1dim)
-      CALL cdf_setatt(nwout, vn_qfact, ln_qfact)
+      CALL cdf_setatt(nwout, vn_iotaf, ln_qfact)
       CALL cdf_define(nwout, vn_presf, presf, 
      1                dimname=r1dim)
       CALL cdf_setatt(nwout, vn_presf, ln_presf, units='Pa')
@@ -446,6 +568,12 @@
       CALL cdf_define(nwout, vn_chipf, 
      1                phipf, dimname=r1dim)
       CALL cdf_setatt(nwout, vn_chipf, ln_chipf)
+#IFDEF _FLOW
+      CALL cdf_define(nwout, vn_bucof, 
+     1                bucof, dimname=r1dim)
+      CALL cdf_define(nwout, vn_bvcof, 
+     1                bvcof, dimname=r1dim)
+#ENDIF
       CALL cdf_define(nwout, vn_jcuru, 
      1                jcuru, dimname=r1dim)
       CALL cdf_define(nwout, vn_jcurv, 
@@ -457,9 +585,28 @@
       CALL cdf_define(nwout, vn_mass, mass, 
      1                dimname=r1dim)
       CALL cdf_setatt(nwout, vn_mass, ln_mass)
+#IFDEF _FLOW
+      CALL cdf_define(nwout, vn_pmap, pmap(1:ns), 
+     1                dimname=r1dim)
+      CALL cdf_setatt(nwout, vn_pmap, ln_pmap, units='not sure yet')
+      CALL cdf_define(nwout, vn_omega, omega(1:ns), 
+     1                dimname=r1dim)
+      CALL cdf_setatt(nwout, vn_omega, ln_omega, units='not sure yet')
+      CALL cdf_define(nwout, vn_tpotb, tpotb(1:ns), 
+     1                dimname=r1dim)
+      CALL cdf_setatt(nwout, vn_tpotb, ln_tpotb, units='Normalized')
       CALL cdf_define(nwout, vn_presh, pres(1:ns), 
      1                dimname=r1dim)
       CALL cdf_setatt(nwout, vn_presh, ln_presh, units='Pa')
+      CALL cdf_define(nwout, vn_rotfot, rotfot(1:ns), 
+     1                dimname=r1dim)
+      CALL cdf_setatt(nwout, vn_rotfot, ln_rotfot, units='not sure yet')
+#ELSE
+      CALL cdf_define(nwout, vn_presh, pres(1:ns), 
+     1                dimname=r1dim)
+      CALL cdf_setatt(nwout, vn_presh, ln_presh, units='Pa')
+#ENDIF
+
       CALL cdf_define(nwout, vn_betah, beta_vol, 
      1                dimname=r1dim)
       CALL cdf_define(nwout, vn_buco, buco, 
@@ -514,7 +661,7 @@
             CALL cdf_setatt(nwout, vn_potcos, ln_potcos)
          END IF
 
-         IF (nextcur.gt.0 .and. ASSOCIATED(curlabel)) THEN
+         IF (nextcur.gt.0 .and. ALLOCATED(curlabel)) THEN
          CALL cdf_define(nwout, vn_curlab,
      1        curlabel(1:nextcur), dimname=currl)
          END IF
@@ -537,6 +684,31 @@
       CALL cdf_setatt(nwout, vn_bsubvmnc, ln_bsubvmnc)
       CALL cdf_define(nwout, vn_bsubsmns, bsubsmns, dimname=r3dim)
       CALL cdf_setatt(nwout, vn_bsubsmns, ln_bsubsmns)
+#ifdef _ANIMEC
+      CALL cdf_define(nwout, vn_pparmnc, pparmnc, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_pparmnc, ln_pparmnc)
+      CALL cdf_define(nwout, vn_ppermnc, ppermnc, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_ppermnc, ln_ppermnc)
+      CALL cdf_define(nwout, vn_hotdmnc, hotdmnc, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_hotdmnc, ln_hotdmnc)
+      CALL cdf_define(nwout, vn_pbprmnc, pbprmnc, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_pbprmnc, ln_pbprmnc)
+      CALL cdf_define(nwout, vn_ppprmnc, ppprmnc, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_ppprmnc, ln_ppprmnc)
+      CALL cdf_define(nwout, vn_sigmnc, sigmnc, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_sigmnc, ln_sigmnc)
+      CALL cdf_define(nwout, vn_taumnc, taumnc, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_taumnc, ln_taumnc)
+#elif defined _FLOW
+      CALL cdf_define(nwout, vn_protmnc, protmnc, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_protmnc, ln_protmnc)
+      CALL cdf_define(nwout, vn_protrsqmnc, protrsqmnc, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_protrsqmnc, ln_protrsqmnc)
+      CALL cdf_define(nwout, vn_prprmnc, prprmnc, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_prprmnc, ln_prprmnc)
+#endif
+
+
 
       CALL cdf_define(nwout, vn_currumnc, currumnc, dimname=r3dim)    !MRC 8-12-16
       CALL cdf_setatt(nwout, vn_currumnc, ln_currumnc)
@@ -594,6 +766,29 @@
       CALL cdf_setatt(nwout, vn_bsubvmns, ln_bsubvmns)
       CALL cdf_define(nwout, vn_bsubsmnc, bsubsmnc, dimname=r3dim)
       CALL cdf_setatt(nwout, vn_bsubsmnc, ln_bsubsmnc)
+#ifdef _ANIMEC
+      CALL cdf_define(nwout, vn_pparmns, pparmns, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_pparmns, ln_pparmns)
+      CALL cdf_define(nwout, vn_ppermns, ppermns, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_ppermns, ln_ppermns)
+      CALL cdf_define(nwout, vn_hotdmns, hotdmns, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_hotdmns, ln_hotdmns)
+      CALL cdf_define(nwout, vn_pbprmns, pbprmns, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_pbprmns, ln_pbprmns)
+      CALL cdf_define(nwout, vn_ppprmns, ppprmns, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_ppprmns, ln_ppprmns)
+      CALL cdf_define(nwout, vn_sigmns, sigmns, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_sigmns, ln_sigmns)
+      CALL cdf_define(nwout, vn_taumns, taumns, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_taumns, ln_taumns)
+#elif defined _FLOW
+      CALL cdf_define(nwout, vn_protmns, protmns, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_protmns, ln_protmns)
+      CALL cdf_define(nwout, vn_protrsqmns, protrsqmns, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_protrsqmns, ln_protrsqmns)
+      CALL cdf_define(nwout, vn_prprmns, prprmns, dimname=r3dim)
+      CALL cdf_setatt(nwout, vn_prprmns, ln_prprmns)
+#endif
 
       CALL cdf_define(nwout, vn_currumns, currumns, dimname=r3dim)
       CALL cdf_setatt(nwout, vn_currumns, ln_currumns)
@@ -626,18 +821,32 @@
 !================================
 
 ! Scalars
+#ifdef _ANIMEC 
+      CALL cdf_write(nwout, vn_version, vversion_string)
+#elif defined _FLOW
+      CALL cdf_write(nwout, vn_version, vversion_string)
+#else
       CALL cdf_write(nwout, vn_version, vversion)
+#endif
       CALL cdf_write(nwout, vn_extension, input_extension)
       CALL cdf_write(nwout, vn_mgrid, mgrid_file)
       CALL cdf_write(nwout, vn_pcurr_type, pcurr_type)
       CALL cdf_write(nwout, vn_piota_type, piota_type)
       CALL cdf_write(nwout, vn_pmass_type, pmass_type)
       CALL cdf_write(nwout, vn_magen, wb)
+#IFDEF _ANIMEC
+      CALL cdf_write(nwout, vn_wpar, wpar)
+      CALL cdf_write(nwout, vn_bcrit, bcrit)
+#ELSE
       CALL cdf_write(nwout, vn_therm, wp)
+#ENDIF
       CALL cdf_write(nwout, vn_gam, gamma)
       CALL cdf_write(nwout, vn_maxr, rmax_surf)
       CALL cdf_write(nwout, vn_minr, rmin_surf)
       CALL cdf_write(nwout, vn_maxz, zmax_surf)
+#IFDEF _FLOW
+      CALL cdf_write(nwout, vn_machsq, bcrit)
+#ENDIF
       CALL cdf_write(nwout, vn_fp, nfp)
       CALL cdf_write(nwout, vn_radnod, ns)
       CALL cdf_write(nwout, vn_polmod, mpol)
@@ -672,6 +881,11 @@
       CALL cdf_write(nwout, vn_fsqr, fsqr)
       CALL cdf_write(nwout, vn_fsqz, fsqz)
 
+      IF (lrecon) THEN
+         CALL cdf_write(nwout, vn_mse, imse2-1)
+         CALL cdf_write(nwout, vn_thom, itse)
+      END IF
+
       CALL cdf_write(nwout, vn_nextcur, nextcur)
       IF (nextcur .gt. 0) THEN
          CALL cdf_write(nwout, vn_extcur, extcur(1:nextcur))
@@ -682,7 +896,7 @@
          CALL cdf_write(nwout, vn_maxpot, mnpd)
          CALL cdf_write(nwout, vn_nobd, nobd)
          CALL cdf_write(nwout, vn_nbset, nbsets)
-         IF (nextcur.gt.0 .and. ASSOCIATED(curlabel))
+         IF (nextcur.gt.0 .and. ALLOCATED(curlabel))
      1   CALL cdf_write(nwout, vn_curlab, curlabel(1:nextcur))
       END IF
 
@@ -718,6 +932,13 @@
          ELSE
             iasym = 0
          END IF
+         IF (lrecon) THEN
+            ireconstruct = 1
+         ELSE
+            itse = 0
+            imse2 = 0
+            ireconstruct = 0
+         END IF
 
 !
 !     Insert version information into wout file. This will be parsed in
@@ -735,14 +956,17 @@
 #ifdef _ANIMEC
          WRITE (nwout2, *) wb, wpar, gamma, pfac,
 #else
-         WRITE (nwout2, *) wb, wp, gamma, 1,
+         WRITE (nwout2, *) wb, wp, gamma, pfac,
 #endif
      1    rmax_surf, rmin_surf, zmax_surf
-
+#ifdef _FLOW
+     2   ,bcrit !machsq
+#endif
          WRITE (nwout2, *) nfp, ns, mpol, ntor, mnmax, mnmax_nyq0,
-     1     itfsq, iter2, iasym, 0, ier_flag
+     1     itfsq, iter2, iasym, ireconstruct, ier_flag
 
-         WRITE (nwout2, *) 0, 0, nbsets, nobd, nextcur, nstore_seq
+         WRITE (nwout2, *) imse2 - 1, itse, nbsets, nobd, nextcur,
+     1     nstore_seq
          IF (nbsets .gt. 0) WRITE (nwout2, *) (nbfld(i),i=1,nbsets)
          WRITE (nwout2, '(a)') mgrid_file
 
@@ -754,7 +978,7 @@
 
       IF (.not. lwrite) GOTO 970   ! J Geiger: in case lwouttxt is not true
                                    !           jump to close nc-file
-      ALLOCATE (xfinal(neqs), stat=js)
+      ALLOCATE (xfinal(neqs2), stat=js)
       IF (js .NE. 0) STOP 'Allocation error for xfinal in WROUT!'
       xfinal = xc
 #ifdef _HBANGLE
@@ -884,11 +1108,50 @@
         END IF  
    10   END DO
    20  END DO
-#endif
+!
+      DO js = 2, ns
+         bsq(js,:nznt) = SQRT(2*ABS(bsq(js,:nznt)))
+      END DO
+#elif defined _FLOW
+!... CALCULATE RADIAL DERIVATIVES OF PRESSURE IN TOROIDALLY ROTATING PLASMA 
+!... STORE IN ARRAYS pppr AND pd PREVIOUSLY USED IN PRES_ROT AND PROT_GRAD.
+      eps = EPSILON(eps)
+      DO js=2,ns-1
+!         pd(js) = ohs * log(pres(js+1)/(pres(js)+eps))
+!         pppr(js) = ohs * log(rotfot(js+1)/(rotfot(js)+eps))
+         pd(js) = two*ohs *(pres(js+1)-pres(js)) 
+     1                   / (pres(js+1)+pres(js)+eps)
+         pppr(js) = two*ohs * (rotfot(js+1)-rotfot(js))
+     1                      / (rotfot(js+1)+rotfot(js)+eps)
+      END DO
+!... INTERPOLATE (EXTRAPOLATE) TO HALF INTEGER MESH
+      pdh = c1p5 * pd(2) - p5 * pd(3)
+      pmh = c1p5 * pppr(2) - p5 * pppr(3)
+      pde = c1p5 * pd(ns-1) - p5 * pd(ns-2)
+      pme = c1p5 * pppr(ns-1) - p5 * pppr(ns-2)
+      DO js=ns-2,2,-1
+         pd(js+1)   = p5 * (pd(js+1) + pd(js))
+         pppr(js+1) = p5 * (pppr(js+1) + pppr(js))
+      END DO
+         pd(2)    = pdh
+         pd(ns)   = pde
+         pppr(2)  = pmh
+         pppr(ns) = pme
+      DO js = 2, ns
+         bsq(js,:nznt) = SQRT(2*ABS(bsq(js,:nznt)-prot(js,:nznt)))
+      END DO
+!CALCULATE RADIAL PRESSURE GRADIENT WITH TOROIDAL FLOW ON HALF INTEGER MESH
+      DO 30 js = 2, ns 
+        DO 25 lk = 1, nznt  
+          prprim(js,lk) = pd(js)*prot(js,lk)+pppr(js)*protrsq(js,lk)
+   25   END DO
+   30 END DO
+#else
 !SPH100209: COMPUTE |B| = SQRT(|B|**2) and store in bsq, bsqa
       DO js = 2, ns
          bsq(js,:nznt) = SQRT(2*ABS(bsq(js,:nznt)-pres(js)))
       END DO
+#endif
 
       tmult = p5/r0scale**2
 !SPH: FIXED THIS 03-05-07 TO CALL symmetrization routine
@@ -901,14 +1164,18 @@
 #ifdef _ANIMEC
      2                   ppar   , pperp  , densit ,
      3                   sigma_an , tau_an , pbprim , ppprim ,
+#elif defined _FLOW
+     4                   prot   , protrsq  , prprim ,
 #endif
-     4                   bsqa,  gsqrta, bsubua, bsubva, bsupua,
-     5                   bsupva, bsubsa
+     5                   bsqa,  gsqrta, bsubua, bsubva, bsupua,
+     6                   bsupva, bsubsa
 #ifdef _ANIMEC
-     6                  ,ppara  , pperpa , densita,
-     7                   sigma_ana, tau_ana, pbprima, ppprima
+     7                  ,ppara  , pperpa , densita,
+     8                   sigma_ana, tau_ana, pbprima, ppprima
+#elif defined _FLOW
+     9                  ,prota  , protrsqa, prprima
 #endif
-     8                    )
+     A                    )
 
          IF (lfreeb) THEN     !MRC  10-15-15
             CALL symoutput_sur(bsubu_sur, bsubv_sur,                           &
@@ -931,6 +1198,19 @@
          bsubsmn = 0
          bsupumn = 0
          bsupvmn = 0
+#ifdef _ANIMEC
+         pparmn  = 0
+         ppermn  = 0
+         sigmn   = 0
+         taumn   = 0
+         pbprmn  = 0
+         ppprmn  = 0
+         hotdmn  = 0
+#elif defined _FLOW
+         protmn    = 0
+         protrsqmn = 0
+         prprmn    = 0
+#endif
 
          MN2: DO mn = 1, mnmax_nyq0
             n = NINT(xn_nyq0(mn))/nfp
@@ -964,6 +1244,10 @@
                   pbprmn(mn)  = pbprmn(mn)  + tcosi*pbprim(js,lk)
                   ppprmn(mn)  = ppprmn(mn)  + tcosi*ppprim(js,lk)
                   hotdmn(mn)  = hotdmn(mn)  + tcosi*densit(js,lk)
+#elif defined _FLOW
+                  protmn(mn)     = protmn(mn)     + tcosi*prot(js,lk)
+                  protrsqmn(mn)  = protrsqmn(mn)  + tcosi*protrsq(js,lk)
+                  prprmn(mn)     = prprmn(mn)     + tcosi*prprim(js,lk)
 #endif
                END DO
             END DO
@@ -986,6 +1270,10 @@
          pbprmnc(:,js)  = pbprmn(:)
          ppprmnc(:,js)  = ppprmn(:)
          hotdmnc(:,js)  = hotdmn(:)
+#elif defined _FLOW
+         protmnc(:,js)     = protmn(:)
+         protrsqmnc(:,js)  = protrsqmn(:)
+         prprmnc(:,js)     = prprmn(:)
 #endif
       END DO RADIUS2
 
@@ -1030,6 +1318,8 @@
       hotdmnc(:,1)  = 0;  pparmnc(:,1)  = 0;  ppermnc(:,1) = 0
       pbprmnc(:,1)  = 0;  ppprmnc(:,1)  = 0
       sigmnc(:,1)   = 0;  taumnc(:,1)   = 0   
+#elif defined _FLOW
+      protmnc(:,1)   = 0;  protrsqmnc(:,1)   = 0;   prprmnc(:,1) = 0
 #endif
 
       IF (.not.lasym) GO TO 200
@@ -1050,6 +1340,10 @@
          pbprmn  = 0
          ppprmn  = 0
          hotdmn  = 0
+#elif defined _FLOW
+         protmn    = 0
+         protrsqmn = 0
+         prprmn    = 0
 #endif
          MN3: DO mn = 1, mnmax_nyq0
             n = NINT(xn_nyq0(mn))/nfp
@@ -1083,6 +1377,10 @@
                   pbprmn(mn)  = pbprmn(mn)  + tsini*pbprima(js,lk)
                   ppprmn(mn)  = ppprmn(mn)  + tsini*ppprima(js,lk)
                   hotdmn(mn)  = hotdmn(mn)  + tsini*densita(js,lk)
+#elif defined _FLOW
+                  protmn(mn)     = protmn(mn)    + tsini*prota(js,lk)
+                  protrsqmn(mn)  = protrsqmn(mn) + tsini*protrsqa(js,lk)
+                  prprmn(mn)     = prprmn(mn)    + tsini*prprima(js,lk)
 #endif
                   jlk = jlk+ns
                END DO
@@ -1104,6 +1402,10 @@
          pbprmns(:,js)  = pbprmn(:)
          ppprmns(:,js)  = ppprmn(:)
          hotdmns(:,js)  = hotdmn(:)
+#elif defined _FLOW
+         protmns(:,js)     = protmn(:)
+         protrsqmns(:,js)  = protrsqmn(:)
+         prprmns(:,js)     = prprmn(:)
 #endif
       END DO RADIUS3
 
@@ -1116,6 +1418,8 @@
       hotdmns(:,1)  = 0;  pparmns(:,1)  = 0;  ppermns(:,1) = 0
       pbprmns(:,1)  = 0;  ppprmns(:,1)  = 0
       sigmns(:,1)   = 0;  taumns(:,1)   = 0   
+#elif defined _FLOW
+      protmns(:,1)   = 0;  protrsqmns(:,1)   = 0;   prprmns(:,1) = 0
 #endif
 
       IF (lfreeb) THEN        !MRC  10-15-15
@@ -1152,10 +1456,10 @@
 
  200  CONTINUE
 
-      CALL Compute_Currents(bsubsmnc, bsubsmns, bsubumnc, bsubumns,            &
-     &                      bsubvmnc, bsubvmns,                                &
-     &                      xm_nyq0, xn_nyq0, mnmax_nyq0, lasym, ns,           &
-     &                      currumnc, currvmnc, currumns, currvmns)
+!      CALL Compute_Currents(bsubsmnc, bsubsmns, bsubumnc, bsubumns,            &
+!     &                      bsubvmnc, bsubvmns,                                &
+!     &                      xm_nyq0, xn_nyq0, mnmax_nyq0, lasym, ns,           &
+!     &                      currumnc, currvmnc, currumns, currvmns)
 
 #ifdef _DEBUG
       WRITE (333, *) '    JS     M*B_S     GRAD(B_U)    J^V'
@@ -1216,6 +1520,7 @@
 !
 !     WRITE OUT ARRAYS
 !
+
 #ifdef NETCDF
       CALL cdf_write(nwout, vn_racc, raxis_cc(0:ntor))
       CALL cdf_write(nwout, vn_zacs, zaxis_cs(0:ntor)) 
@@ -1227,6 +1532,19 @@
       CALL cdf_write(nwout, vn_bsubumnc, bsubumnc)      !Half mesh
       CALL cdf_write(nwout, vn_bsubvmnc, bsubvmnc)      !Half mesh
       CALL cdf_write(nwout, vn_bsubsmns, bsubsmns)      !Full mesh
+#ifdef _ANIMEC
+      CALL cdf_write(nwout, vn_pparmnc, pparmnc)
+      CALL cdf_write(nwout, vn_ppermnc, ppermnc)
+      CALL cdf_write(nwout, vn_hotdmnc, hotdmnc)
+      CALL cdf_write(nwout, vn_pbprmnc, pbprmnc)
+      CALL cdf_write(nwout, vn_ppprmnc, ppprmnc)
+      CALL cdf_write(nwout, vn_sigmnc, sigmnc)
+      CALL cdf_write(nwout, vn_taumnc, taumnc)
+#elif defined _FLOW
+      CALL cdf_write(nwout, vn_protmnc, protmnc)
+      CALL cdf_write(nwout, vn_protrsqmnc, protrsqmnc)
+      CALL cdf_write(nwout, vn_prprmnc, prprmnc)
+#endif
 
       CALL cdf_write(nwout, vn_currumnc, currumnc)      !MRK 8-12-16
       CALL cdf_write(nwout, vn_currvmnc, currvmnc)
@@ -1252,6 +1570,9 @@
       CALL cdf_write(nwout, vn_ac, ac(0:j))
       j = SIZE(ai)-1
       CALL cdf_write(nwout, vn_ai, ai(0:j))
+      CALL cdf_write(nwout, vn_ah, ah(0:j))
+      j = SIZE(ai)-1
+      CALL cdf_write(nwout, vn_atuname, at(0:j))
 
       j = SIZE(am_aux_s)
       CALL cdf_write(nwout, vn_am_aux_s, am_aux_s(1:j))
@@ -1273,6 +1594,10 @@
       CALL cdf_write(nwout, vn_phipf, twopi*signgs*phipf)
       CALL cdf_write(nwout, vn_chi, chi) 
       CALL cdf_write(nwout, vn_chipf, twopi*signgs*chipf)
+!#IFDEF _FLOW
+!      CALL cdf_write(nwout, vn_bucof, bucof)
+!      CALL cdf_write(nwout, vn_bvcof, bvcof)
+!#ENDIF
       CALL cdf_write(nwout, vn_jcuru, jcuru/mu0)
       CALL cdf_write(nwout, vn_jcurv, jcurv/mu0)
       CALL cdf_write(nwout, vn_jdotb, jdotb)
@@ -1284,8 +1609,16 @@
       buco(1) = 0; bvco(1) = 0; vp(1) = 0; overr(1) = 0;  specw(1) = 1
       beta_vol(1) = 0
       CALL cdf_write(nwout, vn_iotah, iotas(1:ns))
-      CALL cdf_write(nwout, vn_mass, mass/mu0) 
-      CALL cdf_write(nwout, vn_presh, pres(1:ns)/mu0)
+      CALL cdf_write(nwout, vn_mass, mass/mu0)
+#IFDEF _FLOW
+      CALL cdf_write(nwout, vn_pmap, pmap(1:ns)/mu0)
+      CALL cdf_write(nwout, vn_omega, omega(1:ns))
+      CALL cdf_write(nwout, vn_tpotb, tpotb(1:ns))
+      CALL cdf_write(nwout,  vn_presh, pres(1:ns))
+      CALL cdf_write(nwout, vn_rotfot, rotfot(1:ns))
+#ELSE
+      CALL cdf_write(nwout,  vn_presh, pres(1:ns)/mu0)
+#ENDIF 
       CALL cdf_write(nwout, vn_betah, beta_vol)
       CALL cdf_write(nwout, vn_buco, buco)
       CALL cdf_write(nwout, vn_bvco, bvco) 
@@ -1338,6 +1671,8 @@
      3              ,pparmnc (mn,js), ppermnc (mn,js), hotdmnc (mn,js),
      4               pbprmnc (mn,js), ppprmnc (mn,js), sigmnc  (mn,js),
      5               taumnc  (mn,js)
+#elif defined _FLOW
+     6              ,protmnc (mn,js), protrsqmnc(mn,js), prprmnc(mn,js)
 #endif
                IF (lasym) THEN
                   WRITE (nwout2, *) bmns(mn,js), gmns(mn,js), 
@@ -1347,6 +1682,8 @@
      3              ,pparmns (mn,js), ppermns (mn,js), hotdmns (mn,js),
      4               pbprmns (mn,js), ppprmns (mn,js), sigmns  (mn,js),
      5               taumns  (mn,js)
+#elif defined _FLOW
+     6              ,protmns (mn,js), protrsqmns(mn,js), prprmns(mn,js)
 #endif
                ENDIF
             END DO MN2_OUT
@@ -1365,10 +1702,19 @@
 
          WRITE (nwout2, *) (iotaf(js), presf(js)/mu0,
      1       twopi*signgs*phipf(js),
-     2       phi(js), jcuru(js)/mu0, jcurv(js)/mu0, js=1,ns)
-         WRITE (nwout2, *) (iotas(js), mass(js)/mu0, pres(js)/mu0,
-     1   beta_vol(js), phip(js), buco(js), bvco(js), vp(js),
-     2   overr(js), specw(js),js=2,ns)
+#ifdef _FLOW
+     2       bucof(js), bvcof(js),
+#endif
+     3       phi(js), jcuru(js)/mu0, jcurv(js)/mu0, js=1,ns)
+         WRITE (nwout2, *) (iotas(js), mass(js)/mu0, 
+#ifdef _FLOW
+     1                 pmap(js)/mu0, omega(js), tpotb(js), pres(js)/mu0,
+     2                 rotfot(js),
+#else
+     2                       pres(js)/mu0,
+#endif
+     3   beta_vol(js), phip(js), buco(js), bvco(js), vp(js),
+     4   overr(js), specw(js),js=2,ns)
 !-----------------------------------------------
 
          WRITE (nwout2, *) aspect, betatot, betapol, betator, betaxis,
@@ -1389,7 +1735,7 @@
 
          IF (nextcur.gt.0) THEN
             WRITE (nwout2, *) (extcur(i),i=1,nextcur)
-            lcurr = ASSOCIATED(curlabel) .and. lfreeb
+            lcurr = ALLOCATED(curlabel) .and. lfreeb
             WRITE (nwout2, *) lcurr
             IF (lcurr) WRITE (nwout2, *) (curlabel(i),i=1,nextcur)
          ENDIF
@@ -1564,6 +1910,54 @@
          ENDIF
       ENDIF                   !added for diagno version 1.5 end
 
+!-----------------------------------------------
+!     DATA AND MSE FITS
+!-----------------------------------------------
+         IF (.not.lrecon) GOTO 950
+
+         IF (imse2 - 1.gt.2 .or. itse.gt.0) THEN
+            WRITE (nwout2, *) tswgt, msewgt
+            CALL smoothdata(nwout2)
+
+!       These knot values are on SQRT(s) grid
+            presfactor = mu0*pthommax             !!*pfac moved to getthom
+            WRITE (nwout2, *) isnodes, (sknots(i),ystark(i),y2stark(i),
+     1          i=1,isnodes)
+            WRITE (nwout2, *) ipnodes, (pknots(i),presfactor*ythom(i),
+     1          presfactor*y2thom(i),i=1,ipnodes)
+            WRITE (nwout2, *)(datamse(i),rmid(i),qmid(i),shear(i),
+     1          presmid(i),alfa(i),curmid(i),i=1,2*ns-1)
+            WRITE (nwout2, *)(rstark(i),datastark(i),qmeas(i),i=1,imse)
+            WRITE (nwout2, *)(rthom(i),datathom(i),i=1,itse)
+         ENDIF
+         IF (nobd .gt. 0) THEN
+            WRITE (nwout2, *) (dsiext(i),plflux(i),dsiobt(i),i=1,nobd)
+            WRITE (nwout2, *) flmwgt
+         ENDIF
+         IF (nbfldn .gt. 0) THEN
+            DO n = 1, nbsets
+               WRITE (nwout2, *) (bcoil(i,n),plbfld(i,n),bbc(i,n),
+     1             i=1,nbfld(n))
+            END DO
+            WRITE (nwout2, *) bcwgt
+         ENDIF
+
+         WRITE (nwout2, *) phidiam, delphid
+!
+!     Write Limiter & Prout plotting specs
+!
+         WRITE (nwout2, *) nsets, nparts, nlim
+         WRITE (nwout2, *) (nsetsn(i),i=1,nsets)
+         WRITE (nwout2, *) (((pfcspec(i,j,k),i=1,nparts),j=1,nsetsn(k)),
+     1       k=1,nsets)
+         WRITE (nwout2, *) (limitr(i), i=1,nlim)
+         WRITE (nwout2, *) ((rlim(i,j),zlim(i,j),i=1,limitr(j)),
+     1       j=1,nlim)
+         WRITE (nwout2, *) nrgrid, nzgrid
+         WRITE (nwout2, *) tokid
+         WRITE (nwout2, *) rx1, rx2, zy1, zy2, condif
+         WRITE (nwout2, *) imatch_phiedge
+
       ENDIF
 
  950  CONTINUE
@@ -1583,6 +1977,19 @@
          CALL cdf_write(nwout, vn_bsubumns, bsubumns)
          CALL cdf_write(nwout, vn_bsubvmns, bsubvmns)
          CALL cdf_write(nwout, vn_bsubsmnc, bsubsmnc)
+#ifdef _ANIMEC
+         CALL cdf_write(nwout, vn_pparmns, pparmns)
+         CALL cdf_write(nwout, vn_ppermns, ppermns)
+         CALL cdf_write(nwout, vn_hotdmns, hotdmns)
+         CALL cdf_write(nwout, vn_pbprmns, pbprmns)
+         CALL cdf_write(nwout, vn_ppprmns, ppprmns)
+         CALL cdf_write(nwout, vn_sigmns, sigmns)
+         CALL cdf_write(nwout, vn_taumns, taumns)
+#elif defined _FLOW
+         CALL cdf_write(nwout, vn_protmns, protmns)
+         CALL cdf_write(nwout, vn_protrsqmns, protrsqmns)
+         CALL cdf_write(nwout, vn_prprmns, prprmns)
+#endif
 
          CALL cdf_write(nwout, vn_currumns, currumns)     !MRC  8-12-16
          CALL cdf_write(nwout, vn_currvmns, currvmns)
@@ -1619,17 +2026,23 @@
      1                                bsubsmns, bsupumnc, bsupvmnc
 #ifdef _ANIMEC
      2   ,sigmnc,taumnc,pparmnc,ppermnc,pbprmnc,ppprmnc,hotdmnc
+#elif defined _FLOW 
+     2   ,protmnc, protrsqmnc ,prprmnc
 #endif
      3                                )
       IF (ALLOCATED(gmns)) DEALLOCATE(gmns, bmns, bsubumns, bsubvmns,
      1                                bsubsmnc, bsupumns, bsupvmns
 #ifdef _ANIMEC
      2   ,sigmns,taumns,pparmns,ppermns,pbprmns,ppprmns,hotdmns
+#elif defined _FLOW 
+     2   ,protmns, protrsqmns ,prprmns
 #endif
      3                                )
 #ifdef _ANIMEC
       IF (ALLOCATED(tau_ana)) DEALLOCATE(sigma_ana, tau_ana, ppara,
      1                        pperpa, pbprima, ppprima, densita)
+#elif defined _FLOW
+      IF (ALLOCATED(prota)) DEALLOCATE(prota,protrsqa,prprima)
 #endif
 ! J Geiger: check also for allocation.
       IF (ALLOCATED(gmn)) DEALLOCATE (gmn, bmn, bsubumn, bsubvmn,
@@ -1637,6 +2050,8 @@
 #ifdef _ANIMEC
      2             sigmn, taumn, pparmn, ppermn, pbprmn, ppprmn,
      3             hotdmn,
+#elif defined _FLOW
+     3  protmn , protrsqmn , prprmn,
 #endif
      4             stat=istat)
 
@@ -1664,6 +2079,7 @@
 
       CALL second0 (twoutoff)
       timer(twout) = timer(twout) + twoutoff - twouton
+#if defined(SKS)
       fo_wrout_time = timer(twout)
-
+#endif
       END SUBROUTINE wrout

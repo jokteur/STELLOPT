@@ -135,6 +135,9 @@
 !-------------------------------------------------------------------------------
 !  Start of executable code
 !-------------------------------------------------------------------------------
+#if defined(SKS)
+      RETURN !As per SPH suggestion on Oct 13, 2014
+#endif
       IF (vmh_index .eq. 0) THEN
          CALL second0(vmh_time_zero)
       ENDIF

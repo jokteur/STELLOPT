@@ -1,13 +1,18 @@
       SUBROUTINE readin(input_file, iseq_count, ier_flag, lscreen)
       USE vmec_main
+#ifdef _FLOW
+     1            ,machsq => bcrit
+#endif
       USE vmec_params
+      USE vparams, ONLY: nsd
       USE vacmod
+      USE vsvd
       USE vspline
       USE timer_sub
       USE mgrid_mod, ONLY: nextcur, curlabel, nfper0, read_mgrid
       USE init_geometry
       USE parallel_include_module, ONLY: grank, mgrid_file_read_time,
-     &                                   LPRECOND
+     1                                   LPRECOND
       USE parallel_vmec_module, ONLY: RUNVMEC_COMM_WORLD
       IMPLICIT NONE
 C-----------------------------------------------
@@ -20,10 +25,10 @@ C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
       INTEGER :: iexit, ipoint, n, iunit, ier_flag_init,
-     &   i, ni, m, nsmin, igrid, mj, isgn, ioff, joff,
-     &   NonZeroLen
+     1   i, ni, m, nsmin, igrid, mj, isgn, ioff, joff,
+     2   NonZeroLen    
       REAL(dp), DIMENSION(:,:), POINTER ::
-     &  rbcc, rbss, rbcs, rbsc, zbcs, zbsc, zbcc, zbss
+     1  rbcc, rbss, rbcs, rbsc, zbcs, zbsc, zbcc, zbss
       REAL(dp) :: rtest, ztest, tzc, trc, delta
       REAL(dp), ALLOCATABLE :: temp(:)
       CHARACTER(LEN=100) :: line, line2
@@ -251,12 +256,6 @@ C-----------------------------------------------
       IF (ier_flag_init .EQ. more_iter_flag) GOTO 1000
 
 !
-!     Handle IMAS
-!
-      IF (ier_flag_init .EQ. imas_read_flag) ier_flag = imas_read_flag 
-
-
-!
 !     READ IN DATA FROM INDATA FILE
 !
       CALL read_indata(input_file, iunit, ier_flag)
@@ -269,54 +268,53 @@ C-----------------------------------------------
 !
 !      PRINT *,'IN READIN, LWRITE: ', lwrite
       IF (lwrite) THEN
-         CALL heading(input_extension, time_slice,
-     &                iseq_count, lmac, lscreen, lwrite)
+        CALL heading(input_extension, time_slice,
+     1             iseq_count, lmac, lscreen, lwrite)
       END IF
 
 !
 !     READ IN COMMENTS DEMARKED BY "!"
-!     
-      IF(ier_flag_init .NE. imas_read_flag) THEN
-        REWIND (iunit, iostat=iexit)
-        IF (lWrite) THEN
-          DO WHILE(iexit .EQ. 0)
+!  
+      REWIND (iunit, iostat=iexit)
+      IF (lWrite) THEN
+         DO WHILE(iexit .EQ. 0)
             READ (iunit, '(a)', iostat=iexit) line
             IF (iexit .NE. 0) EXIT
             iexit = INDEX(line,'INDATA')
             iexit = iexit + INDEX(line,'indata')
             ipoint = INDEX(line,'!')
             IF (ipoint .EQ. 1) WRITE (nthreed, *) TRIM(line)
-          ENDDO
-        END IF
-        CLOSE (iunit)
-      ENDIF
+         ENDDO
+      END IF
+      CLOSE (iunit)
 
 !
 !     READ IN AND STORE (FOR SEQUENTIAL RUNNING) MAGNETIC FIELD DATA
 !     FROM MGRID_FILE
 !
-      IF (lfreeb .AND. (ier_flag_init .NE. imas_read_flag)) THEN
+      IF (lfreeb) THEN
          CALL second0(trc)
          CALL read_mgrid (mgrid_file, extcur, nzeta, nfp, 
-     &                    lscreen, ier_flag, comm = RUNVMEC_COMM_WORLD)
+     1                    lscreen, ier_flag, comm = RUNVMEC_COMM_WORLD)
          CALL second0(tzc)
          mgrid_file_read_time = mgrid_file_read_time + (tzc - trc)
 
          IF (lfreeb .AND. lscreen .AND. lwrite) THEN
             WRITE (6,'(2x,a,1p,e10.2,a)') 'Time to read MGRID file: ', 
-     &             tzc - trc, ' s'
+     1             tzc - trc, ' s'
             IF (ier_flag .ne. norm_term_flag) RETURN
             IF (lwrite) WRITE (nthreed,20) nr0b, nz0b, np0b, rminb, 
-     &                         rmaxb, zminb, zmaxb, TRIM(mgrid_file)
+     1                         rmaxb, zminb, zmaxb, TRIM(mgrid_file)
  20         FORMAT(//,' VACUUM FIELD PARAMETERS:',/,1x,24('-'),/,
-     &     '  nr-grid  nz-grid  np-grid      rmin      rmax      zmin',
-     &     '      zmax     input-file',/,3i9,4f10.3,5x,a)
+     1     '  nr-grid  nz-grid  np-grid      rmin      rmax      zmin',
+     2     '      zmax     input-file',/,3i9,4f10.3,5x,a)
          END IF
       END IF
 
 !
 !     PARSE NS_ARRAY
 !
+      
       nsin = MAX (3, nsin)
       multi_ns_grid = 1
       IF (ns_array(1) .eq. 0) THEN                    !Old input style
@@ -326,7 +324,7 @@ C-----------------------------------------------
       ELSE
           nsmin = 1
           DO WHILE (ns_array(multi_ns_grid) .ge. nsmin .and.
-     &             multi_ns_grid .lt. 100)      ! .ge. previously .gt.
+     1             multi_ns_grid .lt. 100)      ! .ge. previously .gt.
              nsmin = MAX(nsmin, ns_array(multi_ns_grid))
              IF (nsmin .le. nsd) THEN
                 multi_ns_grid = multi_ns_grid + 1
@@ -336,7 +334,7 @@ C-----------------------------------------------
                 IF (lwrite) THEN
                    PRINT *,' NS_ARRAY ELEMENTS CANNOT EXCEED ',nsd
                    PRINT *,' CHANGING NS_ARRAY(',multi_ns_grid,') to ',
-     &                       nsd
+     1                       nsd
                 END IF
              END IF
           END DO
@@ -347,7 +345,7 @@ C-----------------------------------------------
          IF (multi_ns_grid .eq. 1) ftol_array(1) = ftol
          DO igrid = 2, multi_ns_grid
             ftol_array(igrid) = 1.e-8_dp * (1.e8_dp * ftol)**
-     &                          ( REAL(igrid-1,dp)/(multi_ns_grid-1) )
+     1        ( REAL(igrid-1,dp)/(multi_ns_grid-1) )
          END DO
       ENDIF
 
@@ -368,144 +366,147 @@ C-----------------------------------------------
 
       PROC0: IF (lwrite) THEN
          WRITE (nthreed,100)
-     &   ns_array(multi_ns_grid),ntheta1,nzeta,mpol,ntor,nfp,
+     1   ns_array(multi_ns_grid),ntheta1,nzeta,mpol,ntor,nfp,
 #ifdef _ANIMEC
-     &   gamma,spres_ped,phiedge,curtor,bcrit,lRFP
+     2  gamma,spres_ped,phiedge,curtor,bcrit,lRFP
+#elif defined _FLOW
+     2  gamma,spres_ped,phiedge,curtor,machsq,lRFP
 #else
-     &   gamma,spres_ped,phiedge,curtor,lRFP
+     2  gamma,spres_ped,phiedge,curtor,lRFP
 #endif
  100  FORMAT(/,' COMPUTATION PARAMETERS: (u = theta, v = zeta)'/,
-     &  1x,45('-'),/,
-     &  '     ns     nu     nv     mu     mv',/,
-     &  5i7,//,' CONFIGURATION PARAMETERS:',/,1x,39('-'),/,
-     &  '    nfp      gamma      spres_ped    phiedge(wb)'
+     1  1x,45('-'),/,
+     2  '     ns     nu     nv     mu     mv',/,
+     3  5i7,//,' CONFIGURATION PARAMETERS:',/,1x,39('-'),/,
+     4  '    nfp      gamma      spres_ped    phiedge(wb)'
 #ifdef _ANIMEC
-     &  '     curtor(A)      BCrit(T)        lRFP',
-     &  /,i7,1p,e11.3,2e15.3,2e14.3,L12/)
+     5  '     curtor(A)      BCrit(T)        lRFP',
+     6  /,i7,1p,e11.3,2e15.3,2e14.3,L12/)
+#elif defined _FLOW
+     5  '     curtor(A)      Mach-axis        lRFP',
+     6  /,i7,1p,e11.3,2e15.3,2e14.3,L12/)
 #else
-     &  '     curtor(A)        lRFP',
-     &  /,i7,1p,e11.3,2e15.3,e14.3,L12/)
+     5  '     curtor(A)        lRFP',
+     6  /,i7,1p,e11.3,2e15.3,e14.3,L12/)
 #endif
          WRITE (nthreed,110) ncurr,niter_array(multi_ns_grid),
-     &   ns_array(1),nstep,nvacskip,
-     &   ftol_array(multi_ns_grid),tcon0,lasym,lforbal,lmove_axis,
-     &   lconm1,mfilter_fbdy,nfilter_fbdy,lfull3d1out,
-     &   max_main_iterations,lgiveup,fgiveup                                         ! M Drevlak 20130114
+     1   ns_array(1),nstep,nvacskip,
+     2   ftol_array(multi_ns_grid),tcon0,lasym,lforbal,lmove_axis,
+     3   lconm1,mfilter_fbdy,nfilter_fbdy,lfull3d1out,
+     4   max_main_iterations,lgiveup,fgiveup                                         ! M Drevlak 20130114
  110  FORMAT(' RUN CONTROL PARAMETERS:',/,1x,23('-'),/,
-     &  '  ncurr  niter   nsin  nstep  nvacskip      ftol     tcon0',
-     &  '    lasym  lforbal lmove_axis lconm1',/,
-     &     4i7,i10,1p,2e10.2,4L9,/,
-     &  '  mfilter_fbdy nfilter_fbdy lfull3d1out max_main_iterations', ! J Geiger 20120203
-     &  ' lgiveup fgiveup',/,               ! M Drevlak 20130114
-     &     2(6x,i7),L12,10x,i10,L8,e9.1,/)  ! M Drevlak 20130114
+     1  '  ncurr  niter   nsin  nstep  nvacskip      ftol     tcon0',
+     2  '    lasym  lforbal lmove_axis lconm1',/,
+     3     4i7,i10,1p,2e10.2,4L9,/,
+     4  '  mfilter_fbdy nfilter_fbdy lfull3d1out max_main_iterations', ! J Geiger 20120203
+     5  ' lgiveup fgiveup',/,               ! M Drevlak 20130114
+     6     2(6x,i7),L12,10x,i10,L8,e9.1,/)  ! M Drevlak 20130114
 
          WRITE (nthreed,120) precon_type, prec2d_threshold
  120  FORMAT(' PRECONDITIONER CONTROL PARAMETERS:',/,1x,34('-'),/,
-     &       '  precon_type   prec2d_threshold',/,2x,a10,1p,e20.2,/)
+     1  '  precon_type   prec2d_threshold',/,2x,a10,1p,e20.2,/)
 
          IF (nextcur .gt. 0) THEN
             WRITE(nthreed, "(' EXTERNAL CURRENTS',/,1x,17('-'))")
             ni = 0
-            IF (ASSOCIATED(curlabel)) THEN
-               ni = MAXVAL(LEN_TRIM(curlabel(1:nextcur)))
-            END IF
+            IF (ALLOCATED(curlabel))
+     1         ni = MAXVAL(LEN_TRIM(curlabel(1:nextcur)))
             ni = MAX(ni+4, 14)
             WRITE (line,  '(a,i2.2,a)') "(5a",ni,")"
             WRITE (line2, '(a,i2.2,a)') "(5(",ni-12,"x,1p,e12.4))"
             DO i = 1,nextcur,5
                ni = MIN(i+4, nextcur)
-               IF (ASSOCIATED(curlabel)) THEN
-                  WRITE (nthreed, line, iostat=mj)
-     &                  (TRIM(curlabel(n)),n=i,ni)
-                  WRITE (nthreed, line2,iostat=mj) (extcur(n), n=i,ni)
-               END IF
-            END DO
+               IF (ALLOCATED(curlabel))
+     1         WRITE (nthreed, line, iostat=mj) 
+     2               (TRIM(curlabel(n)),n=i,ni)
+               WRITE (nthreed, line2,iostat=mj) 
+     1                 (extcur(n), n=i,ni)
+            ENDDO
             WRITE (nthreed, *)
-         END IF
+         ENDIF
 
          IF (bloat .ne. one) THEN
             WRITE (nthreed,'(" Profile Bloat Factor: ",1pe11.4)') bloat
             phiedge = phiedge*bloat
-         END IF
+         ENDIF
 
-         IF (pres_scale .ne. one) THEN
-            WRITE (nthreed,121) pres_scale
-         END IF
- 121  FORMAT(' Pressure profile factor: ',1pe11.4,
-     &       ' (multiplier for pressure)')
+         IF (pres_scale .ne. one) 
+     1      WRITE (nthreed,'(" Pressure profile factor: ",
+     2            1pe11.4," (multiplier for pressure)")') pres_scale
+
 !  Print out am array
             WRITE(nthreed,130)
             WRITE(nthreed,131) TRIM(pmass_type)
             WRITE(nthreed,132)
  130  FORMAT(' MASS PROFILE COEFFICIENTS - newton/m**2',
-     &       ' (EXPANSION IN NORMALIZED RADIUS):')
+     1  ' (EXPANSION IN NORMALIZED RADIUS):')
  131  FORMAT(' PMASS parameterization type is ''', a,'''')
  132  FORMAT(1x,35('-'))
 !         WRITE(nthreed,135)(am(i-1),i=1, SIZE(am))
  135  FORMAT(1p,6e12.3)
 
          SELECT CASE(TRIM(pmass_type))
-            CASE ('Akima_spline','cubic_spline')
-               WRITE(nthreed,"(' am_aux_s is' )")
-               n = NonZeroLen(am_aux_s,SIZE(am_aux_s))
-               WRITE(nthreed,135)(am_aux_s(i),i=1, n)
-               n = NonZeroLen(am_aux_f,SIZE(am_aux_f))
-               WRITE(nthreed,"(' am_aux_f is' )")
-               WRITE(nthreed,135)(am_aux_f(i),i=1, n)
-            CASE DEFAULT
-               n = NonZeroLen(am,SIZE(am))
-               WRITE(nthreed,135)(am(i-1),i=1,n)
-         END SELECT
+         CASE ('Akima_spline','cubic_spline')
+            WRITE(nthreed,"(' am_aux_s is' )")
+            n = NonZeroLen(am_aux_s,SIZE(am_aux_s))
+            WRITE(nthreed,135)(am_aux_s(i),i=1, n)
+            n = NonZeroLen(am_aux_f,SIZE(am_aux_f))
+            WRITE(nthreed,"(' am_aux_f is' )")
+            WRITE(nthreed,135)(am_aux_f(i),i=1, n)
+          CASE DEFAULT
+            n = NonZeroLen(am,SIZE(am))
+            WRITE(nthreed,135)(am(i-1),i=1,n)
+          END SELECT
 
-         IF (ncurr.eq.0) THEN
-            IF (lRFP) THEN
-               WRITE (nthreed,142)
-            ELSE
-               WRITE (nthreed,140)
-            END IF
+      IF (ncurr.eq.0) THEN
+          IF (lRFP) THEN
+             WRITE (nthreed,142)
+          ELSE
+             WRITE (nthreed,140)
+          END IF
 !  Print out ai array          
 !          WRITE(nthreed,135)(ai(i-1),i=1, SIZE(ai))
-            WRITE(nthreed,143) TRIM(piota_type)
-            SELECT CASE(TRIM(piota_type))
-               CASE ('Akima_spline','cubic_spline')
-                  n = NonZeroLen(ai_aux_s,SIZE(ai_aux_s))
-                  WRITE(nthreed,"(' ai_aux_s is' )")
-                  WRITE(nthreed,135)(ai_aux_s(i),i=1, n)
-                  n = NonZeroLen(ai_aux_f,SIZE(ai_aux_f))
-                  WRITE(nthreed,"(' ai_aux_f is' )")
-                  WRITE(nthreed,135)(ai_aux_f(i),i=1, n)
-               CASE DEFAULT
-                  n = NonZeroLen(ai,SIZE(ai))
-                  WRITE(nthreed,135)(ai(i-1),i=1, n)
-            END SELECT
-         ELSE
+          WRITE(nthreed,143) TRIM(piota_type)
+          SELECT CASE(TRIM(piota_type))
+          CASE ('Akima_spline','cubic_spline')
+             n = NonZeroLen(ai_aux_s,SIZE(ai_aux_s))
+             WRITE(nthreed,"(' ai_aux_s is' )")
+             WRITE(nthreed,135)(ai_aux_s(i),i=1, n)
+             n = NonZeroLen(ai_aux_f,SIZE(ai_aux_f))
+             WRITE(nthreed,"(' ai_aux_f is' )")
+             WRITE(nthreed,135)(ai_aux_f(i),i=1, n)
+           CASE DEFAULT
+             n = NonZeroLen(ai,SIZE(ai))
+             WRITE(nthreed,135)(ai(i-1),i=1, n)
+           END SELECT
+      ELSE
 !  Print out ac array
-            WRITE(nthreed,145)
-            WRITE(nthreed,146) TRIM(pcurr_type)
-            WRITE(nthreed,147)
-!            WRITE(nthreed,135)(ac(i-1),i=1, SIZE(ac))
-            SELECT CASE(TRIM(pcurr_type))
-               CASE ('Akima_spline_Ip','Akima_spline_I',                       &
-     &               'cubic_spline_Ip','cubic_spline_I')
-                  n = NonZeroLen(ac_aux_s,SIZE(ac_aux_s))
-                  WRITE(nthreed,"(' ac_aux_s is' )")
-                  WRITE(nthreed,135)(ac_aux_s(i),i=1, n)
-                  n = NonZeroLen(ac_aux_f,SIZE(ac_aux_f))
-                  WRITE(nthreed,"(' ac_aux_f is' )")
-                  WRITE(nthreed,135)(ac_aux_f(i),i=1, n)
-               CASE DEFAULT
-                  n = NonZeroLen(ac,SIZE(ac))
-                  WRITE(nthreed,135)(ac(i-1),i=1, n)
-            END SELECT
+          WRITE(nthreed,145)
+          WRITE(nthreed,146) TRIM(pcurr_type)
+          WRITE(nthreed,147)
+!          WRITE(nthreed,135)(ac(i-1),i=1, SIZE(ac))
+          SELECT CASE(TRIM(pcurr_type))
+          CASE ('Akima_spline_Ip','Akima_spline_I',                            &
+     &           'cubic_spline_Ip','cubic_spline_I')
+             n = NonZeroLen(ac_aux_s,SIZE(ac_aux_s))
+             WRITE(nthreed,"(' ac_aux_s is' )")
+             WRITE(nthreed,135)(ac_aux_s(i),i=1, n)
+             n = NonZeroLen(ac_aux_f,SIZE(ac_aux_f))
+             WRITE(nthreed,"(' ac_aux_f is' )")
+             WRITE(nthreed,135)(ac_aux_f(i),i=1, n)
+           CASE DEFAULT
+             n = NonZeroLen(ac,SIZE(ac))
+             WRITE(nthreed,135)(ac(i-1),i=1, n)
+           END SELECT
          END IF
 
  140  FORMAT(/' IOTA PROFILE COEFFICIENTS',
-     &       ' (EXPANSION IN NORMALIZED RADIUS):',/,1x,35('-'))
+     1   ' (EXPANSION IN NORMALIZED RADIUS):',/,1x,35('-'))
  142  FORMAT(/' SAFETY-FACTOR (q) PROFILE COEFFICIENTS ai',
-     &       ' (EXPANSION IN NORMALIZED RADIUS):',/,1x,35('-'))
+     1   ' (EXPANSION IN NORMALIZED RADIUS):',/,1x,35('-'))
  143  FORMAT(' PIOTA parameterization type is ''', a,'''')
  145  FORMAT(/' TOROIDAL CURRENT DENSITY (*V'') COEFFICIENTS',
-     &       ' ac (EXPANSION IN NORMALIZED RADIUS):')
+     1        ' ac (EXPANSION IN NORMALIZED RADIUS):')
  146  FORMAT(' PCURR parameterization type is ''', a,'''')
  147  FORMAT(1x,38('-'))
 
@@ -513,34 +514,43 @@ C-----------------------------------------------
          n = NonZeroLen(aphi,SIZE(aphi))
          WRITE(nthreed,135)(aphi(i),i=1,n)
  150  FORMAT(/' NORMALIZED TOROIDAL FLUX COEFFICIENTS aphi',
-     &       ' (EXPANSION IN S):',/,1x,35('-'))
+     1   ' (EXPANSION IN S):',/,1x,35('-'))
 #ifdef _ANIMEC
-         IF (ANY(ah .ne. zero)) THEN
-            WRITE(nthreed,160)
-            n = NonZeroLen(ah,SIZE(ah))
-            WRITE(nthreed,135)(ah(i-1),i=1, n)
-            WRITE(nthreed,165)
-            n = NonZeroLen(at,SIZE(at))
-            WRITE(nthreed,135)(at(i-1),i=1, n)
-         END IF
+      IF (ANY(ah .ne. zero)) THEN
+         WRITE(nthreed,160)
+         WRITE(nthreed,135)(ah(i-1),i=1, SIZE(ah))
+         WRITE(nthreed,165)
+         WRITE(nthreed,135)(at(i-1),i=1, SIZE(at))
+      END IF
 
  160  FORMAT(' HOT PARTICLE PRESSURE COEFFICIENTS ah',
-     &       ' (EXPANSION IN TOROIDAL FLUX):',/,1x,35('-'))
+     1  ' (EXPANSION IN TOROIDAL FLUX):',/,1x,35('-'))
  165  FORMAT(' HOT PARTICLE TPERP/T|| COEFFICIENTS at',
-     &       ' (EXPANSION IN TOROIDAL FLUX):',/,1x,35('-'))
+     1  ' (EXPANSION IN TOROIDAL FLUX):',/,1x,35('-'))
+#elif defined _FLOW
+      IF (ANY(ah .ne. zero)) THEN
+         WRITE(nthreed,170)
+         WRITE(nthreed,135)(ah(i-1),i=1, SIZE(ah))
+         WRITE(nthreed,175)
+         WRITE(nthreed,135)(at(i-1),i=1, SIZE(at))
+      END IF
+
+ 170  FORMAT(' TOROIDAL FLOW FREQUENCY COEFFICIENTS ah',
+     1  ' (EXPANSION IN TOROIDAL FLUX):',/,1x,35('-'))
+ 175  FORMAT(' TEMPERATURE COEFFICIENTS at',
+     1  ' (EXPANSION IN TOROIDAL FLUX):',/,1x,35('-'))
 #endif
 
 !  Fourier Boundary Coefficients
          WRITE(nthreed,180)
  180  FORMAT(/,' R-Z FOURIER BOUNDARY COEFFICIENTS AND',
-     &       ' MAGNETIC AXIS INITIAL GUESS',/,
-     &       ' R = RBC*COS(m*u - n*v) + RBS*SIN(m*u - n*v),',
-     &       ' Z = ZBC*COS(m*u - n*v) + ZBS*SIN(m*u-n*v)'/1x,86('-'),
-     &       /,'   nb  mb     rbc         rbs         zbc         ',
-     &       'zbs   ',
-     &       '    raxis(c)    raxis(s)    zaxis(c)    zaxis(s)')
+     1         ' MAGNETIC AXIS INITIAL GUESS',/,
+     1  ' R = RBC*COS(m*u - n*v) + RBS*SIN(m*u - n*v),',
+     2  ' Z = ZBC*COS(m*u - n*v) + ZBS*SIN(m*u-n*v)'/1x,86('-'),
+     3  /,'   nb  mb     rbc         rbs         zbc         zbs   ',
+     4   '    raxis(c)    raxis(s)    zaxis(c)    zaxis(s)')
 
-      END IF PROC0
+       ENDIF PROC0
 
 1000  CONTINUE
 
@@ -548,23 +558,21 @@ C-----------------------------------------------
 !     CONVERT TO REPRESENTATION WITH RBS(m=1) = ZBC(m=1)
 !
       IF (lasym) THEN
-         delta = ATAN((rbs(0,1) - zbc(0,1))/
-     &                (ABS(rbc(0,1)) + ABS(zbs(0,1))))
+         delta = ATAN( (rbs(0,1) - zbc(0,1))/
+     1           (ABS(rbc(0,1)) + ABS(zbs(0,1))) )
          IF (delta .ne. zero) THEN
-            DO m = 0,mpol1
-               DO n = -ntor,ntor
-                  trc = rbc(n,m)*COS(m*delta) + rbs(n,m)*SIN(m*delta)
-                  rbs(n,m) = rbs(n,m)*COS(m*delta)
-     &                     - rbc(n,m)*SIN(m*delta)
-                  rbc(n,m) = trc
-                  tzc = zbc(n,m)*COS(m*delta) + zbs(n,m)*SIN(m*delta)
-                  zbs(n,m) = zbs(n,m)*COS(m*delta)
-     &                     - zbc(n,m)*SIN(m*delta)
-                  zbc(n,m) = tzc
-               END DO
-            END DO
-         END IF
-      END IF
+         DO m = 0,mpol1
+            DO n = -ntor,ntor
+            trc = rbc(n,m)*COS(m*delta) + rbs(n,m)*SIN(m*delta)
+            rbs(n,m) = rbs(n,m)*COS(m*delta) - rbc(n,m)*SIN(m*delta)
+            rbc(n,m) = trc
+            tzc = zbc(n,m)*COS(m*delta) + zbs(n,m)*SIN(m*delta)
+            zbs(n,m) = zbs(n,m)*COS(m*delta) - zbc(n,m)*SIN(m*delta)
+            zbc(n,m) = tzc
+            ENDDO
+         ENDDO
+         ENDIF
+      ENDIF
 
 !
 !     ALLOCATE MEMORY FOR NU, NV, MPOL, NTOR SIZED ARRAYS
@@ -605,14 +613,13 @@ C-----------------------------------------------
       ioff = LBOUND(rbcc,1)
       joff = LBOUND(rbcc,2)
 
-
-      DO m=0, mpol1
-         mj = m + joff
+      DO m=0,mpol1
+         mj = m+joff
          IF (lfreeb .and. 
-     &       (mfilter_fbdy.gt.1 .and. m.gt.mfilter_fbdy)) CYCLE
-         DO n = -ntor, ntor
+     1       (mfilter_fbdy.gt.1 .and. m.gt.mfilter_fbdy)) CYCLE
+         DO n=-ntor,ntor
             IF (lfreeb .and. 
-     &         (nfilter_fbdy.gt.0 .and. ABS(n).gt.nfilter_fbdy)) CYCLE
+     1         (nfilter_fbdy.gt.0 .and. ABS(n).gt.nfilter_fbdy)) CYCLE
             ni = ABS(n) + ioff
             IF (n .eq. 0) THEN
                isgn = 0
@@ -640,18 +647,18 @@ C-----------------------------------------------
 
             IF (ier_flag_init .ne. norm_term_flag) CYCLE
             trc = ABS(rbc(n,m)) + ABS(rbs(n,m))
-     &          + ABS(zbc(n,m)) + ABS(zbs(n,m))
+     1          + ABS(zbc(n,m)) + ABS(zbs(n,m))
             IF (m .eq. 0) THEN
                IF (n .lt. 0) CYCLE
                IF (trc.eq.zero .and. ABS(raxis_cc(n)).eq.zero .and.
-     &             ABS(zaxis_cs(n)).eq.zero) CYCLE
+     1             ABS(zaxis_cs(n)).eq.zero) CYCLE
                IF (lwrite) WRITE (nthreed,195) n, m, rbc(n,m), rbs(n,m),
-     &                   zbc(n,m), zbs(n,m), raxis_cc(n), raxis_cs(n),
-     &                   zaxis_cc(n), zaxis_cs(n)
+     1                   zbc(n,m), zbs(n,m), raxis_cc(n), raxis_cs(n),
+     2                   zaxis_cc(n), zaxis_cs(n)
             ELSE
                IF (trc .eq. zero) CYCLE
                IF (lwrite) WRITE (nthreed,195) n, m, rbc(n,m), rbs(n,m),
-     &                   zbc(n,m), zbs(n,m)
+     1                   zbc(n,m), zbs(n,m)
             END IF
          END DO
       END DO
@@ -703,31 +710,57 @@ C-----------------------------------------------
 !     ALL THE FOLLOWING USE THE FULL 2D BLOCK-TRI PRECONDITIONER
 !     BUT DIFFER IN THE WAY TIME-EVOLUTION IS HANDLED
       SELECT CASE (ch1) 
-         CASE ('c', 'C')
+      CASE ('c', 'C')
 !conjugate gradient
-            IF (ch2 == 'g' .or. ch2 == 'G') itype_precon = 1
-            LPRECOND = .TRUE.
-         CASE ('g', 'G')
+         IF (ch2 == 'g' .or. ch2 == 'G') itype_precon = 1             
+         LPRECOND = .TRUE.
+      CASE ('g', 'G')
 !gmres or gmresr
-            IF (ch2 == 'm' .or. ch2 == 'M') itype_precon = 2
-            IF (LEN_TRIM(precon_type) == 6) itype_precon = 3
-            LPRECOND = .TRUE.
-         CASE ('t', 'T')
+         IF (ch2 == 'm' .or. ch2 == 'M') itype_precon = 2
+         IF (LEN_TRIM(precon_type) == 6) itype_precon = 3             
+         LPRECOND = .TRUE.
+      CASE ('t', 'T')
 !transpose free qmr
-            IF (ch2 == 'f' .or. ch2 == 'F') itype_precon = 4
-            LPRECOND = .TRUE.
+         IF (ch2 == 'f' .or. ch2 == 'F') itype_precon = 4             
+         LPRECOND = .TRUE.
       END SELECT
       
 
       iresidue = -1
+      IF (lrecon) THEN
+!
+!     DETERMINE CURRENT-FLUX CONSISTENCY CHECK
+!
+        signiota = one
+        IF (signgs*curtor*phiedge .lt. zero)signiota = -one
+        IF (sigma_current .EQ. zero) THEN
+          IF (lwrite) WRITE (*,*) 'Sigma_current cannot be zero!'
+          ier_flag = -1
+          RETURN
+        END IF
+
+!
+!     SET UP RECONSTRUCTION FIXED PROFILES
+!
+        dcon = ATAN(one)/45
+        CALL readrecon                   !Setup for reconstruction mode
+        CALL fixrecon(ier_flag)          !Fixed arrays for reconstruction
+        IF (ier_flag .ne. norm_term_flag) RETURN
+      END IF
 
       currv = mu0*curtor              !Convert to Internal units
 
+#ifdef _FLOW
+      machsq = machsq * machsq        ! Square the Mach number on axis
+#endif
+
       CALL second0(treadoff)
       timer(tread) = timer(tread) + (treadoff-treadon)
+#if defined(SKS)
       CALL MPI_Bcast(LPRECOND,1,MPI_LOGICAL,0,RUNVMEC_COMM_WORLD,            &
      &               MPI_ERR)
-      readin_time = timer(tread)
+        readin_time = timer(tread)
+#endif
 
       END SUBROUTINE readin
 
@@ -738,7 +771,7 @@ C-----------------------------------------------
       REAL(dp), INTENT(IN)  :: array(n)
       INTEGER :: k
 
-      DO k = n, 1, -1
+      DO k=n,1,-1
          IF (array(k) .NE. zero) EXIT
       END DO
 

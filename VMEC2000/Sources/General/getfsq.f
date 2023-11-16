@@ -1,3 +1,4 @@
+#if defined(SKS)
       SUBROUTINE getfsq_par(gcr, gcz, gnormr, gnormz, gnorm, medge)
       USE vmec_main, ONLY: rprec, ns, ns1, mnsize
       USE vmec_params, ONLY: ntmax
@@ -35,6 +36,7 @@
       gnormz = gnorm * totalgcx(2)
 
       END SUBROUTINE getfsq_par
+#endif
 
       SUBROUTINE getfsq(gcr, gcz, gnormr, gnormz, gnorm, medge)
       USE vmec_main, ONLY: rprec, ns, ns1, mnsize

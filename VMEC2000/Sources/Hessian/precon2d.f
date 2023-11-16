@@ -197,6 +197,7 @@ C-----------------------------------------------
 
       END SUBROUTINE block_precond
 
+#if defined(SKS)
       SUBROUTINE block_precond_par(gc)
       USE blocktridiagonalsolver, ONLY: SetMatrixRHS
       USE blocktridiagonalsolver, ONLY: BackwardSolve 
@@ -214,15 +215,11 @@ C-----------------------------------------------
       REAL(dp) :: ton, toff
       REAL(dp), DIMENSION (:,:), ALLOCATABLE :: solvec
 C-----------------------------------------------
-      IF (.NOT.lactive) THEN
-         RETURN
-      END IF
+      IF (.NOT.lactive) RETURN
 !
 !     Applies 2D block-preconditioner to forces vector (gc)
 !
-      IF (ntyptot .LE. 0) THEN
-         STOP 'ntyptot must be > 0'
-      END IF
+      IF (ntyptot .LE. 0) STOP 'ntyptot must be > 0'
 
       mblk = ntyptot*mnsize
 
@@ -233,7 +230,7 @@ C-----------------------------------------------
       tmp(:,tlglob:trglob) = -tmp(:,tlglob:trglob)
       
       DO globrow=tlglob, trglob
-         CALL SetMatrixRHS(globrow,tmp(:,globrow))
+        CALL SetMatrixRHS (globrow,tmp(:,globrow))
       END DO
       DEALLOCATE (tmp, stat=istat)
 
@@ -243,9 +240,8 @@ C-----------------------------------------------
       bcyclic_backwardsolve_time=bcyclic_backwardsolve_time+(toff-ton)
        
       ALLOCATE (solvec(mblk,ns), stat=istat)
-      IF (istat .NE. 0) THEN
-         STOP 'Allocation error in block_precond before gather'
-      END IF
+      IF (istat .NE. 0) 
+     1   STOP 'Allocation error in block_precond before gather'
 
       DO globrow=tlglob, trglob
          CALL GetSolutionVector (globrow,solvec(:,globrow))
@@ -288,55 +284,47 @@ C-----------------------------------------------
 !
       CALL second0(tprec2don)
       
-      IF (l_backslv .and. sp.ne.dp) THEN
-         STOP 'Should set sp = dp!'
-      END IF
+      IF (l_backslv .and. sp.ne.dp) STOP 'Should set sp = dp!'
 
       ntyptot = SIZE(gc,4)
-      IF (ntyptot .NE. 3*ntmax) THEN
-         STOP ' NTYPTOT != 3*ntmax'
-      END IF
+      IF (ntyptot .NE. 3*ntmax) STOP ' NTYPTOT != 3*ntmax'
       mblk = ntyptot*mnsize
 
       bsize = REAL(mblk*mblk, dp)*3*KIND(block_diag)
       IF (bsize .gt. HUGE(mblk)) THEN
-         WRITE (6, *) ' bsize: ', bsize, ' exceeds HUGE(int): ',
-     &                HUGE(mblk)
+        WRITE (6, *) ' bsize: ', bsize, ' exceeds HUGE(int): ', 
+     1                 HUGE(mblk)
 !        WRITE (6, *) ' Blocks will be written to disk.'
 !        lswap2disk = .TRUE.
       ELSE
-         lswap2disk = .FALSE.
+        lswap2disk = .FALSE.
       END IF
 
       bsize = bsize*ns
       IF (bsize .lt. 1.E6_dp) THEN
-         ibsize = bsize/1.E1_dp
-         label = " Kb"
+          ibsize = bsize/1.E1_dp
+          label = " Kb"
       ELSE IF (bsize .lt. 1.E9_dp) THEN
-         ibsize = bsize/1.E4_dp
-         label = " Mb"
+          ibsize = bsize/1.E4_dp
+          label = " Mb"
       ELSE
-         ibsize = bsize/1.E7_dp
-         label = " Gb"
+          ibsize = bsize/1.E7_dp
+          label = " Gb"
       END IF
 
       DO i = 1,2
-         IF (i .eq. 1) THEN
-            iunit = 6
-         END IF
-         IF (i .eq. 2) THEN
-            iunit = nthreed
-         END IF
-         IF (grank.EQ.0) THEN
-            WRITE (iunit, '(/,2x,a,i5,a,/,2x,a,i5,a)')
-     &         'Initializing 2D block preconditioner at ', iter2,
-     &         ' iterations',
-     &         'Estimated time to compute Hessian = ',
-     &         3*ntyptot*mnsize,' VMEC time steps'
-            WRITE (iunit, '(2x,a,i4,a,f12.2,a)') 'Block dim: ', mblk,
-     &         '^2  Preconditioner size: ', REAL(ibsize)/100,
-     &         TRIM(label)
-         END IF
+        IF (i .eq. 1) iunit = 6
+        IF (i .eq. 2) iunit = nthreed
+        IF (grank.EQ.0) THEN
+          WRITE (iunit, '(/,2x,a,i5,a,/,2x,a,i5,a)') 
+     1         'Initializing 2D block preconditioner at ', iter2,
+     2         ' iterations',
+     3         'Estimated time to compute Hessian = ',
+     4         3*ntyptot*mnsize,' VMEC time steps'
+          WRITE (iunit, '(2x,a,i4,a,f12.2,a)') 'Block dim: ', mblk,
+     1         '^2  Preconditioner size: ', REAL(ibsize)/100, 
+     2         TRIM(label)
+        END IF
       END DO
 !
 !     COMPUTE AND STORE BLOCKS (MN X MN) FOR PRECONDITIONER
@@ -344,76 +332,64 @@ C-----------------------------------------------
       CALL second0(time_on)
 
       ALLOCATE (gc_save(0:ntor,0:mpol1,ns,ntyptot), stat=istat)
-      IF (istat .NE. 0) THEN
-         STOP 'Allocation error: gc_save in compute_blocks'
-      END IF
+      IF (istat .NE. 0) 
+     1    STOP 'Allocation error: gc_save in compute_blocks'
 
       IF (ALLOCATED(block_diag)) THEN
-         DEALLOCATE (block_diag, block_plus, block_mins, stat=istat)
-         IF (istat .ne. 0) THEN
-            STOP 'Deallocation error in compute blocks'
-         END IF
+          DEALLOCATE (block_diag, block_plus, block_mins, stat=istat)
+          IF (istat .ne. 0) STOP 'Deallocation error in compute blocks'
       END IF
 
 !
 !     GENERAL (SLOWER BY 2/3 THAN SYMMETRIC VERSION) METHOD: ASSUMES NO SYMMETRIES OF R, Z COEFFICIENTS
 !
       CALL sweep3_blocks_par (xc, xcdot, gc)
-      IF (lactive) THEN
-         CALL compute_col_scaling_par
-      END IF
+      IF (lactive) CALL compute_col_scaling_par
 
       ictrl_prec2d = 1                 !Signals funct3d (residue) to use block preconditioner
 
       CALL second0(time_off)
-      IF (grank .EQ. 0) THEN
-         WRITE (6,1000) time_off - time_on
-         WRITE (nthreed,1000) time_off - time_on
-      END IF
+      DO m = 1, 2
+         IF (m .eq. 1) n = 6
+         IF (m .eq. 2) n = nthreed
+         IF (grank .EQ. 0)
+     1      WRITE (n,'(1x,a,f10.2,a)')' Time to compute blocks: ', 
+     2             time_off - time_on,' s'
+      END DO
 
 !
 !     FACTORIZE HESSIAN 
 !
       CALL second0(time_on)
-      IF (ALLOCATED(ipiv_blk)) THEN
-         DEALLOCATE(ipiv_blk, stat=ntype)
-      END IF
+      IF (ALLOCATED(ipiv_blk)) DEALLOCATE(ipiv_blk, stat=ntype)
       ALLOCATE (ipiv_blk(mblk,ns), stat=ntype)     
-      IF (ntype .ne. 0) THEN
-         STOP 'Allocation error2 in block_precond'
-      END IF
+      IF (ntype .ne. 0) STOP 'Allocation error2 in block_precond'
 
       CALL second0(ton)
-      IF (lactive) THEN
-         CALL ForwardSolve
-      END IF
+      IF (lactive) CALL ForwardSolve
 
       CALL second0(time_off)
-      toff = time_off
-      bcyclic_forwardsolve_time = bcyclic_forwardsolve_time
-     &                          + (toff - ton)
+      toff=time_off
+      bcyclic_forwardsolve_time=bcyclic_forwardsolve_time+(toff-ton)
 
-      IF (grank.EQ.0) THEN
-         WRITE(6,1001) time_off - time_on
-         WRITE(nthreed,1001) time_off - time_on
-      END IF
+      DO m = 1 , 2
+          IF (m .eq. 1) n = 6
+          IF (m .eq. 2) n = nthreed
+          IF (grank.EQ.0)
+     1      WRITE (n,'(1x,a,f10.2,a)')' Time to factor blocks:  ', 
+     2             time_off - time_on,' s'
+      END DO
 
-      IF (.NOT.l_backslv) THEN
-         DEALLOCATE (gc_save)
-      END IF
+      IF (.NOT.l_backslv) DEALLOCATE (gc_save)
 
       CALL second0(tprec2doff)
 
       timer(tprec2d) = timer(tprec2d) + (tprec2doff - tprec2don)
-      compute_blocks_time = compute_blocks_time
-     &                    + (tprec2doff - tprec2don)
-
-1000  FORMAT(1x,' Time to compute blocks: ',f10.2,' s')
-1001  FORMAT(1x,' Time to factor blocks:  ',f10.2,' s')
+      compute_blocks_time = compute_blocks_time + (tprec2doff-tprec2don)
 
       END SUBROUTINE compute_blocks_par
 
-      SUBROUTINE sweep3_blocks_par(xc, xcdot, gc)
+      SUBROUTINE sweep3_blocks_par (xc, xcdot, gc)
       USE vmec_main, ONLY: ncurr, r01, z01, lthreed, chips, delt0r
       USE blocktridiagonalsolver, ONLY: Initialize, SetBlockRowCol
       USE blocktridiagonalsolver, ONLY: WriteBlocks
@@ -441,61 +417,53 @@ C-----------------------------------------------
       diag_val=zero
       IF (grank.EQ.0) THEN
         WRITE (6, *)
-     &   " Using non-symmetric sweep to compute Hessian elements"
+     1   " Using non-symmetric sweep to compute Hessian elements"
       END IF
 
       eps = SQRT(EPSILON(eps))
       eps = eps/10
       rztype = 2*ntmax
-      lamtype = rztype + 1
+      lamtype = rztype+1
 
-      n_2d = 0
-      m_2d = 0
+      n_2d = 0;  m_2d = 0
 
       ALLOCATE(DataItem(0:ntor,0:mpol1,1:3*ntmax), stat=istat)
-      IF (istat .ne. 0) THEN
-         STOP 'Allocation error in sweep3_blocks'
-      END IF
+      IF (istat .ne. 0) STOP 'Allocation error in sweep3_blocks'
 
 !
 !     CALL FUNCT3D FIRST TIME TO STORE INITIAL UN-PRECONDITIONED FORCES
 !     THIS WILL CALL LAMBLKS (SO FAR, ONLY IMPLEMENTED FOR lasym = false)
 !
       ictrl_prec2d = 2                 !Signals funct3d that preconditioner is being initialized
-      CALL funct3d_par(lscreen, istat)
+      CALL funct3d_par (lscreen, istat)
       IF (istat .NE. 0) THEN
          PRINT *,' ier_flag = ', istat,
      1           ' in SWEEP3_BLOCKS_PAR call to funct3d_par'
          STOP
       ENDIF
 
-      nsmin = t1lglob
-      nsmax = t1rglob
+      nsmin = t1lglob;  nsmax = t1rglob
       xcdot(:,:,nsmin:nsmax,:) = 0
 !      PRINT *,'rank: ', rank,' vrank: ', vrank,' nsmin: ',nsmin,
 !     1        ' nsmax: ', nsmax
 
       IF (FIRSTPASS) THEN
-         edge_mesh = .FALSE.
-         FIRSTPASS = .FALSE.
-         mblk_size = (ntor + 1)*(mpol1 + 1)*3*ntmax
-         IF (mblk_size .NE. ntmaxblocksize) THEN
-            STOP 'wrong mblk_size in precon2d!'
-         END IF
-         CALL Initialize(.FALSE.,ns,mblk_size)
-         myend = nsmax
+        edge_mesh = .FALSE.
+        FIRSTPASS=.FALSE.
+        mblk_size=(ntor+1)*(mpol1+1)*3*ntmax
+        IF (mblk_size .NE. ntmaxblocksize)
+     1     STOP 'wrong mblk_size in precon2d!'
+        CALL Initialize(.FALSE.,ns,mblk_size) 
+        myend = nsmax
 !Align starting pt in (nsmin,nsmax)
-         DO mesh = 1, 3
-            icol = MOD(jstart(mesh) - nsmin, 3)
-            IF (icol .LT. 0) THEN
-               icol = icol + 3
-            END IF
-            mystart(mesh) = nsmin + icol
-            IF (MOD(jstart(mesh) - ns, 3) .EQ. 0) THEN     ! .AND. nsmax.EQ.ns)
-               edge_mesh(mesh) = .TRUE.
-            END IF
-         END DO
-      END IF
+        DO mesh = 1, 3
+           icol = MOD(jstart(mesh)-nsmin, 3)
+           IF (icol .LT. 0) icol = icol+3
+           mystart(mesh) = nsmin+icol
+           IF (MOD(jstart(mesh)-ns, 3) .EQ. 0)     ! .AND. nsmax.EQ.ns) 
+     1        edge_mesh(mesh) = .TRUE.
+        END DO
+      ENDIF
 
 !     STORE chips in xc 
 #if defined(CHI_FORCE)
@@ -503,14 +471,8 @@ C-----------------------------------------------
          xc(0,0,nsmin:nsmax,lamtype) = chips(nsmin:nsmax)
       END IF
 #endif
-      left = rank - 1
-      IF (rank .EQ. 0) THEN
-         left = MPI_PROC_NULL
-      END IF
-      right = rank + 1
-      IF (rank .EQ. nranks - 1) THEN
-         right = MPI_PROC_NULL
-      END IF
+      left=rank-1; IF(rank.EQ.0) left=MPI_PROC_NULL
+      right=rank+1; IF(rank.EQ.nranks-1) right=MPI_PROC_NULL
 
       CALL PadSides(xc)
       CALL PadSides(gc)
@@ -521,23 +483,21 @@ C-----------------------------------------------
       ictrl_prec2d = 3                 !Signals funct3d that preconditioner is being computed
 
       CALL MPI_COMM_SIZE(NS_COMM,lastrank,MPI_ERR)
-      lastrank = lastrank - 1
+      lastrank=lastrank-1
 !
 !     FIRST DO R00 JOG TO LOAD DIAG_VAL ARRAY (DO NOT RELY ON IT BEING THE FIRST JOG)
 !
-      m_2d=0
-      n_2d=0
+      m_2d=0; n_2d=0
 #ifdef _HBANGLE
-      ntype_2d = zsc + ntmax
+      ntype_2d=zsc+ntmax
 #else
-      ntype_2d = rcc
+      ntype_2d=rcc
 #endif
 !     APPLY JOG
       hj = eps * MAX(ABS(r01(ns)), ABS(z01(ns)))
       IF (nranks .GT. 1) THEN
-         CALL MPI_BCAST(hj,1,MPI_REAL8,lastrank,NS_COMM,MPI_ERR)
-         CALL MPI_BCAST(edge_mesh,3,MPI_LOGICAL,lastrank,NS_COMM,              &
-     &                  MPI_ERR)
+        CALL MPI_BCAST(hj,1,MPI_REAL8,lastrank,NS_COMM,MPI_ERR)
+        CALL MPI_BCAST(edge_mesh,3,MPI_REAL8,lastrank,NS_COMM,MPI_ERR)
       END IF
       DO js = mystart(1), myend(1), 3
          xcdot(n_2d,m_2d,js,ntype_2d) = hj
@@ -547,67 +507,52 @@ C-----------------------------------------------
       CALL funct3d_par (lscreen, istat)
 
       LACTIVE0: IF (lactive) THEN
-         IF (nranks .GT. 1) THEN
-            CALL Gather4XArray(gc)
-         END IF
-         IF (istat .NE. 0) THEN
-            STOP 'Error computing Hessian jog!'
-         END IF
+      IF (nranks .GT. 1) CALL Gather4XArray(gc)
+      IF (istat .NE. 0) STOP 'Error computing Hessian jog!'
 !     CLEAR JOG AND STORE BLOCKS FOR THIS JOG
-         xcdot(:,:,nsmin:nsmax,:) = 0
-         DO js = mystart(1), myend(1), 3
-            DataItem = (gc(:,:,js,:) - gc_save(:,:,js,:))/hj
-            diag_val(js) = DataItem(0,0,ntype_2d)
-         END DO
+      xcdot(:,:,nsmin:nsmax,:) = 0
+      DO js = mystart(1), myend(1), 3
+         DataItem = (gc(:,:,js,:) - gc_save(:,:,js,:))/hj
+         diag_val(js) = DataItem(0,0,ntype_2d)
+      END DO
 
-         IF (nranks .GT. 1) THEN
-            icol = 0
-            IF (trglob_arr(1) .LT. 4) THEN
-               icol = 1
-            END IF
-            CALL MPI_BCAST(diag_val(4), 1, MPI_REAL8, icol, NS_COMM,
-     &                     MPI_ERR)
-            icol = nranks - 1
-            IF (tlglob_arr(nranks) .GT. ns - 3) THEN
-               icol = nranks-2
-            END IF
-            CALL MPI_BCAST(diag_val(ns - 3), 1, MPI_REAL8, icol,
-     &                     NS_COMM, MPI_ERR)
-         END IF
-         IF (diag_val(1) .EQ. zero) THEN
-            diag_val(1)  = diag_val(4)
-         END IF
-         IF (diag_val(ns) .EQ. zero) THEN
-            diag_val(ns) = diag_val(ns - 3)
-         END IF
+      IF (nranks .GT. 1) THEN
+        icol = 0
+        IF (trglob_arr(1) .LT. 4) icol = 1
+        CALL MPI_BCAST(diag_val(4),1,MPI_REAL8,icol,NS_COMM,MPI_ERR)
+        icol = nranks-1
+        IF (tlglob_arr(nranks) .GT. ns-3) icol = nranks-2
+        CALL MPI_BCAST(diag_val(ns-3),1,MPI_REAL8,icol,NS_COMM,MPI_ERR)
+      END IF
+      IF (diag_val(1) .EQ. zero)  diag_val(1)  = diag_val(4)
+      IF (diag_val(ns) .EQ. zero) diag_val(ns) = diag_val(ns-3)
 
-         IF (nranks .GT. 1) THEN
-            CALL MPI_Sendrecv(diag_val(trglob), 1, MPI_REAL8, right, 1,
-     &                        diag_val(t1lglob), 1, MPI_REAL8, left, 1,
-     &                        NS_COMM, MPI_STAT, MPI_ERR)
-         END IF
-         DO js = mystart(2), myend(2), 3
-            diag_val(js) = diag_val(js - 1)
-         END DO
+      IF (nranks .GT. 1) THEN
+        CALL MPI_Sendrecv(diag_val(trglob),1,MPI_REAL8,
+     1  right,1,diag_val(t1lglob),1,MPI_REAL8,left,1,
+     2  NS_COMM, MPI_STAT, MPI_ERR)
+      END IF
+      DO js = mystart(2), myend(2), 3
+         diag_val(js) = diag_val(js-1)
+      END DO
 
-         hj_scale = MAX(ABS(r01(ns)), ABS(z01(ns)))
+      hj_scale = MAX(ABS(r01(ns)), ABS(z01(ns)))
 
-         IF (nranks .GT. 1) THEN
-            CALL MPI_Sendrecv(diag_val(trglob), 1, MPI_REAL8, right, 1,
-     &                        diag_val(t1lglob), 1, MPI_REAL8, left, 1,
-     &                        NS_COMM, MPI_STAT, MPI_ERR)
-            CALL MPI_BCAST(hj_scale, 1, MPI_REAL8, lastrank, NS_COMM,
-     &                   MPI_ERR)
-         END IF
+      IF (nranks .GT. 1) THEN
+        CALL MPI_Sendrecv(diag_val(trglob),1,MPI_REAL8,
+     1  right,1,diag_val(t1lglob),1,MPI_REAL8,left,1,
+     2  NS_COMM, MPI_STAT, MPI_ERR)
+        CALL MPI_BCAST(hj_scale,1,MPI_REAL8,lastrank,NS_COMM,MPI_ERR)
+      END IF
 
-         DO js = mystart(3), myend(3), 3
-            diag_val(js) = diag_val(js - 1)
-         END DO
+      DO js = mystart(3), myend(3), 3
+         diag_val(js) = diag_val(js-1)
+      END DO
 
-         IF (ANY(diag_val(tlglob:trglob) .EQ. zero)) THEN
-            PRINT *, 'For rank: ', rank, ' some diag_val == 0'
-            STOP
-         END IF
+      IF (ANY(diag_val(tlglob:trglob) .EQ. zero)) THEN
+         PRINT *, 'For rank: ', rank, ' some diag_val == 0'
+         STOP
+      END IF
       END IF LACTIVE0
 !
 !     PERFORM "JOGS" FOR EACH VARIABLE AT EVERY 3rd RADIAL POINT ACROSS MESH
@@ -618,31 +563,28 @@ C-----------------------------------------------
 
       NTYPE2D: DO ntype_2d = 1, ntyptot
          hj = eps
-         IF (ntype_2d .LT. lamtype) THEN
-            hj = hj*hj_scale
-         END IF
+         IF (ntype_2d .LT. lamtype) hj = hj * hj_scale
 
          M2D: DO m_2d = 0, mpol1
             
             N2D: DO n_2d = 0, ntor
 
-               icol = icol + 1
+            icol=icol+1
             
-               MESH_3PT: DO mesh = 1,3
+            MESH_3PT: DO mesh = 1,3
  
 !              APPLY JOG TO ACTIVE PROCESSORS
-                  IF (lactive) THEN
-                     DO js = mystart(mesh), myend(mesh), 3
-                        xcdot(n_2d,m_2d,js,ntype_2d) = hj
-                     END DO
-                     IF (m_2d.GT.0 .AND. mystart(mesh).EQ.1) THEN
-                        xcdot(n_2d,m_2d,1,ntype_2d) = 0
-                     END IF
-                  END IF
+               IF (lactive) THEN
+                  DO js = mystart(mesh), myend(mesh), 3
+                     xcdot(n_2d,m_2d,js,ntype_2d) = hj
+                  END DO
+                  IF (m_2d.GT.0 .AND. mystart(mesh).EQ.1)
+     1               xcdot(n_2d,m_2d,1,ntype_2d) = 0
+               END IF
 
-                  l_edge = edge_mesh(mesh)
-                  CALL funct3d_par (lscreen, istat)
-                  IF (istat .NE. 0) STOP 'Error computing Hessian jog!'
+               l_edge = edge_mesh(mesh)
+               CALL funct3d_par (lscreen, istat)
+               IF (istat .NE. 0) STOP 'Error computing Hessian jog!'
               
 !
 !              COMPUTE PRECONDITIONER (HESSIAN) ELEMENTS. LINEARIZED EQUATIONS
@@ -661,57 +603,48 @@ C-----------------------------------------------
 !                     a(js+1) = dF(js+1)/hj(js)
 !
 !
-                  LACTIVE1: IF (lactive) THEN
-                     SKIP3_MESH: DO js = mystart(mesh), myend(mesh), 3
+               LACTIVE1: IF (lactive) THEN
+               SKIP3_MESH: DO js = mystart(mesh), myend(mesh), 3
 
 !                 CLEAR JOG AND STORE BLOCKS FOR THIS JOG
-                        xcdot(n_2d,m_2d,js,ntype_2d) = 0
+                  xcdot(n_2d,m_2d,js,ntype_2d) = 0
 
                   !block_mins(js+1) 
-                       js1 = js+1
-                        IF (tlglob.LE.js1 .AND. js1.LE.trglob) THEN
-                           DataItem =
-     &                        (gc(:,:,js1,:)-gc_save(:,:,js1,:))/hj
-                           CALL SetBlockRowCol(js1,icol,DataItem,LOWER)
-                        END IF
+                  js1 = js+1
+                  IF (tlglob.LE.js1 .AND. js1.LE.trglob) THEN
+                    DataItem = (gc(:,:,js1,:)-gc_save(:,:,js1,:))/hj
+                    CALL SetBlockRowCol(js1,icol,DataItem,LOWER)
+                  END IF
 
                   !block_diag(js)
-                        IF (tlglob.LE.js .AND. js.LE.trglob) THEN
-                           DataItem = (gc(:,:,js,:)
-     &                              - gc_save(:,:,js,:))/hj
+                  IF (tlglob.LE.js .AND. js.LE.trglob) THEN
+                    DataItem = (gc(:,:,js,:) - gc_save(:,:,js,:))/hj
 
-                           IF (rank .EQ. lastrank .AND.
-     &                         js   .EQ. ns       .AND.
-     &                         .NOT.lfreeb        .AND.
-     &                         ANY(DataItem(:,:,
-     &                                      1:rztype) .NE. zero)) THEN
-                              STOP 'DIAGONAL BLOCK AT EDGE != 0'
-                           END IF
+                    IF (rank.EQ.lastrank .AND. 
+     1                js.EQ.ns .AND. .NOT.lfreeb .AND.
+     2                ANY(DataItem(:,:,1:rztype).NE.zero)) 
+     3                STOP 'DIAGONAL BLOCK AT EDGE != 0'
 
 !Levenberg-like offset - do NOT apply here if applied in colscaling routine
-                           IF (ntype_2d .GE. lamtype) THEN
-                              DataItem(n_2d,m_2d,ntype_2d) =
-     &                           1.0001_dp*DataItem(n_2d,m_2d,ntype_2d)
-                           END IF
+                    IF (ntype_2d .GE. lamtype) THEN
+                       DataItem(n_2d,m_2d,ntype_2d) = 1.0001_dp*
+     1                 DataItem(n_2d,m_2d,ntype_2d)
+                    END IF
 
-                           IF (DataItem(n_2d,m_2d,
-     &                                  ntype_2d) .EQ. zero) THEN
-                              DataItem(n_2d,m_2d,ntype_2d) =
-     &                           diag_val(js)
-                           END IF
+                    IF (DataItem(n_2d,m_2d,ntype_2d) .EQ. zero) 
+     1                  DataItem(n_2d,m_2d,ntype_2d) = diag_val(js)
 
-                           CALL SetBlockRowCol(js,icol,DataItem,DIAG)
-                        END IF
+                    CALL SetBlockRowCol(js,icol,DataItem,DIAG)
+                  END IF
 
                  !block_plus(js-1)
-                        js1 = js - 1
-                        IF (tlglob .LE. js1 .AND. js1 .LE. trglob) THEN
-                           DataItem = (gc(:,:,js1,:) -
-     &                                 gc_save(:,:,js1,:))/hj
-                           CALL SetBlockRowCol(js1,icol,DataItem,UPPER)
-                        END IF
-                     END DO SKIP3_MESH
-                  END IF LACTIVE1
+                 js1=js-1
+                 IF  (tlglob.LE.js1 .AND. js1.LE.trglob) THEN
+                   DataItem = (gc(:,:,js1,:)-gc_save(:,:,js1,:))/hj
+                   CALL SetBlockRowCol(js1,icol,DataItem,UPPER)
+                 END IF
+               END DO SKIP3_MESH
+               ENDIF LACTIVE1
 
                END DO MESH_3PT
             END DO N2D
@@ -725,8 +658,9 @@ C-----------------------------------------------
       fill_blocks_time=fill_blocks_time + (toff - ton)
  
       END SUBROUTINE sweep3_blocks_par
+#endif
 
-      SUBROUTINE compute_blocks(xc, xcdot, gc)
+      SUBROUTINE compute_blocks (xc, xcdot, gc)
       USE vmec_main, ONLY: iter2
 C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
@@ -751,9 +685,7 @@ C-----------------------------------------------
 !     THE ANALYTIC BLOCK ELEMENTS
 !
       CALL second0(tprec2don)
-      IF (l_backslv .and. sp.ne.dp) THEN
-         STOP 'Should set sp = dp!'
-      END IF
+      IF (l_backslv .and. sp.ne.dp) STOP 'Should set sp = dp!'
 
       ntyptot = SIZE(gc,4)
       mblk = ntyptot*mnsize
@@ -765,54 +697,55 @@ C-----------------------------------------------
 !        WRITE (6, *) ' Blocks will be written to disk.'
 !        lswap2disk = .TRUE.
 !      ELSE
-      lswap2disk = .FALSE.
+        lswap2disk = .FALSE.
 !      END IF
 
       IF (bsize .lt. 1.E6_dp) THEN
-         ibsize = bsize/1.E1_dp
-         label = " Kb"
+          ibsize = bsize/1.E1_dp
+          label = " Kb"
       ELSE IF (bsize .lt. 1.E9_dp) THEN
-         ibsize = bsize/1.E4_dp
-         label = " Mb"
+          ibsize = bsize/1.E4_dp
+          label = " Mb"
       ELSE
-         ibsize = bsize/1.E7_dp
-         label = " Gb"
+          ibsize = bsize/1.E7_dp
+          label = " Gb"
       END IF
 
-      WRITE (6, 1000) iter2, 3*ntyptot*mnsize, mblk, REAL(ibsize)/100,
-     &                TRIM(label)
-      WRITE (nthreed, 1000) iter2, 3*ntyptot*mnsize, mblk,
-     &                      REAL(ibsize)/100, TRIM(label)
+      DO i = 1,2
+         IF (i .eq. 1) iunit = 6
+         IF (i .eq. 2) iunit = nthreed
+         WRITE (iunit, '(/,2x,a,i5,a,/,2x,a,i5,a)') 
+     1         'Initializing 2D block preconditioner at ', iter2,
+     2         ' iterations',
+     3         'Estimated time to compute Hessian = ',
+     4         3*ntyptot*mnsize,' VMEC time steps'
+         WRITE (iunit, '(2x,a,i4,a,f12.2,a)') 'Block dim: ', mblk,
+     1         '^2  Preconditioner size: ', REAL(ibsize)/100, 
+     2         TRIM(label)
+      END DO
 !
 !     COMPUTE AND STORE BLOCKS (MN X MN) FOR PRECONDITIONER
 !
       CALL second0(time_on)
 
       ALLOCATE (gc_save(ns,0:ntor,0:mpol1,ntyptot), stat=istat)
-      IF (istat .ne. 0) THEN
-         STOP 'Allocation error: gc_save in compute_blocks'
-      END IF
+      IF (istat .ne. 0) 
+     1    STOP 'Allocation error: gc_save in compute_blocks'
 
       IF (ALLOCATED(block_diag)) THEN
           DEALLOCATE (block_diag, block_plus, block_mins, stat=istat)
-          IF (istat .ne. 0) THEN
-             STOP 'Deallocation error in compute blocks'
-          END IF
+          IF (istat .ne. 0) STOP 'Deallocation error in compute blocks'
       ELSE IF (ALLOCATED(block_diag_sw)) THEN
          DEALLOCATE (block_diag_sw, block_plus_sw, block_mins_sw, 
-     &                stat=istat)
-         IF (istat .ne. 0) THEN
-            STOP 'Deallocation error in compute blocks'
-         END IF
+     1                stat=istat)
+          IF (istat .ne. 0) STOP 'Deallocation error in compute blocks'
       END IF
 
-      ALLOCATE (block_diag(0:ntor,0:mpol1,ntyptot,
-     &                     0:ntor,0:mpol1,ntyptot,ns),
-     &          block_plus(0:ntor,0:mpol1,ntyptot,
-     &                     0:ntor,0:mpol1,ntyptot,ns),
-     &          block_mins(0:ntor,0:mpol1,ntyptot,
-     &                     0:ntor,0:mpol1,ntyptot,ns),
-     &          stat=istat)
+      ALLOCATE (
+     1 block_diag(0:ntor,0:mpol1,ntyptot,0:ntor,0:mpol1,ntyptot,ns),
+     2 block_plus(0:ntor,0:mpol1,ntyptot,0:ntor,0:mpol1,ntyptot,ns),
+     3 block_mins(0:ntor,0:mpol1,ntyptot,0:ntor,0:mpol1,ntyptot,ns),
+     4            stat=istat)
 
       lswap2disk = (istat .NE. 0)
 
@@ -821,15 +754,13 @@ C-----------------------------------------------
       
       IF (lswap2disk) THEN
          WRITE (6,'(a,i4,a)') '  Allocation error(1) = ', istat,
-     &               ': Not enough memory in compute_blocks'
+     1               ': Not enough memory in compute_blocks'
          WRITE (6,*) ' Writing blocks to disk file'
-         ALLOCATE (block_diag_sw(0:ntor,0:mpol1,ntyptot,
-     &                           0:ntor,0:mpol1,ntyptot),
-     &             block_plus_sw(0:ntor,0:mpol1,ntyptot,
-     &                           0:ntor,0:mpol1,ntyptot),
-     &             block_mins_sw(0:ntor,0:mpol1,ntyptot,
-     &                           0:ntor,0:mpol1,ntyptot),
-     &             stat=istat)
+         ALLOCATE (
+     1 block_diag_sw(0:ntor,0:mpol1,ntyptot,0:ntor,0:mpol1,ntyptot),
+     2 block_plus_sw(0:ntor,0:mpol1,ntyptot,0:ntor,0:mpol1,ntyptot),
+     3 block_mins_sw(0:ntor,0:mpol1,ntyptot,0:ntor,0:mpol1,ntyptot),
+     4               stat=istat)
 
          IF (istat .ne. 0) THEN
             WRITE (6,'(a,i4)') ' Allocation error(2) = ', istat
@@ -842,21 +773,13 @@ C-----------------------------------------------
 !        with a block size = mblk**2. We will then close this and re-open
 !        it with a record size = mblk**2 do deal with full blocks
          ScratchFile = "PRCND2A.bin"
-         IF (FlashDrive .ne. "") THEN
-            ScratchFile = FlashDrive // ScratchFile
-         END IF
+         IF (FlashDrive .ne. "") ScratchFile = FlashDrive // ScratchFile
          CALL OpenDAFile(mblk, mblk**2, 3, ScratchFile, iunit_dacess, 0) 
          ScratchFile = "PRCND2B.bin"
-         IF (FlashDrive .ne. "") THEN
-            ScratchFile = FlashDrive // ScratchFile
-         END IF
-         block_plus_sw = 0
-         block_mins_sw = 0
-         block_diag_sw = 0
+         IF (FlashDrive .ne. "") ScratchFile = FlashDrive // ScratchFile
+         block_plus_sw = 0; block_mins_sw = 0; block_diag_sw = 0
       ELSE
-         block_plus = 0
-         block_mins = 0
-         block_diag = 0
+         block_plus = 0; block_mins = 0; block_diag = 0
       END IF
 
 !
@@ -870,22 +793,24 @@ C-----------------------------------------------
 !      CALL get_eigenvalues(mblk, ns, block_mins, block_diag, block_plus)
 
       CALL second0(time_off)
-      WRITE (6,1001) time_off - time_on
-      WRITE (6,1001) nthreed
+      DO m = 1, 2
+         IF (m .eq. 1) n = 6
+         IF (m .eq. 2) n = nthreed
+         WRITE (n,'(1x,a,f10.2,a)')' Time to compute blocks: ', 
+     1      time_off - time_on,' s'
+      END DO
 
 !     SAVE ORIGINAL (UNFACTORED) BLOCKS FOR CHECKING INVERSE
 !     IN L_BACKSLV=TRUE LOOP IN BLOCK_PRECOND
       IF (l_backslv) THEN
-         ALLOCATE (block_dsave(0:ntor,0:mpol1,ntyptot,
-     &                         0:ntor,0:mpol1,ntyptot,ns),
-     &             block_msave(0:ntor,0:mpol1,ntyptot,
-     &                         0:ntor,0:mpol1,ntyptot,ns),
-     &             block_psave(0:ntor,0:mpol1,ntyptot,
-     &                         0:ntor,0:mpol1,ntyptot,ns),
-     &             stat = istat)
+         ALLOCATE (
+     1   block_dsave(0:ntor,0:mpol1,ntyptot,0:ntor,0:mpol1,ntyptot,ns),
+     2   block_msave(0:ntor,0:mpol1,ntyptot,0:ntor,0:mpol1,ntyptot,ns),
+     3   block_psave(0:ntor,0:mpol1,ntyptot,0:ntor,0:mpol1,ntyptot,ns),
+     4   stat = istat)
          IF (istat .ne. 0) THEN
             WRITE (6,*) 'Allocation error in l_backslv block: stat = ',
-     &                istat
+     1                istat
             l_backslv = .false.
          ELSE
             block_dsave = block_diag;  block_msave = block_mins
@@ -897,9 +822,7 @@ C-----------------------------------------------
 !     FACTORIZE HESSIAN 
 !
       CALL second0(time_on)
-      IF (ALLOCATED(ipiv_blk)) THEN
-         DEALLOCATE(ipiv_blk, stat=ntype)
-      END IF
+      IF (ALLOCATED(ipiv_blk)) DEALLOCATE(ipiv_blk, stat=ntype)
       ALLOCATE (ipiv_blk(mblk,ns), stat=ntype)     
       IF (ntype .ne. 0) STOP 'Allocation error2 in block_precond'
 
@@ -911,8 +834,12 @@ C-----------------------------------------------
       END IF
 
       CALL second0(time_off)
-      WRITE (6,1002) time_off - time_on
-      WRITE (nthreed,1002) time_off - time_on
+      DO m = 1, 2
+          IF (m .eq. 1) n = 6
+          IF (m .eq. 2) n = nthreed
+          WRITE (n,'(1x,a,f10.2,a)')' Time to factor blocks:  ', 
+     1                       time_off - time_on,' s'
+      END DO
 
       IF (.NOT.l_backslv) DEALLOCATE (gc_save)
 
@@ -920,23 +847,16 @@ C-----------------------------------------------
 
       timer(tprec2d) = timer(tprec2d) + (tprec2doff - tprec2don)
 
-1000  FORMAT(/,2x,'Initializing 2D block preconditioner at ',i5,
-     &       ' iterations',
-     &       /,2x,'Estimated time to compute Hessian = ',i5,
-     &       ' VMEC time steps',
-     &       /,2x,'Block dim: ',i4,'^2  Preconditioner size: ',f12.2,a)
-1001  FORMAT(1x,' Time to compute blocks: ',f10.2,' s')
-1002  FORMAT(1x,' Time to factor blocks:  ',f10.2,' s')
-
       END SUBROUTINE compute_blocks
 
-      SUBROUTINE sweep3_blocks(xc, xcdot, gc )
+
+      SUBROUTINE sweep3_blocks (xc, xcdot, gc )
       USE vmec_main, ONLY: ncurr, r01, z01, lthreed, chips, delt0r
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       REAL(dp), DIMENSION(ns,0:ntor,0:mpol1,ntyptot) :: xc, xcdot, 
-     &                                                  gc
+     1                                                  gc
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -950,7 +870,7 @@ C-----------------------------------------------
 !     COMPUTE EVERY 3rd RADIAL POINT FOR EACH MESH STARTING AT js=1,2,3, RESPECTIVELY
 !
       WRITE (6, *)
-     &   " Using non-symmetric sweep to compute Hessian elements"
+     1   " Using non-symmetric sweep to compute Hessian elements"
 
       eps = SQRT(EPSILON(eps))
       eps = eps/10
@@ -961,9 +881,7 @@ C-----------------------------------------------
       n_2d = 0;  m_2d = 0
 
       ALLOCATE(DataItem(0:ntor,0:mpol1,3*ntmax), stat=istat)
-      IF (istat .NE. 0) THEN
-         STOP 'Allocation error in sweep3_blocks'
-      END IF
+      IF (istat .NE. 0) STOP 'Allocation error in sweep3_blocks'
 
       diag_val = 1
 
@@ -974,7 +892,7 @@ C-----------------------------------------------
       CALL funct3d (lscreen, istat)
       IF (istat .ne. 0) THEN
          PRINT *,' ier_flag = ', istat,
-     &           ' in SWEEP3_BLOCKS call to funct3d'
+     1           ' in SWEEP3_BLOCKS call to funct3d'
          STOP
       ENDIF
 
@@ -992,19 +910,16 @@ C-----------------------------------------------
 !     PERFORM R(m=0,n=0) JOG TO LOAD DIAG_VAL ARRAY 
 !     (DO NOT RELY ON IT BEING THE FIRST JOG IN LOOP)
 !
-      m_2d = 0
-      n_2d = 0
+      m_2d=0; n_2d=0
 #ifdef _HBANGLE
-      ntype_2d = zsc + ntmax
+      ntype_2d=zsc+ntmax
 #else
-      ntype_2d = rcc
+      ntype_2d=rcc
 #endif
       edge_mesh = .FALSE.
       DO mesh = 1, 3
          DO js = jstart(mesh), ns, 3
-            IF (js .EQ. ns) THEN
-               edge_mesh(mesh) = .TRUE.
-            END IF
+         IF (js .EQ. ns) edge_mesh(mesh) = .TRUE.
          END DO
       END DO
 
@@ -1015,21 +930,15 @@ C-----------------------------------------------
       END DO
 
       CALL funct3d (lscreen, istat)
-      IF (istat .NE. 0) THEN
-         STOP 'Error computing Hessian jog!'
-      END IF
+      IF (istat .NE. 0) STOP 'Error computing Hessian jog!'
 !     CLEAR JOG AND STORE BLOCKS FOR THIS JOG
       xcdot = 0
       DO js = jstart(1), ns, 3
          DataItem = (gc(js,:,:,:) - gc_save(js,:,:,:))/hj
          diag_val(js) = DataItem(0,0,ntype_2d)
       END DO
-      IF (diag_val(1) .EQ. zero) THEN
-         diag_val(1) = diag_val(4)
-      END IF
-      IF (diag_val(ns).EQ. zero) THEN
-         diag_val(ns) = diag_val(ns-3)
-      END IF
+      IF (diag_val(1) .EQ. zero) diag_val(1) = diag_val(4)
+      IF (diag_val(ns).EQ. zero) diag_val(ns) = diag_val(ns-3)
 
       DO js = jstart(2), ns, 3
          diag_val(js) = diag_val(js-1)
@@ -1038,9 +947,8 @@ C-----------------------------------------------
          diag_val(js) = diag_val(js-1)
       END DO
 
-      IF (ANY(diag_val .EQ. zero)) THEN
-         STOP 'diag_val == 0'
-      END IF
+      IF (ANY(diag_val .EQ. zero)) STOP 'diag_val == 0'
+
 !
 !     PERFORM "JOGS" FOR EACH VARIABLE AT EVERY 3rd RADIAL POINT ACROSS MESH
 !     FOR ntype_2d = (Rcc, Rss, Rsc, Rcs, Zsc, Zcs, Zcc, Zss)
@@ -1048,7 +956,7 @@ C-----------------------------------------------
 !
       NTYPE2D: DO ntype_2d = 1, ntyptot
          IF (ntype_2d .LT. lamtype) THEN
-            hj = eps*MAX(ABS(r01(ns)), ABS(z01(ns)))
+            hj = eps * MAX(ABS(r01(ns)), ABS(z01(ns)))
          ELSE
             hj = eps
          END IF
@@ -1056,25 +964,23 @@ C-----------------------------------------------
          M2D: DO m_2d = 0, mpol1
             N2D: DO n_2d = 0, ntor
 #ifdef _HBANGLE
-               IF (ntype_2d.GT.ntmax .AND. ntype_2d.LE.2*ntmax) THEN
-                  IF (m_2d .NE. 0) THEN
-                     block_diag(n_2d,m_2d,ntype_2d,
-     &                          n_2d,m_2d,ntype_2d,:) = diag_val
-                     CYCLE
-                  END IF
+            IF (ntype_2d.GT.ntmax .AND. ntype_2d.LE.2*ntmax) THEN
+               IF (m_2d .NE. 0) THEN
+                  block_diag(n_2d,m_2d,ntype_2d,
+     1                       n_2d,m_2d,ntype_2d,:) = diag_val
+                  CYCLE
                END IF
+            END IF
 #endif
-               MESH_3PT: DO mesh = 1,3
-!                 APPLY JOG
-                  DO js = jstart(mesh), ns, 3
-                     xcdot(js,n_2d,m_2d,ntype_2d) = hj
-                  END DO
+            MESH_3PT: DO mesh = 1,3
+!              APPLY JOG
+               DO js = jstart(mesh), ns, 3
+                  xcdot(js,n_2d,m_2d,ntype_2d) = hj
+               END DO
 
-                  l_edge = edge_mesh(mesh)
-                  CALL funct3d(lscreen, istat)
-                  IF (istat .NE. 0) THEN
-                     STOP 'Error computing Hessian jog!'
-                  END IF
+               l_edge = edge_mesh(mesh)
+               CALL funct3d (lscreen, istat)
+               IF (istat .NE. 0) STOP 'Error computing Hessian jog!'
 
 !               IF (.NOT.lfreeb)   !NOT NEEDED, gcr, gcz -> 0 in RESIDUE for lfreeb=F 
 !     1            gc(ns,:,:,1:rztype) = gc_save(ns,:,:,1:rztype)
@@ -1095,60 +1001,52 @@ C-----------------------------------------------
 !                     a(js+1) = dF(js+1)/hj(js)
 !
 !              CLEAR JOG
-                  xcdot = 0
+               xcdot = 0
 !
 !              STORE BLOCK ELEMENTS FOR THIS JOG.
 !              FOR OFF-DIAGONAL ELEMENTS, NEED TO ADJUST js INDICES +/- 1
 !
-                  SKIP3_MESH: DO js = jstart(mesh), ns, 3
+               SKIP3_MESH: DO js = jstart(mesh), ns, 3
 
                   !block_mins(js+1) == a
-                     IF (js .lt. ns) THEN
-                        DataItem = (gc(js+1,:,:,:) -
-     &                              gc_save(js+1,:,:,:))/hj
-                     END IF
+                  IF (js .lt. ns)  
+     1               DataItem = (gc(js+1,:,:,:)-gc_save(js+1,:,:,:))/hj
 
-                     IF (lswap2disk) THEN
-                        CALL WriteDAItem_SEQ(DataItem)
-                     ELSE IF (js .lt. ns) THEN
-                        block_mins(:,:,:,n_2d,m_2d,ntype_2d,js+1) =
-     &                     DataItem
-                     END IF
+                  IF (lswap2disk) THEN
+                     CALL WriteDAItem_SEQ(DataItem)
+                  ELSE IF (js .lt. ns) THEN
+                     block_mins(:,:,:,n_2d,m_2d,ntype_2d,js+1)=DataItem
+                  END IF
 
                   !block_diag(js) == d
-                     DataItem = (gc(js,:,:,:) - gc_save(js,:,:,:))/hj
+                  DataItem = (gc(js,:,:,:) - gc_save(js,:,:,:))/hj
 
-                     IF (DataItem(n_2d,m_2d,ntype_2d) .EQ. zero) THEN
-                        DataItem(n_2d,m_2d,ntype_2d) = diag_val(js)
-                     END IF
+                  IF (DataItem(n_2d,m_2d,ntype_2d) .EQ. zero) 
+     1                DataItem(n_2d,m_2d,ntype_2d) = diag_val(js)
 
 !Levenberg-like offset - do NOT apply here if applied in colscaling routine
-                     IF (ntype_2d .GE. lamtype) THEN
-                        DataItem(n_2d,m_2d,ntype_2d) =
-     &                     1.0001_dp*DataItem(n_2d,m_2d,ntype_2d)
-                     END IF
+                  IF (ntype_2d .GE. lamtype) THEN
+                      DataItem(n_2d,m_2d,ntype_2d) = 1.0001_dp*
+     1                DataItem(n_2d,m_2d,ntype_2d)
+                  END IF
 
-                     IF (lswap2disk) THEN
-                        CALL WriteDAItem_SEQ(DataItem)
-                     ELSE
-                        block_diag(:,:,:,n_2d,m_2d,ntype_2d,js) =
-     &                     DataItem
-                     END IF
+                  IF (lswap2disk) THEN
+                     CALL WriteDAItem_SEQ(DataItem)
+                  ELSE
+                     block_diag(:,:,:,n_2d,m_2d,ntype_2d,js) = DataItem
+                  END IF
 
                  !block_plus(js-1) == b
-                     IF (js .GT. 1) THEN
-                        DataItem = (gc(js-1,:,:,:) -
-     &                              gc_save(js-1,:,:,:))/hj
-                     END IF
+                 IF (js .GT. 1)
+     1              DataItem = (gc(js-1,:,:,:)-gc_save(js-1,:,:,:))/hj
 !no coupling of ALL fixed bdy forces to ANY r,z bdy values
-                     IF (lswap2disk) THEN
-                        CALL WriteDAItem_SEQ(DataItem)
-                     ELSE IF (js .GT. 1) THEN
-                        block_plus(:,:,:,n_2d,m_2d,ntype_2d,js-1) =
-     &                     DataItem
-                     END IF
+                 IF (lswap2disk) THEN
+                    CALL WriteDAItem_SEQ(DataItem)
+                 ELSE IF (js .GT. 1) THEN
+                    block_plus(:,:,:,n_2d,m_2d,ntype_2d,js-1)=DataItem
+                 END IF
 
-                  END DO SKIP3_MESH
+               END DO SKIP3_MESH
                END DO MESH_3PT
             END DO N2D
          END DO M2D
@@ -1158,6 +1056,7 @@ C-----------------------------------------------
       DEALLOCATE(DataItem)
 
       END SUBROUTINE sweep3_blocks
+
 
       SUBROUTINE blk3d_factor(a, bm1, bp1, ipiv, mblk, nblocks)
 C-----------------------------------------------
@@ -1173,7 +1072,7 @@ C-----------------------------------------------
       INTEGER, INTENT(in) :: nblocks, mblk
       INTEGER, TARGET, INTENT(out) :: ipiv(mblk,nblocks)
       REAL(sp), TARGET, DIMENSION(mblk,mblk,nblocks), INTENT(inout) :: 
-     &   a, bm1, bp1
+     1                       a, bm1, bp1
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
@@ -1250,13 +1149,13 @@ c  main loop. load and process (backwards) block-rows nblocks to 1.
 !     Compute (and save) qblk(k) = ablk(k)[-1] * bml
 !
          amat => a(:,:,k);  ipivot => ipiv(:,k)
-         CALL dgetrf(mblk, mblk, amat, mblk, ipivot, ier)
+         CALL dgetrf (mblk, mblk, amat, mblk, ipivot, ier)
          IF (ier .ne. 0) GOTO 200
          IF (k .eq. 1) EXIT
           
          bmat => bm1(:,:,k)
-         CALL dgetrs('n', mblk, mblk, amat, mblk, ipivot, bmat, mblk,
-     &               ier)
+         CALL dgetrs('n', mblk, mblk, amat, mblk, ipivot, 
+     1                 bmat, mblk, ier)
 
          IF (ier .ne. 0) GOTO 305
 
@@ -1299,25 +1198,20 @@ c  error returns. ------------------------------------------------------
   200 CONTINUE
 !          < 0:  if info = -i, the i-th argument had an illegal value
 !          > 0:  if info = i, u(i,i) is exactly zero. the factorization
-      WRITE (6,1000) k
-      IF (ier < 0) THEN
-         WRITE (6,1001) ier
-      END IF
-      IF (ier > 0) THEN
-         WRITE (6,1002) ier
-      END IF
+      WRITE (6, '(2x,a,i4)') 'Error factoring matrix in blk3d: block = '
+     1                        , k
+      IF (ier < 0)WRITE (6,'(i4, a)') 
+     1    ier, 'th argument has illegal value'
+      IF (ier > 0)WRITE (6,'(i4, a)') 
+     1    ier, 'th diagonal factor exactly zero'
       STOP
   305 CONTINUE
-      WRITE (6, 1003) ier
+      WRITE (6, '(2/a,i4,2/)') ' BLK3D:   error detected:   ier =',
+     1   ier
       STOP
 
 
   400 CONTINUE
-
-1000  FORMAT(2x,'Error factoring matrix in blk3d: block = ',i4)
-1001  FORMAT(i4,'th argument has illegal value')
-1002  FORMAT(i4,'th diagonal factor exactly zero')
-1003  FORMAT(2/' BLK3D:   error detected:   ier =',i4,2/)
 
       END SUBROUTINE blk3d_factor
 
@@ -1339,7 +1233,7 @@ C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
       REAL(sp), ALLOCATABLE, DIMENSION(:,:) :: 
-     &                       amat, bmat, cmat, temp
+     1                       amat, bmat, cmat, temp
       INTEGER :: k, k1, ier
       INTEGER, POINTER :: ipivot(:)
 C-----------------------------------------------
@@ -1380,7 +1274,7 @@ c  main loop. load and process (backwards) block-rows nblocks to 1.
       CALL ChangeDAFileParams(mblk**2, mblk**2, 3, ScratchFile, nblocks)
 
       ALLOCATE(amat(mblk,mblk), bmat(mblk,mblk), cmat(mblk,mblk),
-     &         temp(mblk,mblk), stat=ier)
+     1         temp(mblk,mblk), stat=ier)
       IF (ier .ne. 0) STOP 'Allocation error in blk3d_factor_swp!' 
 
       CALL ReadDAItem2(temp, nblocks, bldia)
@@ -1391,7 +1285,7 @@ c  main loop. load and process (backwards) block-rows nblocks to 1.
 !
          amat = temp
          ipivot => ipiv(:,k)
-         CALL dgetrf(mblk, mblk, amat, mblk, ipivot, ier)
+         CALL dgetrf (mblk, mblk, amat, mblk, ipivot, ier)
          IF (ier .ne. 0) GOTO 200
 !CONFIRM READ-WRITE ALLOWED...OK FOR DA Files!
          CALL WriteDAItem_RA(amat, k, bldia, 1)
@@ -1399,8 +1293,8 @@ c  main loop. load and process (backwards) block-rows nblocks to 1.
          IF (k .eq. 1) EXIT
           
          CALL ReadDAItem2(bmat, k, blmin)
-         CALL dgetrs('n', mblk, mblk, amat, mblk, ipivot, bmat, mblk,
-     &               ier)
+         CALL dgetrs('n', mblk, mblk, amat, mblk, ipivot, 
+     1                 bmat, mblk, ier)
          IF (ier .ne. 0) GOTO 305
 !
 !     COMPUTE TRANSPOSES HERE (and for cmat below), SINCE REPEATEDLY CALLING MATMUL OPERATION
@@ -1416,8 +1310,8 @@ c  main loop. load and process (backwards) block-rows nblocks to 1.
          CALL ReadDAItem2(amat, k1, blpls)
          CALL ReadDAItem2(temp, k1, bldia)
 !         temp = temp - MATMUL(amat, bmat)
-         CALL dgemm('N','N',mblk,mblk,mblk,-one,amat,mblk, bmat, mblk,
-     &              one, temp, mblk)
+         CALL dgemm('N','N',mblk,mblk,mblk,-one,amat,mblk,
+     1              bmat, mblk, one, temp, mblk)
          cmat = TRANSPOSE(amat)
          CALL WriteDAItem_RA(cmat, k1, blpls, 1)
 
@@ -1430,16 +1324,16 @@ c  error returns. ------------------------------------------------------
   200 CONTINUE
 !          < 0:  if info = -i, the i-th argument had an illegal value
 !          > 0:  if info = i, u(i,i) is exactly zero. the factorization
-      WRITE (6,1000) k
-      IF (ier < 0) THEN
-         WRITE (6,1001) ier
-      END IF
-      IF (ier > 0) THEN
-         WRITE (6,1002) ier
-      END IF
+      WRITE (6, '(2x,a,i4)') 'Error factoring matrix in blk3d: block = '
+     1                        , k
+      IF (ier < 0)WRITE (6,'(i4, a)') 
+     1    ier, 'th argument has illegal value'
+      IF (ier > 0)WRITE (6,'(i4, a)') 
+     1    ier, 'th diagonal factor exactly zero'
       STOP
   305 CONTINUE
-      WRITE (6, 1003) ier
+      WRITE (6, '(2/a,i4,2/)') ' BLK3D:   error detected:   ier =',
+     1   ier
       STOP
 
   400 CONTINUE
@@ -1448,12 +1342,8 @@ c  error returns. ------------------------------------------------------
 
       CALL CloseDAFile
 
-1000  FORMAT(2x,'Error factoring matrix in blk3d: block = ',i4)
-1001  FORMAT(i4,'th argument has illegal value')
-1002  FORMAT(i4,'th diagonal factor exactly zero')
-1003  FORMAT(2/' BLK3D:   error detected:   ier =',i4,2/)
-
       END SUBROUTINE blk3d_factor_swp
+
 
       SUBROUTINE blk3d_factor_swp2(ipiv, mblk, nblocks)
 C-----------------------------------------------
@@ -1514,7 +1404,7 @@ c  main loop. load and process (backwards) block-rows nblocks to 1.
       CALL ChangeDAFileParams(mblk**2, mblk**2, 3, ScratchFile, nblocks)
 
       ALLOCATE(amat(mblk,mblk), bmat(mblk,mblk), cmat(mblk,mblk),
-     &         temp(mblk,mblk), stat=ier)
+     1         temp(mblk,mblk), stat=ier)
       IF (ier .ne. 0) STOP 'Allocation error in blk3d_factor_swp!' 
 
       CALL ReadDAItem2(temp, 1, bldia)
@@ -1533,8 +1423,8 @@ c  main loop. load and process (backwards) block-rows nblocks to 1.
          IF (k .eq. nblocks) EXIT
           
          CALL ReadDAItem2(bmat, k, blpls)
-         CALL dgetrs('n', mblk, mblk, amat, mblk, ipivot, bmat, mblk,
-     &               ier)
+         CALL dgetrs('n', mblk, mblk, amat, mblk, ipivot, 
+     1                 bmat, mblk, ier)
          IF (ier .ne. 0) GOTO 305
 !
 !     COMPUTE TRANSPOSES HERE (and for cmat below), SINCE REPEATEDLY CALLING MATMUL OPERATION
@@ -1546,12 +1436,12 @@ c  main loop. load and process (backwards) block-rows nblocks to 1.
 !
 !      Update effective diagonal "a" matrix. Use dgemm: faster AND doesn't overflow normal stack
 !
-         k1 = k + 1
+         k1 = k+1 
          CALL ReadDAItem2(amat, k1, blmin)
          CALL ReadDAItem2(temp, k1, bldia)
 !         temp = temp - MATMUL(amat, bmat)
-         CALL dgemm('N','N',mblk,mblk,mblk,-one,amat,mblk, bmat, mblk,
-     &              one, temp, mblk)
+         CALL dgemm('N','N',mblk,mblk,mblk,-one,amat,mblk,
+     1              bmat, mblk, one, temp, mblk)
          cmat = TRANSPOSE(amat)
          CALL WriteDAItem_RA(cmat, k1, blmin, 1)
 
@@ -1564,16 +1454,16 @@ c  error returns. ------------------------------------------------------
   200 CONTINUE
 !          < 0:  if info = -i, the i-th argument had an illegal value
 !          > 0:  if info = i, u(i,i) is exactly zero. the factorization
-      WRITE (6,1000) k
-      IF (ier < 0) THEN
-         WRITE (6,1001) ier
-      END IF
-      IF (ier > 0) THEN
-         WRITE (6,1002) ier
-      END IF
+      WRITE (6, '(2x,a,i4)') 'Error factoring matrix in blk3d: block = '
+     1                        , k
+      IF (ier < 0)WRITE (6,'(i4, a)') 
+     1    ier, 'th argument has illegal value'
+      IF (ier > 0)WRITE (6,'(i4, a)') 
+     1    ier, 'th diagonal factor exactly zero'
       STOP
   305 CONTINUE
-      WRITE (6,1003) ier
+      WRITE (6, '(2/a,i4,2/)') ' BLK3D:   error detected:   ier =',
+     1   ier
       STOP
 
   400 CONTINUE
@@ -1581,11 +1471,6 @@ c  error returns. ------------------------------------------------------
       DEALLOCATE(amat, bmat, cmat, temp, stat=ier)
 
       CALL CloseDAFile
-
-1000  FORMAT(2x,'Error factoring matrix in blk3d: block = ',i4)
-1001  FORMAT(i4,'th argument has illegal value')
-1002  FORMAT(i4,'th diagonal factor exactly zero')
-1003  FORMAT(2/' BLK3D:   error detected:   ier =',i4,2/)
 
       END SUBROUTINE blk3d_factor_swp2
 
@@ -1966,6 +1851,7 @@ c  error returns. ------------------------------------------------------
 
       SUBROUTINE compute_col_scaling_par
       USE xstuff, ONLY: pcol_scale
+#if defined(SKS)
       USE blocktridiagonalsolver, ONLY: GetColSum, ParallelScaling
       USE parallel_vmec_module, ONLY: ToLastNtype, CopyLastNtype
 C-----------------------------------------------
@@ -1996,7 +1882,7 @@ C-----------------------------------------------
       CALL tolastntype(pcol_scale,tmp)
       CALL copylastntype(tmp,pcol_scale)
       DEALLOCATE(tmp)
-
+#endif
       END SUBROUTINE compute_col_scaling_par
 
       SUBROUTINE compute_col_scaling
@@ -2017,7 +1903,7 @@ C-----------------------------------------------
 !-----------------------------------------------
       REAL(dp), INTENT(IN)  :: colsum(mblk_size,tlglob:trglob)
       REAL(dp), INTENT(OUT) :: colscale(mblk_size,ns)
-
+#if defined(SKS)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -2051,6 +1937,7 @@ C-----------------------------------------------
      1                rank+1,1,NS_COMM,MPI_STAT,MPI_ERR)
       END IF
 
+#endif
       END SUBROUTINE VectorCopyPar
 
 
@@ -2073,5 +1960,6 @@ C-----------------------------------------------
       IF (istat .ne. 0) STOP 'Deallocation error-3 in free_mem_precon'
 
       END SUBROUTINE free_mem_precon
+
 
       END MODULE precon2d

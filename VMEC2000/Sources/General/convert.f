@@ -1,27 +1,5 @@
-!-------------------------------------------------------------------------------
-!>  @brief Convert Amn* quantities from internal representation.
-!>
-!>  The external representation matches the values in the wout file. External
-!>  representated quantites are for a single surface only.
-!>
-!>  @param[out]   rmnc      R Fourier amplitudes with external representation
-!>                          for symmetric parity.
-!>  @param[out]   zmns      Z Fourier amplitudes with external representation
-!>                          for symmetric parity.
-!>  @param[out]   lmns      Lambda Fourier amplitudes with external
-!>                          representation for symmetric parity.
-!>  @param[out]   rmnc      R Fourier amplitudes with external representation
-!>                          for asymmetric parity.
-!>  @param[out]   zmns      Z Fourier amplitudes with external representation
-!>                          for asymmetric parity.
-!>  @param[out]   lmns      Lambda Fourier amplitudes with external
-!>                          representation for asymmetric parity.
-!>  @param[inout] rzl_array Fourier amplitudes of R, Z, and lambda with internal
-!>                          representation.
-!-------------------------------------------------------------------------------
-      SUBROUTINE convert_par(rmnc, zmns, lmns,
-     &                       rmns, zmnc, lmnc,
-     &                       rzl_array)
+#if defined(SKS)
+      SUBROUTINE convert_par(rmnc,zmns,lmns,rmns,zmnc,lmnc,rzl_array)
       USE vmec_main
       USE vmec_params
       USE parallel_include_module
@@ -30,9 +8,9 @@ C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
       REAL(dp), DIMENSION(mnmax), INTENT(OUT) ::
-     &    rmnc, zmns, lmns, rmns, zmnc, lmnc
+     1    rmnc, zmns, lmns, rmns, zmnc, lmnc
       REAL(dp), DIMENSION(0:ntor,0:mpol1,ns,3*ntmax),
-     &    INTENT(INOUT) :: rzl_array
+     1    INTENT(INOUT) :: rzl_array
 C-----------------------------------------------
 C   L o c a l   P a r a m e t e r s
 C-----------------------------------------------
@@ -41,7 +19,7 @@ C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
       INTEGER :: rmncc, rmnss, rmncs, rmnsc, zmncs, zmnsc, 
-     &           zmncc, zmnss, lmncs, lmnsc, lmncc, lmnss
+     1           zmncc, zmnss, lmncs, lmnsc, lmncc, lmnss
       INTEGER :: mn, m, n, n1, bufsize, js
       REAL(dp) :: t1, sign0, mul1, tbroadon, tbroadoff
       REAL(dp), ALLOCATABLE, DIMENSION(:) :: bcastbuf
@@ -52,39 +30,37 @@ C-----------------------------------------------
 !     FORM FOR OUTPUT (COEFFICIENTS OF COS(mu-nv), SIN(mu-nv) WITHOUT mscale,nscale norms)
 !
       js = ns
-#if defined(MPI_OPT)
       bufsize = (ntor+1)*(mpol1+1)*3*ntmax
       ALLOCATE(bcastbuf(bufsize))
       mn=0
       DO n1 = 1, 3*ntmax
-         DO m = 0, mpol1
-            DO n = 0, ntor
-               mn = mn + 1
-               bcastbuf(mn) = rzl_array(n,m,js,n1)
-            END DO
-         END DO
+        DO m = 0, mpol1
+          DO n = 0, ntor
+            mn = mn + 1
+            bcastbuf(mn) = rzl_array(n,m,js,n1)
+          END DO
+        END DO
       END DO
       CALL second0(tbroadon)
-      CALL MPI_Bcast(bcastbuf, bufsize, MPI_REAL8, nranks - 1,
-     &               NS_COMM, MPI_ERR)
+      CALL MPI_Bcast(bcastbuf,bufsize,MPI_REAL8,nranks-1,
+     1               NS_COMM,MPI_ERR)
       IF(vlactive) THEN
-        CALL MPI_Bcast(bcastbuf, bufsize, MPI_REAL8, 0,
-     &                 VAC_COMM, MPI_ERR)
+        CALL MPI_Bcast(bcastbuf,bufsize,MPI_REAL8,0,
+     1               VAC_COMM,MPI_ERR)
       END IF
       CALL second0(tbroadoff)
       broadcast_time = broadcast_time + (tbroadoff -tbroadon)
 
       mn=0
       DO n1 = 1, 3*ntmax
-         DO m = 0, mpol1
-            DO n = 0, ntor
-               mn = mn + 1
-               rzl_array(n,m,js,n1) = bcastbuf(mn)
-            END DO
-         END DO
+        DO m = 0, mpol1
+          DO n = 0, ntor
+            mn = mn + 1
+            rzl_array(n,m,js,n1) = bcastbuf(mn)
+          END DO
+        END DO
       END DO
       DEALLOCATE(bcastbuf)
-#endif
 
       rmncc = rcc
       rmnss = rss
@@ -127,12 +103,12 @@ C-----------------------------------------------
             ELSE IF (js .gt. 1) THEN
                sign0 = n/n1
                IF (.not.lthreed) sign0 = 0
-               rmnc(mn) = p5*t1*(rzl_array(n1,m,js,rmncc) +
-     &                           sign0*rzl_array(n1,m,js,rmnss))
-               zmns(mn) = p5*t1*(rzl_array(n1,m,js,zmnsc) -
-     &                           sign0*rzl_array(n1,m,js,zmncs))
-               lmns(mn) = p5*t1*(rzl_array(n1,m,js,lmnsc) -
-     &                           sign0*rzl_array(n1,m,js,lmncs))
+               rmnc(mn) = p5*t1*(rzl_array(n1,m,js,rmncc)+sign0*
+     1            rzl_array(n1,m,js,rmnss))
+               zmns(mn) = p5*t1*(rzl_array(n1,m,js,zmnsc)-sign0*
+     1            rzl_array(n1,m,js,zmncs))
+               lmns(mn) = p5*t1*(rzl_array(n1,m,js,lmnsc)-sign0*
+     1            rzl_array(n1,m,js,lmncs))
             ELSE IF (js .eq. 1) THEN
                rmnc(mn) = 0
                zmns(mn) = 0
@@ -174,12 +150,12 @@ C-----------------------------------------------
                lmnc(mn) = t1*rzl_array(n,m,js,lmncc)
             ELSE IF (js .gt. 1) THEN
                sign0 = n/n1
-               rmns(mn) = p5*t1*(mul1*rzl_array(n1,m,js,rmnsc) -
-     &                           sign0*rzl_array(n1,m,js,rmncs))
-               zmnc(mn) = p5*t1*(mul1*rzl_array(n1,m,js,zmncc) +
-     &                           sign0*rzl_array(n1,m,js,zmnss))
-               lmnc(mn) = p5*t1*(mul1*rzl_array(n1,m,js,lmncc) +
-     &                           sign0*rzl_array(n1,m,js,lmnss))
+               rmns(mn) = p5*t1*(mul1*rzl_array(n1,m,js,rmnsc)-sign0*    !ers-corrected rmnsc <-> rmncs 
+     1            rzl_array(n1,m,js,rmncs))
+               zmnc(mn) = p5*t1*(mul1*rzl_array(n1,m,js,zmncc)+sign0*
+     1            rzl_array(n1,m,js,zmnss))
+               lmnc(mn) = p5*t1*(mul1*rzl_array(n1,m,js,lmncc)+sign0*
+     1            rzl_array(n1,m,js,lmnss))
             ELSE IF (js .eq. 1) THEN
                rmns(mn) = 0
                zmnc(mn) = 0
@@ -189,31 +165,9 @@ C-----------------------------------------------
       END DO
 
       END SUBROUTINE convert_par
-
-!-------------------------------------------------------------------------------
-!>  @brief Convert Amn* quantities from internal representation.
-!>
-!>  The external representation matches the values in the wout file.
-!>
-!>  @param[out]   rmnc      R Fourier amplitudes with external representation
-!>                          for symmetric parity.
-!>  @param[out]   zmns      Z Fourier amplitudes with external representation
-!>                          for symmetric parity.
-!>  @param[out]   lmns      Lambda Fourier amplitudes with external
-!>                          representation for symmetric parity.
-!>  @param[out]   rmnc      R Fourier amplitudes with external representation
-!>                          for asymmetric parity.
-!>  @param[out]   zmns      Z Fourier amplitudes with external representation
-!>                          for asymmetric parity.
-!>  @param[out]   lmns      Lambda Fourier amplitudes with external
-!>                          representation for asymmetric parity.
-!>  @param[inout] rzl_array Fourier amplitudes of R, Z, and lambda with internal
-!>                          representation.
-!>  @param[in]    js        Radial surface to convert quantities on.
-!-------------------------------------------------------------------------------
-      SUBROUTINE convert(rmnc, zmns, lmns,
-     &                   rmns, zmnc, lmnc,
-     &                   rzl_array, js)
+#endif
+      
+      SUBROUTINE convert(rmnc,zmns,lmns,rmns,zmnc,lmnc,rzl_array,js)
       USE vmec_main
       USE vmec_params
       USE parallel_include_module
@@ -223,9 +177,9 @@ C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
       INTEGER, INTENT(IN) :: js
       REAL(dp), DIMENSION(mnmax), INTENT(out) ::
-     &    rmnc, zmns, lmns, rmns, zmnc, lmnc
+     1    rmnc, zmns, lmns, rmns, zmnc, lmnc
       REAL(dp), DIMENSION(ns,0:ntor,0:mpol1,3*ntmax),
-     &    INTENT(in) :: rzl_array
+     1    INTENT(in) :: rzl_array
 C-----------------------------------------------
 C   L o c a l   P a r a m e t e r s
 C-----------------------------------------------
@@ -234,7 +188,7 @@ C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
       INTEGER :: rmncc, rmnss, rmncs, rmnsc, zmncs, zmnsc, 
-     &           zmncc, zmnss, lmncs, lmnsc, lmncc, lmnss
+     1           zmncc, zmnss, lmncs, lmnsc, lmncc, lmnss
       INTEGER :: mn, m, n, n1
       REAL(dp) :: t1, sign0, mul1
 C-----------------------------------------------
@@ -275,7 +229,7 @@ C-----------------------------------------------
             t1 = mscale(m)*nscale(n)
             mn = mn + 1
             lmns(mn) =-t1*(2*rzl_array(2,n,m,lmncs)
-     &               -       rzl_array(3,n,m,lmncs))
+     1               -       rzl_array(3,n,m,lmncs))
          END DO
       END IF
 
@@ -293,12 +247,12 @@ C-----------------------------------------------
             ELSE IF (js .gt. 1) THEN
                sign0 = n/n1
                IF (.not.lthreed) sign0 = 0
-               rmnc(mn) = p5*t1*(rzl_array(js,n1,m,rmncc) +
-     &                           sign0*rzl_array(js,n1,m,rmnss))
-               zmns(mn) = p5*t1*(rzl_array(js,n1,m,zmnsc) -
-     &                           sign0*rzl_array(js,n1,m,zmncs))
-               lmns(mn) = p5*t1*(rzl_array(js,n1,m,lmnsc) -
-     &                           sign0*rzl_array(js,n1,m,lmncs))
+               rmnc(mn) = p5*t1*(rzl_array(js,n1,m,rmncc)+sign0*
+     1            rzl_array(js,n1,m,rmnss))
+               zmns(mn) = p5*t1*(rzl_array(js,n1,m,zmnsc)-sign0*
+     1            rzl_array(js,n1,m,zmncs))
+               lmns(mn) = p5*t1*(rzl_array(js,n1,m,lmnsc)-sign0*
+     1            rzl_array(js,n1,m,lmncs))
             ELSE IF (js .eq. 1) THEN
                rmnc(mn) = 0
                zmns(mn) = 0
@@ -340,12 +294,12 @@ C-----------------------------------------------
                lmnc(mn) = t1*rzl_array(js,n,m,lmncc)
             ELSE IF (js .gt. 1) THEN
                sign0 = n/n1
-               rmns(mn) = p5*t1*(mul1*rzl_array(js,n1,m,rmnsc) -
-     &                           sign0*rzl_array(js,n1,m,rmncs))
-               zmnc(mn) = p5*t1*(mul1*rzl_array(js,n1,m,zmncc) +
-     &                           sign0*rzl_array(js,n1,m,zmnss))
-               lmnc(mn) = p5*t1*(mul1*rzl_array(js,n1,m,lmncc) +
-     &                           sign0*rzl_array(js,n1,m,lmnss))
+               rmns(mn) = p5*t1*(mul1*rzl_array(js,n1,m,rmnsc)-sign0*    !ers-corrected rmnsc <-> rmncs 
+     1            rzl_array(js,n1,m,rmncs))
+               zmnc(mn) = p5*t1*(mul1*rzl_array(js,n1,m,zmncc)+sign0*
+     1            rzl_array(js,n1,m,zmnss))
+               lmnc(mn) = p5*t1*(mul1*rzl_array(js,n1,m,lmncc)+sign0*
+     1            rzl_array(js,n1,m,lmnss))
             ELSE IF (js .eq. 1) THEN
                rmns(mn) = 0
                zmnc(mn) = 0

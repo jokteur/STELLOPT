@@ -23,7 +23,8 @@ release:
 
 debug:
 	@echo "Beginning debug compilation and linking of vmec2000"
-	@cd $(DBG); rm -f *.f *.f90 *.c; rm -f $(MAKE); ln -fs ../$(MAKE) .; make -f $(MAKE) $(EXE_F) FLAGS="$(FLAGS_D) $(MOD1_PATH)" TYPE="debug" LOCTYPE="Debug" 
+	@touch_debug
+	@cd $(DBG); rm -f *.f90 *.c; rm -f $(MAKE); ln -fs ../$(MAKE) .; make -f $(MAKE) $(EXE_F) FLAGS="$(FLAGS_D) $(MOD1_PATH)" TYPE="debug" LOCTYPE="Debug" 
 	@rm -f $(MYHOME)/$(EXE_F)
 	@-(umask 022; rm -f $(MYHOME)/$(EXE_F); ln -fs $(DBG_PATH)/$(EXE_F) $(MYHOME) 2> /dev/null; umask 077)
 	@echo "Debug version - xvmec2000 - is now updated"
@@ -48,20 +49,3 @@ static_release:
 	@echo "Static Release version - xvmec2000 - is now updated"
 	@echo "To free up space, delete all *.o files from Release"
 	@echo ""
-
-lib_release:
-	@echo "Beginning release compilation and linking of libvmec.a"
-	@cd $(REL); rm -f *.f *.f90 *.c; rm -f $(MAKE); ln -fs ../$(MAKE) .; make -f $(MAKE) libvmec.a FLAGS="-fPIC $(FLAGS_R) $(MOD1_PATH)" TYPE="release" LOCTYPE="Release"
-	@rm -f $(REL)\*.f; rm -f $(REL)\*.f90
-	@echo "Release version - libvmec.a - is now updated"
-	@echo "To free up space, delete all *.o files from Release"
-	@echo ""
-
-lib_debug:
-	@echo "Beginning debug compilation and linking of libvmec.a"
-	@cd $(DBG); rm -f *.f *.f90 *.c; rm -f $(MAKE); ln -fs ../$(MAKE) .; make -f $(MAKE) libvmec.a FLAGS="-fPIC $(FLAGS_D) $(MOD1_PATH)" TYPE="debug" LOCTYPE="Debug"
-	@rm -f $(DBG)\*.f; rm -f $(DBG)\*.f90
-	@echo "Debug version - libvmec.a - is now updated"
-	@echo "To free up space, delete all *.o files from Release"
-	@echo ""
-

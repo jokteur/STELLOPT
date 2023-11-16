@@ -15,6 +15,8 @@ C-----------------------------------------------
 
 #ifdef _ANIMEC
       ALLOCATE (pperp_ns(nznt), stat=istat1)
+#elif defined _FLOW
+      ALLOCATE (prot_ns(nznt), stat=istat1)
 #endif
       ALLOCATE (rmn_bdy(0:ntor,0:mpol1,ntmax),
      1          zmn_bdy(0:ntor,0:mpol1,ntmax), stat=istat1)

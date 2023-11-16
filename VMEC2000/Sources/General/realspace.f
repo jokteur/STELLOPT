@@ -10,11 +10,15 @@
 #ifdef _ANIMEC
       REAL(dp), DIMENSION(:), ALLOCATABLE :: 
      1   pperp, ppar, onembc, pp1, pp2, pp3
+#elif defined _FLOW
+      REAL(dp), DIMENSION(:), ALLOCATABLE :: 
+     1   prot, protrsq, pp1, pp2, pp3
 #endif
       REAL(dp), DIMENSION(:), ALLOCATABLE :: guu, guv, gvv, sigma_an,
      1   ru0, zu0, gcon, rcon0, zcon0, phip, chip, shalf, sqrts, wint
       REAL(dp), DIMENSION(:,:), ALLOCATABLE, TARGET ::
      1   extra1, extra2, extra3, extra4
+#if defined(SKS)
       INTEGER, DIMENSION(:), ALLOCATABLE :: ireflect_par
       REAL(dp), DIMENSION(:,:,:), ALLOCATABLE :: pru, pz1, pzu, pr1
       REAL(dp), DIMENSION(:,:,:), ALLOCATABLE :: prv, pzv
@@ -29,5 +33,5 @@
       REAL(dp), DIMENSION(:,:), ALLOCATABLE :: pru0, pzu0
       REAL(dp), DIMENSION(:,:), ALLOCATABLE :: prcon0, pzcon0
       REAL(dp), DIMENSION(:,:), ALLOCATABLE :: psqrts
-
+#endif
       END MODULE realspace

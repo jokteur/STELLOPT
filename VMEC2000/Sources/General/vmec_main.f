@@ -16,6 +16,8 @@ C-----------------------------------------------
 #ifdef _ANIMEC
 !WAC: ANISOTROPIC ARRAYS
      2    phot, pmap, pppr, papr, tpotb, pd,
+#elif defined _FLOW
+     2    rotfot, omega, pmap, pppr,  tpotb, pd,
 #endif
      2    buco, bvco, bdotgradv, equif, specw, tcon, 
      3    psi, yellip, yinden, ytrian, yshift, ygeo, overr, 
@@ -23,7 +25,9 @@ C-----------------------------------------------
      5    blam, clam, dlam, icurv, vpphi, presgrad, 
      6    r01, z01, bdamp, bucof, bvcof, chi
       REAL(dp), DIMENSION(:,:,:,:), ALLOCATABLE :: faclam, faclam0
+#if defined(SKS)
       REAL(dp), DIMENSION(:,:,:,:), ALLOCATABLE :: pfaclam
+#endif
       REAL(dp), ALLOCATABLE :: xcl0(:)
 
       REAL(dp), DIMENSION(0:mpol1d,3) :: xmpq
@@ -34,6 +38,8 @@ C-----------------------------------------------
      3   fsqr1, fsqz1, fsql1, fsq, fedge, wb, wp, r00b, z00b, fz00_edge
 #ifdef _ANIMEC
      4  ,wpar, wper
+#elif defined _FLOW
+     4  ,wrot
 #endif
       REAL(dp), DIMENSION(nstore_seq) :: fsqt, wdot
       REAL(dp) :: ftolv, otav, alphaR, alphaZ
@@ -45,6 +51,9 @@ C-----------------------------------------------
 #ifdef _ANIMEC
       REAL(dp), DIMENSION(:), ALLOCATABLE :: pperp_ns
       REAL(dp) :: medge, phedg
+#elif defined _FLOW
+      REAL(dp), DIMENSION(:), ALLOCATABLE :: prot_ns
+      REAL(dp) :: medge
 #endif
       REAL(dp) :: rbtor, rbtor0, ctor, delbsq, res0, res1, delt0r   !DO NOT remove res0, delt0r -> V3FIT
       REAL(dp), DIMENSION(ndatafmax) ::
@@ -52,10 +61,7 @@ C-----------------------------------------------
       LOGICAL :: lthreed, lconm1
       INTEGER, DIMENSION(:), ALLOCATABLE :: ireflect
       INTEGER :: multi_ns_grid, iequi, itype_precon, irst,
-     1    iter1, iter2, iterc=1, ijacob, itfsq, iresidue, neqs,
-     2    irzloff, ivac, ndatap, ndatai
-
-      REAL(dp) :: router
-      REAL(dp) :: rinner
+     1    iter1, iter2, iterc=1, ijacob, itfsq, iresidue, neqs, neqs1,
+     2    neqs2, irzloff, ivac, ndatap, ndatai
 C-----------------------------------------------
       END MODULE vmec_main

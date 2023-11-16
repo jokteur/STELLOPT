@@ -5,6 +5,8 @@
 
       CONTAINS
 
+#if defined(SKS)
+
       SUBROUTINE calc_fbal_par(bsubu, bsubv)
       USE vmec_main, ONLY: buco, bvco, equif, iequi,
      1                     jcurv, jcuru, chipf, vp, pres, 
@@ -53,6 +55,7 @@
       !SKS-RANGE: All LHS's computed correctly in [t1lglob, trglob]
 
       END SUBROUTINE calc_fbal_par
+#endif
 
       SUBROUTINE calc_fbal(bsubu, bsubv)
       USE vmec_main, ONLY: buco, bvco, equif, 
@@ -60,6 +63,8 @@
      2                     phipf, vpphi, presgrad, ohs
 #ifdef _ANIMEC
      3                    ,pmap, pd, phot, tpotb, zero
+#elif defined _FLOW
+     3                    ,pmap, pd, rotfot, zero
 #endif
       USE vmec_params, ONLY: signgs
       USE vmec_dim, ONLY: ns, nrzt, nznt, ns1
@@ -68,8 +73,14 @@
      1                    ,pperp, ppar, onembc, sigma_an,
      2                     pp1, pp2, pp3
       USE vforces, gsqrt => azmn_o
+#elif defined _FLOW
+     1                    ,prot, protrsq,
+     2                     pp1, pp2, pp3
+      USE vforces, gsqrt => azmn_o
 #endif
-
+#if defined (SKS)      
+      USE parallel_include_module 
+#endif      
       IMPLICIT NONE
 !-----------------------------------------------
       REAL(dp), INTENT(in) :: bsubu(1:nrzt), bsubv(1:nrzt)
@@ -80,13 +91,58 @@
       INTEGER :: nsmin, nsmax
 #ifdef _ANIMEC
       REAL(dp) :: t4, t5
+#elif defined _FLOW
+      REAL(dp) :: t4, t5, eps
 #endif
 !-----------------------------------------------
+#ifdef _FLOW
+      eps = EPSILON(eps)
+#endif
       DO js = 2, ns
          buco(js) = SUM(bsubu(js:nrzt:ns)*wint(js:nrzt:ns))
          bvco(js) = SUM(bsubv(js:nrzt:ns)*wint(js:nrzt:ns))
       END DO
 
+#ifdef _ANIMEC
+      IF (ANY(phot .ne. zero)) THEN
+         pp3(1:nrzt:ns) = 0
+         DO js = 2,ns
+            DO lk = 1,nznt
+               pp3(js:nrzt:ns) = gsqrt(js:nrzt:ns)/vp(js)
+!               l = js +(lk-1)*ns
+!               pp3(l) = gsqrt(l)/vp(js)
+            END DO
+         END DO	
+
+         CALL bimax_ppargrad(pp1,pp2,pp3,ppar,onembc,pres,phot,tpotb)
+
+         DO js = 2, ns1
+            pmap(js) = SUM(pp2(js:nrzt:ns)*wint(js:nrzt:ns))
+            pd  (js) = SUM(pp1(js:nrzt:ns)*wint(js:nrzt:ns))
+         END DO
+      ELSE
+         pmap = 0
+         pd   = 0
+      END IF
+#elif defined _FLOW
+      IF (ANY(rotfot .ne. zero)) THEN
+         pp3(1:nrzt:ns) = 0
+         DO js = 2,ns
+            DO lk = 1,nznt
+               pp3(js:nrzt:ns) = gsqrt(js:nrzt:ns)/vp(js)
+            END DO
+         END DO	
+
+         CALL prot_grad(pp1, pp2, pp3, prot, protrsq)
+         DO js = 2, ns1
+            pmap(js) = SUM(pp2(js:nrzt:ns)*wint(js:nrzt:ns))
+            pd  (js) = SUM(pp1(js:nrzt:ns)*wint(js:nrzt:ns))
+         END DO
+      ELSE
+         pmap = pres
+         pd   = 0
+      END IF
+#endif
 !     FROM AMPERE'S LAW, JcurX are angle averages of jac*JsupX, so
 !                        JcurX = (dV/ds)/twopi**2 <JsupX> where <...> is flux surface average
       DO js = 2, ns1
@@ -95,6 +151,20 @@
 !FOR RFP vpphi(js) = (vp(js+1)/phip(js+1) + vp(js)/phip(js))/2
          vpphi(js) = (vp(js+1) + vp(js))/2
          presgrad(js) = (pres(js+1) - pres(js))*ohs
+#ifdef _ANIMEC
+         t4 = signgs*pmap(js)*ohs*
+     1                  (pres(js+1)*phot(js+1)-pres(js)*phot(js))
+         t5 = signgs*pd(js) *  ohs*(tpotb(js+1)-tpotb(js))
+         presgrad(js) = presgrad(js) + t4 + t5
+#elif defined _FLOW
+!         t4 = signgs*pmap(js)*ohs*log(pres(js+1)/(pres(js)+eps))
+!         t5 = signgs*pd(js) *  ohs*log(rotfot(js+1)/(rotfot(js)+eps))
+         t4 = signgs*pmap(js)*2*ohs*(pres(js+1)-pres(js))
+     1        / (pres(js+1)+pres(js)+eps)
+         t5 = signgs*pd(js) * 2* ohs*(rotfot(js+1)-rotfot(js))
+     1        / (rotfot(js+1)+rotfot(js)+eps)
+         presgrad(js) = t4 + t5
+#endif
          equif(js) = (-phipf(js)*jcuru(js) + chipf(js)*jcurv(js))
      1                /vpphi(js) + presgrad(js)
       END DO
@@ -295,6 +365,47 @@ c
  106  format (i3,1p,1e15.6,1p,3e12.3)
 
       END SUBROUTINE mirror_crit
+#elif defined _FLOW
+      SUBROUTINE prot_grad(pp1, pp2, pp3, prot, protrsq)
+      USE vmec_main, ONLY: zero
+      USE vmec_dim, ONLY: ns, nznt, nrzt
+C-----------------------------------------------
+C   D u m m y   A r g u m e n t s
+C-----------------------------------------------
+      REAL(dp), INTENT(in) :: pp3(nrzt), prot(nrzt), protrsq(nrzt)
+      REAL(dp), INTENT(out):: pp1(nrzt), pp2(nrzt)
+C-----------------------------------------------
+C   L o c a l   V a r i a b l e s
+C-----------------------------------------------
+      INTEGER     :: js, lk, l
+      REAL(dp), ALLOCATABLE :: tmp0(:), tmp2(:)
+!      REAL(dp) :: eps
+C-----------------------------------------------
+!********0*********0*********0*********0*********0*********0*********0**
+!     Model with Pure Toroidal Plasma Rotation.                        *
+!     EVALUATION OF AMPLITUDES OF partial p/partial s AT FIXED R.      *
+!     (partial p/partial s)_R=[d(log P_0)/ds+U(s)R^2*d(log U)/ds]p(s,R)*
+!     Compute pressure gradient at fixed B times PP3                   *
+!     PP3 can be sqrt(g), sqrt(g)/V' or unity                          *
+!     PP1 = U(s)R^2p(s,R)      ;    PP2 = p(s,R)                       *
+!*********0*********0*********0*********0*********0*********0*********0*
+!      eps = EPSILON(eps)
+      ALLOCATE (tmp0(nrzt), tmp2(nrzt))
+
+      pp1(1:nrzt:ns) = 0;  pp2(1:nrzt:ns) = 0
+      DO js = 2, ns
+         tmp0(js:nrzt:ns) = pp3(js:nrzt:ns)*protrsq(js:nrzt:ns)
+         tmp2(js:nrzt:ns) = pp3(js:nrzt:ns)*prot(js:nrzt:ns)
+      END DO
+
+      DO l = 1,nrzt-1    !PUT AMPLITUDE OF p, UR^2p ON FULL MESH GRID
+         pp2(l) = 0.5_dp*(tmp2(l)+tmp2(l+1))
+         pp1(l) = 0.5_dp*(tmp0(l)+tmp0(l+1))
+      END DO
+
+      DEALLOCATE (tmp0, tmp2)
+!
+      END SUBROUTINE prot_grad
 #endif
 
       END MODULE fbal
