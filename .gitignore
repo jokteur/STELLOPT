@@ -11,7 +11,7 @@
 ._*
 __*
 make.inc
-CMakeLists.txt
+build
 */Release/*.f90
 */Release/*.f
 */Debug/*.f90
