@@ -14,8 +14,8 @@
       os       = ' MS Windows 2000'
       os_release  = ' 5.00'
 !DEC$ ELSE
-      INTEGER :: ierror, ipid, iunit=10
-      CHARACTER(LEN=200) :: fileId
+      ! INTEGER :: ierror, ipid, iunit=10
+      ! CHARACTER(LEN=200) :: fileId
 
 !     Get unique unit number from pid
 !      CALL getpid(ipid, ierror)

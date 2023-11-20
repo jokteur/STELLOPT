@@ -15,7 +15,7 @@ include(cmake-modules/FindNetCDF.cmake)
 add_compile_definitions(MPI_OPT NETCDF LHDF5)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp -fallow-argument-mismatch -ffree-form -ffree-line-length-none -ffixed-line-length-none -Wno-argument-mismatch -fPIC -O2 -fexternal-blas -fbacktrace")
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp -fallow-argument-mismatch -Wno-argument-mismatch -fPIC -O2 -fexternal-blas -fbacktrace -fcheck=all,no-array-temps")
     # -fcheck=all,no-array-temps 
 endif()
 
