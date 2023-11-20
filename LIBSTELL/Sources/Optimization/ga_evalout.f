@@ -8,9 +8,9 @@ c  establishes the best individual, and outputs information.
       USE mpi_params, ONLY: master
       IMPLICIT NONE
       EXTERNAL fcn
-!DEC$ IF .NOT.DEFINED (MPI_OPT)
+#ifndef MPI_OPT
       EXTERNAL ga_fitness_parallel
-!DEC$ ENDIF
+#endif
       INTEGER :: nopt, n, j, k, kk, iflag, myid
       REAL(rprec), DIMENSION(nopt) :: fvec
       REAL(rprec), DIMENSION(nparmax) :: paramsm,paramav
@@ -67,10 +67,10 @@ c        END IF
          END IF
 
       END DO
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
          CALL ga_fitness_mpi (jend-jstart+1, f_obj, num_obj,
      1        fcn, nfev, fitness)
-!DEC$ ELSE
+#else
          IF (myid .eq. master) WRITE(6,'(1x,i4,a,i4,a)') jend-jstart+1,
      1         ' processes started on ',num_processors, ' processors'
 c
@@ -80,14 +80,14 @@ c        flush out buffer before multiprocessing
 
          CALL multiprocess(jend-jstart+1, num_processors,
      >                  ga_fitness_parallel, fcn )
-!DEC$ ENDIF
+#endif
         nfev=nfev+jend-jstart+1
         nfit_eval=nfev
 
 !       Clean up...
         iflag=-100
         CALL fcn(nopt, npopsiz, parent(1,jbest), fvec, iflag, nfev)
-!DEC$ IF .NOT.DEFINED (MPI_OPT)
+#ifndef MPI_OPT
         DO j=jstart, jend
 c
 c  Call function evaluator, Write out individual and fitness, and add
@@ -107,7 +107,7 @@ c    1                      iflag, nfev)
          fitness(j)=funcval
          CLOSE(j+1000, status='delete')
         END DO
-!DEC$ ENDIF
+#endif
         DO 30 j = jstart, jend
          fitsum=fitsum+fitness(j)
          DO 22 n=1,nparam

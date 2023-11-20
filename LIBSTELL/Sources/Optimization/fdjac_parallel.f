@@ -13,13 +13,13 @@ C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
       INTEGER :: iflag
-!DEC$ IF DEFINED (CRAY)
+#if defined(CRAY)
       INTEGER :: i
-!DEC$ ENDIF
+#endif
       REAL(rprec) :: temp, temp2, h, enorm
       EXTERNAL fcn, enorm
 C-----------------------------------------------
-!DEC$ IF .NOT.DEFINED (MPI_OPT)
+#ifndef MPI_OPT
 !
 !     THIS ROUTINE IS PASSED TO THE MULTI-PROCESSOR HANDLING
 !     ROUTINE
@@ -40,20 +40,20 @@ C-----------------------------------------------
 !     WRITE TO A UNIQUE FILE FOR I/O IN MULTI-PROCESSOR SYSTEM
 !
       WRITE (j+1000) j, iflag, h, temp2
-!DEC$ IF DEFINED (CRAY)
+#if defined(CRAY)
       DO i = 1,m
          WRITE (j+1000) wap(i)
       END DO
       DO i = 1,n
          WRITE (j+1000) xp(i)
       END DO
-!DEC$ ELSE
+#else
       WRITE (j+1000) wap
       WRITE (j+1000) xp
-!DEC$ ENDIF
+#endif
 
       CLOSE (j+1000)                      !!Needed to run correctly in multi-tasking...
 
       xp(j) = temp
-!DEC$ ENDIF
+#endif
       END SUBROUTINE fdjac_parallel

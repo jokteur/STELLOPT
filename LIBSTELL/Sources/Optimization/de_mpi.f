@@ -7,7 +7,7 @@
       REAL(rprec),INTENT(inout) :: funcval(np)
       EXTERNAL fcn
 
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       INTEGER :: status(MPI_STATUS_size)                     !mpi stuff
       INTEGER :: i,  j, iflag, ikey                                !mpi stuff
       INTEGER :: numsent, sender, ierr                       !mpi stuff
@@ -119,5 +119,5 @@ c        Skip this when processor id exceeds work to be done
  300  CONTINUE
       PRINT *,' IFLAG = ', iflag, ' in de_mpi CALL to fcn'
       STOP
-!DEC$ ENDIF
+#endif
       END SUBROUTINE de_mpi

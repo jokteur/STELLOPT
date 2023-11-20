@@ -88,7 +88,7 @@ c  If irestrt.ne.0, READ from restart file.
             END DO
             CLOSE (iunit_ga_restart)
          END IF
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
          CALL MPI_BCAST(istart, 1, MPI_INTEGER, master,
      1     MPI_COMM_STEL, ierr)
          CALL MPI_BCAST(npopsiz, 1, MPI_INTEGER, master,
@@ -99,7 +99,7 @@ c  If irestrt.ne.0, READ from restart file.
      1        MPI_COMM_STEL, ierr)
          IF (myid .ne. master) iparent(l,:) = fitness
       END DO
-!DEC$ ENDIF
+#endif
 
       END IF
 c

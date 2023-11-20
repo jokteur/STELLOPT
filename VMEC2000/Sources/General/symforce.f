@@ -327,7 +327,7 @@ C-----------------------------------------------
 
 !  Put the surface routines in a separate subroutine since these the quantites
 !  these work on only exist on free boundary runs.
-      SUBROUTINE symoutput_sur(bsubu, bsubv, bsupu, bsupv,                     &
+      SUBROUTINE symoutput_sur(bsubu, bsubv, bsupu, bsupv,                     
      &                         bsubua, bsubva, bsupua, bsupva)
       USE vmec_main, p5 => cp5
 

@@ -12,17 +12,17 @@
 
       INTEGER :: iflag, j, istat, jstat
       EXTERNAL fcn
-!DEC$ IF .NOT.DEFINED (MPI_OPT)
+#ifndef MPI_OPT
       EXTERNAL de_parallel
-!DEC$ ENDIF
+#endif
 
       n_pop = NP
       n_free = Dim_XC
       nfev = nfeval
 
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       CALL de_mpi(np, fcn, val)
-!DEC$ ELSE
+#else
       CALL multiprocess(NP, num_proc, de_parallel, fcn)
 
 !
@@ -47,7 +47,7 @@ c
          CLOSE(j+1000, status='delete')
 
       ENDDO
-!DEC$ ENDIF
+#endif
       nfeval = nfeval + np
       iflag = -102
       !CALL fcn (nopt, n_free, ui_XC(1,:), fvec, iflag, nfeval)

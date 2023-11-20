@@ -341,7 +341,7 @@ C-----------------------------------------------
 !  would be a * sqrt(kappa)
 !
       d_of_kappa = surf_area_p * aminor_p / ( 2 * volume_p)
-      kappa_p = 1 + (pi * pi / 8) * (d_of_kappa ** 2 + SQRT                    &
+      kappa_p = 1 + (pi * pi / 8) * (d_of_kappa ** 2 + SQRT                    
      &      (ABS(d_of_kappa ** 4 - 1)) -1)
       vvc_kappa_p = kappa_p ! Save result for v3fit.
 

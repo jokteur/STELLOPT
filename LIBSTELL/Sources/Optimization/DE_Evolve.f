@@ -86,23 +86,23 @@
       REAL(rprec), DIMENSION(Dim_XC) :: rand_C1
       REAL(rprec), ALLOCATABLE, DIMENSION(:,:) :: pop_XC, rand_XC
       REAL(rprec), DIMENSION(nopt) :: fvec
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       REAL(rprec), DIMENSION(Dim_XC) :: temp_var
       INTEGER :: status(MPI_STATUS_size)                     !mpi stuff
       INTEGER :: sender, anstype,iflag
-!DEC$ ENDIF
+#endif
 
       INTRINSIC MAX, MIN, RANDOM_NUMBER, MOD, ABS, ANY, ALL, MAXLOC,
      1          MINLOC, MAXVAL, MINVAL
 
       ierr = 0
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       ierr_mpi = 0
       call MPI_COMM_RANK (MPI_COMM_STEL, myid, ierr_mpi)        !mpi stuff
       IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
       CALL MPI_BARRIER(MPI_COMM_STEL, ierr_mpi)                 !mpi stuff
       IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
-!DEC$ ENDIF
+#endif
 
       ALLOCATE (ui_XC(NP, Dim_XC), pop_XC(NP, Dim_XC),
      1          rand_XC(NP, Dim_XC), stat=ierr)
@@ -179,7 +179,7 @@
       END IF
       
 
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
 !!ALL processors need same random variables and initial values
       
    
@@ -206,7 +206,7 @@
       CALL MPI_BARRIER(MPI_COMM_STEL, ierr_mpi) 
       IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
       
-!DEC$ ENDIF 
+#endif 
       
 !!--------------------------------------------------------------------------!!
 !!------Evaluate fitness functions and find the best member-----------------!!
@@ -217,7 +217,7 @@
 
       IF( ANY(val(:NP) == 0._dp) ) THEN
          !CALL DE_Evaluate( num_proc, obj, val, NP, Dim_XC, nfeval)
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
          IF (myid == master) THEN
             DO j = 1,MIN(numprocs-1,np)
                CALL MPI_SEND(j,1,MPI_INTEGER,j,j,MPI_COMM_STEL,
@@ -268,7 +268,7 @@
          CALL MPI_BARRIER(MPI_COMM_STEL, ierr_mpi) 
          CALL MPI_BCAST(val, NP, MPI_REAL8, master,
      1                  MPI_COMM_STEL, ierr_mpi)
-!DEC$ ENDIF 
+#endif 
       ELSE IF (myid .eq. master) THEN
          WRITE(6,*) 'Using evaluation from restart file'
       END IF
@@ -295,10 +295,10 @@ c     END DO
          END DO
       END IF
       
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       CALL MPI_BARRIER(MPI_COMM_STEL, ierr_mpi) 
       IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
-!DEC$ ENDIF 
+#endif 
 
 !!--------------------------------------------------------------------------!!
 !!------Perform evolutionary computation------------------------------------!!
@@ -468,7 +468,7 @@ c     END DO
         END DO
 
  1000   CONTINUE
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       CALL MPI_BARRIER(MPI_COMM_STEL, ierr_mpi) 
       IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
 !!ALL processors need same ui_XC values going into DE_Evaluate
@@ -478,7 +478,7 @@ c     END DO
      1        MPI_COMM_STEL, ierr)
          IF (myid .ne. master) ui_XC(i,:) = temp_var
       END DO
-!DEC$ ENDIF
+#endif
 
 
 !!--------------------------------------------------------------------------!!

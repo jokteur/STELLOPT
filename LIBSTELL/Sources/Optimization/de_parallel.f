@@ -3,7 +3,7 @@
       IMPLICIT NONE
       INTEGER :: j
       EXTERNAL fcn
-!DEC$ IF .NOT.DEFINED (MPI_OPT)
+#ifndef MPI_OPT
       REAL(rprec), DIMENSION(n_free) :: x
       REAL(rprec), DIMENSION(nopt) :: fvec
 
@@ -22,5 +22,5 @@
       WRITE(6,'(a,f12.5,a,i3)')' FUNCVAL = ', funcval,' for iteration ',
      1   j+nfev
 
-!DEC$ ENDIF
+#endif
       END SUBROUTINE de_parallel

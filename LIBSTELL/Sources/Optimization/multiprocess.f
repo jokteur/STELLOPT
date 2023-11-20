@@ -7,7 +7,7 @@ C-----------------------------------------------
       INTEGER numprocess, maxprocess
       REAL, EXTERNAL :: fcn
       EXTERNAL wrapperfcn
-!DEC$ IF .NOT.DEFINED (MPI_OPT)
+#ifndef MPI_OPT
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
@@ -65,5 +65,5 @@ C-----------------------------------------------
             CALL wrapperfcn (i, fcn)
          END DO
       END IF
-!DEC$ ENDIF
+#endif
       END SUBROUTINE multiprocess

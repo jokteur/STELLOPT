@@ -4,17 +4,17 @@
       USE stel_kinds
       USE lmpar_mod, fjac_mod=>fjac, ldfjac_mod=>ldfjac,
      1   ipvt_mod=>ipvt, qtf_mod=>qtf, diag_mod=>diag
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       USE fdjac_mod, ONLY: flip,flag_singletask,flag_cleanup,
      1                     fdjac2_mp_queue, jac_order, jac_count,
      2                     ix_min, h_order, flag_cleanup_lev,
      3                     jac_err, jac_index, n_red !PPPL   
-!DEC$ ELSE
+#else
       USE fdjac_mod, ONLY: max_processors, flip, flag_singletask, 
      1                     flag_cleanup, fdjac2, jac_order, h_order,
      2                     jac_err, jac_index, flag_cleanup_lev,
      3                     ix_min, jac_count, n_red
-!DEC$ ENDIF
+#endif
       USE mpi_params
       USE safe_open_mod
       USE mpi_inc
@@ -49,9 +49,9 @@ C-----------------------------------------------
      1   gnorm, prered, ratio, sum0, temp,
      2   temp1, temp2, xnorm, delta_old, actred_lev, par_old,fnorm_old  !PPPL
       REAL(rprec), DIMENSION(:,:), ALLOCATABLE :: fjac_save
-!DEC$ IF .NOT.DEFINED (MPI_OPT)
+#ifndef MPI_OPT
       REAL(rprec) :: wall_time, wall_time_lev
-!DEC$ ENDIF
+#endif
       REAL(rprec) :: fnorm_min, epsfcn0, epsfcn_temp
       REAL(rprec), ALLOCATABLE, DIMENSION(:) :: x_min, fvec_min
       REAL(rprec), ALLOCATABLE, DIMENSION(:) :: fnorm_array
@@ -199,7 +199,7 @@ c     burton s. garbow, kenneth e. hillstrom, jorge j. more
 c
 c     **********
 
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
 c     Get mpi parameters
       CALL MPI_COMM_RANK (MPI_COMM_STEL, myid, ierr_mpi)       !mpi stuff
       IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
@@ -207,7 +207,7 @@ c     Get mpi parameters
       CALL MPI_COMM_SIZE (MPI_COMM_STEL, numprocs, ierr_mpi)   !mpi stuff
       IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
       IF (ierr_mpi .ne. 0) STOP 'MPI_COMM_SIZE error in LMDIF'
-!DEC$ ENDIF
+#endif
 
       info = 0;      iflag = 0;      cycle_count = 0
 
@@ -275,7 +275,7 @@ c     Get mpi parameters
      1"DIAG > 1 when mode=2"
 
 
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       IF (numprocs > n) THEN
          IF (myid .eq. master) THEN
             WRITE (6, *)'Warning: more processors have been requested',
@@ -285,7 +285,7 @@ c     Get mpi parameters
          info = 11
          GOTO 400
       END IF
-!DEC$ ENDIF
+#endif
 
 !
 !     check the input parameters for errors.
@@ -305,9 +305,9 @@ c     Get mpi parameters
       jac_order = 0                                                     !PPPL
       info = 0;      iflag = 0;      cycle_count = 0
       delta = 0                                                         !PPPL
-!DEC$ IF .NOT.DEFINED (MPI_OPT)
+#ifndef MPI_OPT
       myid = 0;      wall_time = 0;      wall_time_lev = 0
-!DEC$ ENDIF
+#endif
 !
 !     ASSIGN VALUES TO MODULE VARIABLES (FACILITATES PASSING TO SUBROUTINES)
 !
@@ -360,7 +360,7 @@ c     Get mpi parameters
       END IF
 
 !     Set up workers communicator (only master processor here) for initial run
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       IF (myid .ne. master) THEN
          ikey = MPI_UNDEFINED
       ELSE
@@ -369,7 +369,7 @@ c     Get mpi parameters
       CALL MPI_COMM_SPLIT(MPI_COMM_STEL, ikey, worker_id, 
      1                    MPI_COMM_WORKERS, ierr_mpi)
       IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
-!DEC$ ENDIF
+#endif
 
 !     evaluate the function at the starting point and calculate its norm.
       IF (myid .eq. master) THEN
@@ -388,22 +388,22 @@ c     Get mpi parameters
          WRITE(iunit,'(10ES22.12E3)') x(1:n)
          WRITE(iunit,'(ES22.12E3)') fnorm
          CLOSE(iunit)
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
          CALL MPI_COMM_FREE(MPI_COMM_WORKERS, ierr_mpi)
          IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)      
-!DEC$ ENDIF
+#endif
       END IF
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       CALL MPI_BCAST(x,n, MPI_REAL8, master, 
      1               MPI_COMM_STEL, ierr_mpi)
       !CALL MPI_BARRIER(MPI_COMM_STEL,ierr_mpi)
       IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
-!DEC$ ENDIF
+#endif
       iflag = FLAG_CLEANUP
       IF (myid == master) iflag = flag_cleanup_lev
       call fcn (m, n, x, fvec, iflag, nfev)
 
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       CALL MPI_BCAST(iflag,1, MPI_INTEGER, master, 
      1               MPI_COMM_STEL, ierr_mpi)
       IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
@@ -411,7 +411,7 @@ c     Get mpi parameters
      1     MPI_BCAST(fvec, m, MPI_REAL8, master, 
      2               MPI_COMM_STEL, ierr_mpi)
       IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
-!DEC$ ENDIF
+#endif
 
       IF (iflag .lt. 0) GOTO 300
       fnorm = enorm(m,fvec)
@@ -423,20 +423,20 @@ c     Get mpi parameters
       par = 0
       iter = 1
       lfirst_lm = .true.
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       IF (myid .eq. master) WRITE (6, 1000) numprocs
 !  1000 FORMAT (/,' Beginning Levenberg-Marquardt Iterations',/,
 !      1        ' Number of Processors: ',i4,//,
 ! !     1        ' Number of Processors: ',i4,' (1 controller proc)',//,
 !      2        70('='),/,2x,'Iteration',3x,'Processor',7x,'Chi-Sq',7x,
 !      3       'LM Parameter',6x,'Delta Tol'/,70('='))
-!DEC$ ELSE
+#else
       WRITE (6, 1000) max_processors
  1000 FORMAT (/,' Beginning Levenberg-Marquardt Iterations',/,
      1        ' Number processors requested: ', i4,//,
      1        59('='),/,2x,'Iteration',8x,'Chi-Sq',7x,
      2       'LM Parameter',6x,'Delta Tol',/,59('='))
-!DEC$ ENDIF
+#endif
       IF (myid == master)  WRITE(6, '(2x,i6,8x,i3,7x,1es12.4)')
      1                           0, myid, fnorm*fnorm
       CALL FLUSH(6)
@@ -449,24 +449,24 @@ c     Get mpi parameters
          delta_old = delta                                               !PPPL
          par_old = par                                                   !PPPL
          fnorm_old = fnorm
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
          CALL MPI_BARRIER(MPI_COMM_STEL,ierr_mpi)                       !PPPL -SAL
          IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
-!DEC$ ENDIF
+#endif
          
 !
 !        calculate the jacobian matrix.
 !
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
          CALL fdjac2_mp_queue(fcn, fnorm, m, n, x, fvec, fjac, ldfjac,
      1           iflag, nfev, epsfcn, fnorm_min, x_min, fvec_min,
      2           fnorm_array,.true.)        !PPPL
      
-!DEC$ ELSE
+#else
          iflag = 2
          CALL fdjac2(fcn, m, n, x, fvec, fjac, ldfjac, iflag, nfev,
      1               epsfcn, wa4, wall_time, fnorm_min, x_min, fvec_min)
-!DEC$ ENDIF
+#endif
          nfev = nfev + n
          
          ! The Jacobian evaluation was all failed evaluations
@@ -596,7 +596,7 @@ c     Get mpi parameters
 !
 !        Determine the levenberg-marquardt PARAMETER.
 !
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
            IF (PRESENT(xvmin) .and. PRESENT(xvmax)) THEN
               CALL levmarq_param_mp (x, wa1, wa2, wa3, wa4,
      1                               nfev, m, n, iflag, fcn, 
@@ -607,10 +607,10 @@ c     Get mpi parameters
      1                               nfev, m, n, iflag, fcn, 
      2                               lev_step_range,fnorm_min)   !PPPL
            END IF
-!DEC$ ELSE
+#else
            CALL levmarq_param(x, wa1, wa2, wa3, wa4,
      1          wall_time_lev, nfev, m, n, iflag, fcn)
-!DEC$ ENDIF
+#endif
            IF (iflag .lt. 0) EXIT
 
 !
@@ -646,25 +646,25 @@ c     Get mpi parameters
 !        test if Jacobian calculation gave best improvement
 !        (added by MZ and SH) (always false for non-mpi runs)
 !           
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
            step_improved = fnorm_min < MIN(fnorm,fnorm1)
-!DEC$ ENDIF
+#endif
            
            ! Jacobian gives best improvment so take orthagonal step
            IF (step_improved) THEN
               IF (myid == master)
      1           jac_count = MIN(count(jac_order(:) .ne. 0),
      2                           INT(SQRT(REAL(numprocs))))
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
               call MPI_BCAST(jac_count, 1, MPI_INTEGER, master,
      1                       MPI_COMM_STEL, ierr_mpi)
               IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
               IF (ierr_mpi .ne. 0) GOTO 3000
-!DEC$ ENDIF
+#endif
               
               IF(myid .ne. master) jac_order = 0
               
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
               CALL MPI_BCAST(jac_order, jac_count, MPI_INTEGER, master,
      1                       MPI_COMM_STEL, ierr_mpi)
               IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
@@ -672,7 +672,7 @@ c     Get mpi parameters
               
               CALL MPI_BARRIER(MPI_COMM_STEL,ierr_mpi)                  !PPPL -SAL
               IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
-!DEC$ ENDIF
+#endif
               
               CALL stepopt_mp(fcn, wa2, wa4, m, n, x_min, fvec_min,
      1                         fnorm_min, iflag, nfev, epsfcn)
@@ -850,16 +850,16 @@ c
          CALL fcn (m, n, x, fvec, iflag, nfev)
       END IF
 
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       RETURN
 
  3000 CONTINUE
       WRITE (6, *) 'MPI_BCAST error in LMDIF, ierr = ', ierr_mpi
-!DEC$ ELSE
+#else
       WRITE(*, '(2(/,a, f10.2))')
      1     ' Total wall clock time in jacobian multi-process call  = ',
      2     wall_time,
      3     ' Total wall clock time in lev param multi-process call = ',
      4     wall_time_lev
-!DEC$ ENDIF
+#endif
       END SUBROUTINE lmdif

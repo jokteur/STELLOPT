@@ -3,16 +3,16 @@
       USE mpi_params, ONLY: master, myid, MPI_COMM_STEL
       USE mpi_inc
       IMPLICIT NONE
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       REAL(rprec), DIMENSION(nparam) :: x
-!DEC$ ENDIF
+#endif
 
       INTEGER :: np, nopt, nfev
       REAL(rprec), DIMENSION(nopt) :: fvec
       REAL(rprec) :: funcval(np)
       EXTERNAL fcn
 
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       INTEGER :: j, iflag, istat
 
       INTEGER :: status(MPI_STATUS_size)                     !mpi stuff
@@ -140,5 +140,5 @@ c
       WRITE (6,*) ' IFLAG = ', iflag, ' in ga_fitness_mpi CALL to fcn'
       STOP
 
-!DEC$ ENDIF
+#endif
       END SUBROUTINE ga_fitness_mpi

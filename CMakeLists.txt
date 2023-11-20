@@ -11,8 +11,9 @@ find_package(MPI COMPONENTS Fortran)
 set(NETCDF_F90 "YES")
 set(NETCDF_F77 "YES")
 include(cmake-modules/FindNetCDF.cmake)
+find_package(LAPACK REQUIRED)
 
-add_compile_definitions(MPI_OPT NETCDF LHDF5)
+add_compile_definitions(NETCDF LHDF5 LINUX)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp -fallow-argument-mismatch -Wno-argument-mismatch -fPIC -O2 -fexternal-blas -fbacktrace -fcheck=all,no-array-temps")
@@ -22,3 +23,4 @@ endif()
 #TODO: Intel, MSVC, Clang
 
 add_subdirectory(LIBSTELL)
+add_subdirectory(VMEC2000)

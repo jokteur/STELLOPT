@@ -116,13 +116,13 @@
          END DO
       END IF
 
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       CALL MPI_BARRIER(MPI_COMM_STEL, ierr)
       IF (ierr .ne. 0) CALL mpi_stel_abort(ierr)
       CALL MPI_BCAST(X_array,NP*n,MPI_REAL8,master,MPI_COMM_STEL,
      1               ierr)
       IF (ierr .ne. 0) CALL mpi_stel_abort(ierr)
-!DEC$ ENDIF
+#endif
 
       lkeep_running   = .true.
       lfirst_pass     = .true.
@@ -149,10 +149,10 @@
                WRITE(6,'(2X,I6,8X,I3,7X,1ES12.4E2)') 1,0,fnorm**2
                CALL FLUSH(6)
             END IF
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
             CALL MPI_BCAST(istat,1,MPI_INTEGER,0,MPI_COMM_STEL,ierr_mpi)
             CALL MPI_BARRIER(MPI_COMM_STEL, ierr_mpi)
-!DEC$ ENDIF
+#endif
             IF (istat < 0) THEN
                IF (myid == 0) WRITE(6,'(A)') 
      1                      '!!!!! First Eq failed !!!!!'
@@ -189,14 +189,14 @@
      1                  fvec_array(1:m,i:j),nfeval,MPI_COMM_STEL)
          nfeval = nfeval + NP
 
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
          CALL MPI_BCAST(fvec_array,NP*m,MPI_REAL8,master,MPI_COMM_STEL,
      1               ierr)
          IF (ierr .ne. 0) CALL mpi_stel_abort(ierr)
          CALL MPI_BCAST(x_array,NP*n,MPI_REAL8,master,MPI_COMM_STEL,
      1               ierr)
          IF (ierr .ne. 0) CALL mpi_stel_abort(ierr)
-!DEC$ ENDIF
+#endif
  
          ! Output the xvector and fevals
          IF (myid == master) THEN

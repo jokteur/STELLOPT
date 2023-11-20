@@ -3,7 +3,7 @@
       IMPLICIT NONE
       INTEGER :: j
       EXTERNAL fcn
-!DEC$ IF .NOT.DEFINED (MPI_OPT)
+#ifndef MPI_OPT
       INTEGER :: iflag
       REAL(rprec) :: funcval, ga_evaluate
 
@@ -13,5 +13,5 @@
       WRITE (j+1000) j, iflag
       WRITE (j+1000) funcval
       CLOSE (j+1000)
-!DEC$ ENDIF
+#endif
       END SUBROUTINE ga_fitness_parallel

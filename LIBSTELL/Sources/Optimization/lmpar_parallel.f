@@ -7,7 +7,7 @@ C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
       INTEGER :: j
       EXTERNAL fcn
-!DEC$ IF .NOT.DEFINED (MPI_OPT)
+#ifndef MPI_OPT
 C-----------------------------------------------
 C   L o c a l   P a r a m e t e r s
 C-----------------------------------------------
@@ -19,9 +19,9 @@ C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
       INTEGER :: iflag, nfact
-!DEC$ IF DEFINED (CRAY)
+#if defined(CRAY)
       INTEGER :: istat, k
-!DEC$ ENDIF
+#endif
       REAL(rprec) :: deltain, parin, fnorm_in, pnorm_in, scale_factor
 C-----------------------------------------------
 C   E x t e r n a l   F u n c t i o n s
@@ -87,7 +87,7 @@ c
 !     OPEN A UNIQUE FILE FOR I/O IN MULTI-PROCESSOR SYSTEM
 !
       WRITE (j+1000) j, iflag, pnorm_in, fnorm_in, parin, deltain
-!DEC$ IF DEFINED (CRAY)
+#if defined(CRAY)
       DO k = 1, n
          WRITE (j+1000) wa1p(k), wa2p(k)
          DO istat = 1, n
@@ -97,9 +97,9 @@ c
       DO k = 1, m
          WRITE (j+1000) wa4p(k)
       END DO
-!DEC$ ELSE
+#else
       WRITE (j+1000) wa1p, wa2p, wa4p, fjac(1:n, 1:n)
-!DEC$ ENDIF
+#endif
       CLOSE (j+1000)                      !!Needed to run correctly in multi-tasking...
-!DEC$ ENDIF
+#endif
       END SUBROUTINE lmpar_parallel

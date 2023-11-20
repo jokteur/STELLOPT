@@ -113,10 +113,10 @@
      1                            temp_fvec(:), x_temp(:)
       REAL(rprec), ALLOCATABLE :: x_array(:,:), fval_array(:,:),
      1                            x_new(:,:), help2d(:,:), help2d2(:,:)
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       INTEGER :: status(MPI_STATUS_size)                     !mpi stuff
       INTEGER :: sender
-!DEC$ ENDIF
+#endif
       
 !----------------------------------------------------------------------
 !     BEGIN SUBROUTINE
@@ -189,7 +189,7 @@
          END IF
       END IF
       
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       ! BROADCAST The X_Array
       CALL MPI_BARRIER(MPI_COMM_STEL, ierr_mpi)
       IF (ierr_mpi .ne. 0) CALL mpi_stel_abort(ierr_mpi)
@@ -202,7 +202,7 @@
       CALL MPI_BCAST(fnorm_min,1,MPI_REAL8,master,MPI_COMM_STEL,
      1               ierr_mpi)
       IF (ierr_mpi .ne. 0) CALL mpi_stel_abort(ierr_mpi)
-!DEC$ ENDIF
+#endif
       
       ! Evaluate the Population if necessary
       IF (lrestart) THEN
@@ -210,7 +210,7 @@
      1        WRITE(6,*) 'Using evaluation from restart file'
          CALL FLUSH(6)
       ELSE
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
          ! Eval the x array
          ALLOCATE(help2d(n,NP-1),help2d2(m,NP-1))
          FORALL (i=2:NP) help2d(:,i-1) = x_array(i,:)
@@ -282,7 +282,7 @@
             fnorm_array = SUM(fval_array*fval_array,DIM=2)     
             i= COUNT(fnorm_array >= 1E12)
          END DO
-!DEC$ ELSE
+#else
          DO i = 1, NP
             x_temp = x_array(i,:)
             iflag = i
@@ -290,7 +290,7 @@
             fval_array(i,:) = temp_fvec
             fnorm_array(i)  = SUM(temp_fvec*temp_fvec)
          END DO
-!DEC$ ENDIF
+#endif
       END IF
       
       ! Output to the xvec.dat file
@@ -327,13 +327,13 @@
          END IF
       END IF
       
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       CALL MPI_BARRIER(MPI_COMM_STEL, ierr_mpi)  
       IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi) 
       CALL MPI_BCAST(fnorm_min,1,MPI_REAL8,master,MPI_COMM_STEL,
      1               ierr_mpi)
       IF (ierr_mpi .ne. 0) CALL mpi_stel_abort(ierr_mpi)
-!DEC$ ENDIF
+#endif
       
       
       !Preform Evolutionary Computation
@@ -462,15 +462,15 @@
             DEALLOCATE(a1,a2,a3,a4,a5)
          END IF
       
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
          ! BROADCAST The X_Array
          CALL MPI_BARRIER(MPI_COMM_STEL, ierr_mpi)
          IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi) 
          CALL MPI_BCAST(x_new,NP*n,MPI_REAL8,master,MPI_COMM_STEL,
      1               ierr_mpi)
          IF (ierr_mpi .ne. 0) CALL mpi_stel_abort(ierr_mpi)
-!DEC$ ENDIF
-!DEC$ IF DEFINED (MPI_OPT)
+#endif
+#if defined(MPI_OPT)
          
          ! Evaluate Population (new)
          ALLOCATE(help2d(n,NP),help2d2(m,NP))
@@ -485,7 +485,7 @@
          
          CALL MPI_BARRIER(MPI_COMM_STEL, ierr_mpi)
          IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
-!DEC$ ELSE
+#else
          DO i = 1, NP
             x_temp = x_new(i,:)
             iflag = i
@@ -493,7 +493,7 @@
             fval_array(i,:) = temp_fvec
             fnorm_new(i)  = SUM(temp_fvec*temp_fvec)
          END DO
-!DEC$ ENDIF
+#endif
       
          IF (myid == master) THEN
             fnorm_new = SUM(fval_array*fval_array,DIM=2)
@@ -550,7 +550,7 @@
             WRITE(6,*) ' Selecting,',j,' improvements'
          END IF
 
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
          ! Now broadcast this stuff
          CALL MPI_BARRIER(MPI_COMM_STEL, ierr_mpi)
          IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
@@ -569,7 +569,7 @@
          CALL MPI_BCAST(fnorm_min,1,MPI_REAL8,master,MPI_COMM_STEL,
      1               ierr_mpi)
          IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
-!DEC$ ENDIF
+#endif
 
       END DO
 

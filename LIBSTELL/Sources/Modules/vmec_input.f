@@ -373,7 +373,7 @@
       INTEGER,INTENT(IN) :: local_master
       INTEGER,INTENT(INOUT) :: local_comm
       INTEGER,INTENT(INOUT) :: iflag
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       iflag = 0
       ! Logicals
       CALL MPI_BCAST(lpofr,          1, MPI_LOGICAL, local_master, 
@@ -632,7 +632,7 @@
      1               local_master, local_comm, iflag)
       CALL MPI_BARRIER(local_comm,iflag)
       IF (iflag /= 0) RETURN
-!DEC$ ENDIF
+#endif
       iflag = 0
       RETURN
       END SUBROUTINE bcast_indata_namelist

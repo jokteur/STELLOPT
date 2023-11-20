@@ -55,7 +55,7 @@
 !----------------------------------------------------------------------
 !     BEGIN SUBROUTINE
 !----------------------------------------------------------------------
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       ierr_mpi = 0
       CALL MPI_BARRIER(MAP_COMM, ierr_mpi)                 !mpi stuff
       IF (ierr_mpi /= MPI_SUCCESS) STOP "MAP: BARRIER 1"
@@ -63,7 +63,7 @@
       IF (ierr_mpi /= MPI_SUCCESS) STOP "MAP: COMM_RANK"
       CALL MPI_COMM_SIZE( MAP_COMM, numprocs, ierr_mpi )          ! MPI
       IF (ierr_mpi /= MPI_SUCCESS) STOP "MAP: COMM_SIZE"
-!DEC$ ENDIF
+#endif
       
       ! The extent of the search space is
       !       ndiv^N
@@ -115,12 +115,12 @@
          WRITE(6, '(2x,i6,8x,i3,7x,1ES22.12E3)') 1, myid, temp_norm*temp_norm
          CALL FLUSH(6)
       END IF
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       CALL MPI_BARRIER(MAP_COMM, ierr_mpi)
       IF (ierr_mpi /= MPI_SUCCESS) STOP "MAP: BARRIER 2"
-!DEC$ ENDIF
+#endif
       
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       ! Queued Workload
       IF (myid .eq. master) THEN
          numsent = 1
@@ -185,14 +185,14 @@
             END IF
          END DO
       END IF
-!DEC$ ELSE
+#else
       STOP 'LIBSTELL must be compile in parallel to use this feature!'
-!DEC$ ENDIF
+#endif
 
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       CALL MPI_BARRIER(MAP_COMM, ierr_mpi)                 !mpi stuff
       IF (ierr_mpi /= MPI_SUCCESS) STOP "MAP: BARRIER 3"
-!DEC$ ENDIF
+#endif
    
       IF (myid .eq. master) THEN
          WRITE(6,'(A)') '------- Outputing to map.dat --------'
@@ -212,9 +212,9 @@
       DEALLOCATE(x_temp, val_temp, dx)
       DEALLOCATE(grid, vals, bin_step)
       
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       CALL MPI_BARRIER(MAP_COMM, ierr_mpi)                 !mpi stuff
-!DEC$ ENDIF
+#endif
 
       RETURN
 !-----------------------------------------------------------------------

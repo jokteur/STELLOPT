@@ -380,9 +380,9 @@ MODULE MPI_SHARMEM
 
       SUBROUTINE mpialloc_3d_dbl(array,n1,n2,n3,subid,mymaster,share_comm,win)
       ! Libraries
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       USE MPI
-!DEC$ ENDIF
+#endif
       USE ISO_C_BINDING
       IMPLICIT NONE
       ! Arguments

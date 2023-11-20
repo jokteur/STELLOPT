@@ -63,7 +63,7 @@
 !      LOGICAL            :: vmh_print_flag = .TRUE.           
       LOGICAL            :: vmh_print_flag = .FALSE.
       REAL(rprec)        :: vmh_time_zero = 0
-      PRIVATE vmh_dim, vmh_index, vmh_save_i1, vmh_save_i2,                    &
+      PRIVATE vmh_dim, vmh_index, vmh_save_i1, vmh_save_i2,                    
      &   vmh_print_flag
 
 !-------------------------------------------------------------------------------
@@ -78,7 +78,7 @@
 !  vmh_i1              V3FIT, reconstruction iteration number
 !  vmh_i2              V3FIT, jacobian calculation, reconstruction parameter #
 
-      INTEGER, DIMENSION(vmh_dim) :: vmh_iterc, vmh_iter2m1, vmh_ns,           &
+      INTEGER, DIMENSION(vmh_dim) :: vmh_iterc, vmh_iter2m1, vmh_ns,           
      &    vmh_nvacskip, vmh_ivac, vmh_ictrl_prec2d, vmh_i1, vmh_i2
 
 !-------------------------------------------------------------------------------
@@ -88,7 +88,7 @@
 ! vmh_time_step		VMEC delt0 values
 ! vmh_time          SYSTEM_TIME, via LIBSTELL's second0 function
 
-      REAL(rprec), DIMENSION(vmh_dim) :: vmh_time_step, vmh_fsqr,              &
+      REAL(rprec), DIMENSION(vmh_dim) :: vmh_time_step, vmh_fsqr,              
      &   vmh_fsqz, vmh_fsql, vmh_fedge, vmh_time
 
 !*******************************************************************************
@@ -110,7 +110,7 @@
 !  USE statements
 !-------------------------------------------------------------------------------
 
-      USE vmec_main, ONLY: iter1, iter2, iterc, fsqr, fsqz, fsql,              &
+      USE vmec_main, ONLY: iter1, iter2, iterc, fsqr, fsqz, fsql,              
      &   fedge, ivac
       USE vmec_dim, ONLY: ns
       USE vmec_input, ONLY: nvacskip
@@ -191,7 +191,7 @@
       IF (.NOT. vmh_print_flag) RETURN
 
       vmh_history_file_name = TRIM('vmec_history.' // input_extension)
-      CALL safe_open(vmh_iou,istat,TRIM(vmh_history_file_name),                &
+      CALL safe_open(vmh_iou,istat,TRIM(vmh_history_file_name),                
      &   'replace','formatted',delim_in='none',record_in=150)
       IF (istat .ne. 0) THEN
          WRITE(*,*) 'In subroutine vmec_history_print: Error from'
@@ -200,23 +200,23 @@
       ENDIF
       
       WRITE(vmh_iou,*) 'History arrays are dimensioned ',vmh_dim
-      WRITE(vmh_iou,*) 'Subroutine vmec_history_store was called ',            &
+      WRITE(vmh_iou,*) 'Subroutine vmec_history_store was called ',            
      &   vmh_index, ' times'
       WRITE(vmh_iou,*) 
 
-      vmh_header = '    i iterc  2m1   ns nvac ivac ictrl_ i1 i2' //           &
-     &  '    time_step  fsqr      fsqz       fsql      max(fsq)' //            &
+      vmh_header = '    i iterc  2m1   ns nvac ivac ictrl_ i1 i2' //           
+     &  '    time_step  fsqr      fsqz       fsql      max(fsq)' //            
      &  '    fedge      sys-time'
       WRITE(vmh_iou,*) TRIM(vmh_header)
       WRITE(vmh_iou,*) '                      skip      prec2d'
 
       DO i = 1,MIN(vmh_index,vmh_dim)
-         WRITE(vmh_iou,vmh_format2)                                            &
-     &      i, vmh_iterc(i), vmh_iter2m1(i), vmh_ns(i),                        &
-     &      vmh_nvacskip(i), vmh_ivac(i),                                      &
-     &      vmh_ictrl_prec2d(i), vmh_i1(i), vmh_i2(i),                         &
-     &      vmh_time_step(i), vmh_fsqr(i), vmh_fsqz(i), vmh_fsql(i),           &
-     &      MAX(vmh_fsqr(i),vmh_fsqz(i),vmh_fsql(i)),                          &
+         WRITE(vmh_iou,vmh_format2)                                            
+     &      i, vmh_iterc(i), vmh_iter2m1(i), vmh_ns(i),                        
+     &      vmh_nvacskip(i), vmh_ivac(i),                                      
+     &      vmh_ictrl_prec2d(i), vmh_i1(i), vmh_i2(i),                         
+     &      vmh_time_step(i), vmh_fsqr(i), vmh_fsqz(i), vmh_fsql(i),           
+     &      MAX(vmh_fsqr(i),vmh_fsqz(i),vmh_fsql(i)),                          
      &      vmh_fedge(i), vmh_time(i)
       END DO
 

@@ -137,13 +137,13 @@ c
       ALLOCATE (wa(lwa), iwa(n), stat = info)
       IF (info .ne. 0) STOP 'Allocation error in lmdif1!'
 
-!DEC$ IF .NOT.DEFINED (MPI_OPT)
+#ifndef MPI_OPT
 !
 !     Load fdjac module values
 !
       maxj_processors = MAX(max_processors,1)
       numj_lm_params  = MAX(num_lm_params,1)
-!DEC$ ENDIF
+#endif
       maxfev = 200*(n + 1)
       maxfev = MIN (maxfev, nfev_end)             !!SPH-Added 7/99
       ftol = tol
@@ -162,9 +162,9 @@ c
      2     wa(mp5n+1), m, iwa, wa(n+1), wa(2*n+1), wa(3*n+1),
      3     wa(4*n+1), wa(5*n+1))
 
-!DEC$ IF .NOT.DEFINED (MPI_OPT)
+#ifndef MPI_OPT
       IF (info .eq. 8) info = 4
-!DEC$ ENDIF
+#endif
       DEALLOCATE(wa, iwa)
 
       END SUBROUTINE lmdif1

@@ -409,14 +409,14 @@ C-----------------------------------------------
          IF (nextcur .gt. 0) THEN
             WRITE(nthreed, "(' EXTERNAL CURRENTS',/,1x,17('-'))")
             ni = 0
-            IF (ALLOCATED(curlabel))
+            IF (associated(curlabel))
      1         ni = MAXVAL(LEN_TRIM(curlabel(1:nextcur)))
             ni = MAX(ni+4, 14)
             WRITE (line,  '(a,i2.2,a)') "(5a",ni,")"
             WRITE (line2, '(a,i2.2,a)') "(5(",ni-12,"x,1p,e12.4))"
             DO i = 1,nextcur,5
                ni = MIN(i+4, nextcur)
-               IF (ALLOCATED(curlabel))
+               IF (associated(curlabel))
      1         WRITE (nthreed, line, iostat=mj) 
      2               (TRIM(curlabel(n)),n=i,ni)
                WRITE (nthreed, line2,iostat=mj) 
@@ -486,7 +486,7 @@ C-----------------------------------------------
           WRITE(nthreed,147)
 !          WRITE(nthreed,135)(ac(i-1),i=1, SIZE(ac))
           SELECT CASE(TRIM(pcurr_type))
-          CASE ('Akima_spline_Ip','Akima_spline_I',                            &
+          CASE ('Akima_spline_Ip','Akima_spline_I',                            
      &           'cubic_spline_Ip','cubic_spline_I')
              n = NonZeroLen(ac_aux_s,SIZE(ac_aux_s))
              WRITE(nthreed,"(' ac_aux_s is' )")
@@ -757,7 +757,7 @@ C-----------------------------------------------
       CALL second0(treadoff)
       timer(tread) = timer(tread) + (treadoff-treadon)
 #if defined(SKS)
-      CALL MPI_Bcast(LPRECOND,1,MPI_LOGICAL,0,RUNVMEC_COMM_WORLD,            &
+      CALL MPI_Bcast(LPRECOND,1,MPI_LOGICAL,0,RUNVMEC_COMM_WORLD,            
      &               MPI_ERR)
         readin_time = timer(tread)
 #endif

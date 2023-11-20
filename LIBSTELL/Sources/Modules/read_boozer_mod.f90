@@ -559,7 +559,7 @@
 !     Broadcast of variables
 !
       ierr = 0
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined (MPI_OPT)
       CALL MPI_BARRIER(comm, ierr)
       CALL MPI_COMM_RANK(comm, mylocalid, ierr )
       ! Should add a check to make sure we've 
@@ -632,7 +632,7 @@
          CALL MPI_BCAST(pmnc_b, mnboz_b*ns_b, MPI_DOUBLE_PRECISION, local_master, comm, ierr)
          CALL MPI_BCAST(gmns_b, mnboz_b*ns_b, MPI_DOUBLE_PRECISION, local_master, comm, ierr)   
       END IF
-!DEC$ ENDIF
+#endif
       RETURN
 
       END SUBROUTINE bcast_boozer_vars

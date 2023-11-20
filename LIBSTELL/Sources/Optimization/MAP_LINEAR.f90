@@ -28,9 +28,9 @@
       USE safe_open_mod, ONLY: safe_open
       USE mpi_inc
       IMPLICIT NONE
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       INTEGER :: status(MPI_STATUS_size)                     !mpi stuff
-!DEC$ ENDIF
+#endif
 
       INTEGER, INTENT(in) :: n,m, ndiv, iwrite, NP
       REAL(rprec), DIMENSION(n), INTENT(in) :: XCmin, XCmax, XC0
@@ -48,10 +48,10 @@
       INTEGER, PARAMETER :: FLAG_SINGLETASK = -1
       INTEGER, PARAMETER :: FLAG_CLEANUP = -100
 
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       ierr_mpi = 0
       CALL MPI_BARRIER(MPI_COMM_STEL, ierr_mpi)                 !mpi stuff
-!DEC$ ENDIF
+#endif
       
       ! The extent of the search space is
       !       ndiv^N
@@ -102,13 +102,13 @@
          WRITE(6, '(2x,A,3x,A,7x,A)') 'Iteration','Processor','Chi-Sq'
          WRITE(6, '(2x,i6,8x,i3,7x,1ES22.12E3)') 1, myid, temp_norm*temp_norm
       END IF
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       CALL MPI_BARRIER(MPI_COMM_STEL, ierr_mpi)                 !mpi stuff
       IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
-!DEC$ ENDIF
+#endif
       
 
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       ! Queued Workload
       IF (myid .eq. master) THEN
          numsent = 1
@@ -173,15 +173,15 @@
             END IF
          END DO
       END IF
-!DEC$ ELSE
+#else
       STOP 'LIBSTELL must be compile for parallel to use this feature!'
-!DEC$ ENDIF
+#endif
 
 
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       CALL MPI_BARRIER(MPI_COMM_STEL, ierr_mpi)                 !mpi stuff
       IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
-!DEC$ ENDIF
+#endif
    
       IF (myid .eq. master) THEN
          map_file = 'map_linear.dat'
@@ -199,8 +199,8 @@
       DEALLOCATE(x_temp, val_temp, dx)
       DEALLOCATE(grid, vals)
       
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       CALL MPI_BARRIER(MPI_COMM_STEL, ierr_mpi)                 !mpi stuff
-!DEC$ ENDIF
+#endif
       
       END SUBROUTINE MAP_LINEAR

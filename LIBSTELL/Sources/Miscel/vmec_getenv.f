@@ -1,10 +1,10 @@
       SUBROUTINE vmec_getenv(ename, evalue)
       IMPLICIT NONE
       CHARACTER(LEN=*) :: ename, evalue
-!DEC$ IF DEFINED (CRAY)
+#if defined(CRAY)
       INTEGER :: lenname=0, lenval, ierror
       CALL pxfgetenv(ename, lenname, evalue, lenval, ierror)
-!DEC$ ELSE
+#else
       CALL getenv(ename, evalue)
-!DEC$ ENDIF
+#endif
       END SUBROUTINE vmec_getenv

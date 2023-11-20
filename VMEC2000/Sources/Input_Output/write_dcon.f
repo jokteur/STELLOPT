@@ -12,14 +12,14 @@ C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
       INTEGER :: istat, m
-      REAL(rprec), ALLOCATABLE, DIMENSION(:,:,:) :: rmncc, rmnsc, zmnsc,    &
+      REAL(rprec), ALLOCATABLE, DIMENSION(:,:,:) :: rmncc, rmnsc, zmnsc,    
      &   zmncc, lmnsc, lmncc
       REAL(rprec) :: t1(0:mpol1)
       CHARACTER*(256) :: dcon_file
 C-----------------------------------------------
       t1 = nscale(0)*mscale(0:mpol1)
 
-      ALLOCATE (rmncc(ns,0:0,0:mpol1), zmnsc(ns,0:0,0:mpol1),           &
+      ALLOCATE (rmncc(ns,0:0,0:mpol1), zmnsc(ns,0:0,0:mpol1),           
      &          lmnsc(ns,0:0,0:mpol1), stat=istat)
       IF (istat .ne. 0) STOP 'Allocation error in write_dcon'
       DO m=0,mpol1
@@ -29,7 +29,7 @@ C-----------------------------------------------
       END DO
 
       IF (lasym) THEN
-      ALLOCATE (rmnsc(ns,0:0,0:mpol1), zmncc(ns,0:0,0:mpol1),           &
+      ALLOCATE (rmnsc(ns,0:0,0:mpol1), zmncc(ns,0:0,0:mpol1),           
      &          lmncc(ns,0:0,0:mpol1), stat=istat)
       IF (istat .ne. 0) STOP 'Allocation error in write_dcon'
       DO m=0,mpol1

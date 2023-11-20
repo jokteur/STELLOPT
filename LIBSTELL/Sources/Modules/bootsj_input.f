@@ -60,15 +60,15 @@
       END SUBROUTINE write_bootsj_input
 
       SUBROUTINE BCAST_BOOTSJ_INPUT(local_master,comm,istat)
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       USE mpi
-!DEC$ ENDIF
+#endif
       IMPLICIT NONE
       INTEGER, INTENT(inout) :: comm
       INTEGER, INTENT(in)    :: local_master
       INTEGER, INTENT(inout) :: istat
       IF (istat .ne. 0) RETURN
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined(MPI_OPT)
       CALL MPI_BCAST(nrho,1,MPI_INTEGER,local_master,comm,istat)
       IF (istat .ne. 0) RETURN
       CALL MPI_BCAST(mbuse,1,MPI_INTEGER,local_master,comm,istat)
@@ -101,7 +101,7 @@
       CALL MPI_BCAST(ati,size(ati),MPI_DOUBLE_PRECISION,local_master,
      1               comm,istat)
       IF (istat .ne. 0) RETURN
-!DEC$ ENDIF
+#endif
       END SUBROUTINE BCAST_BOOTSJ_INPUT
 
 

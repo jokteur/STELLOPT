@@ -6,7 +6,7 @@ C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
       INTEGER n, mode
       REAL(rprec), DIMENSION(*) :: trigs
-!DEC$ IF .NOT.DEFINED (CRAY) .OR. DEFINED(LONESTAR) .OR. DEFINED(MCURIE)
+#if !defined(CRAY) || defined(LONESTAR) || defined(MCURIE)
 C-----------------------------------------------
 C   L o c a l   P a r a m e t e r s
 C-----------------------------------------------
@@ -54,7 +54,7 @@ C-----------------------------------------------
       angle = (i-1)*del
       trigs(la+i)=SIN(angle)
    50 CONTINUE
-!DEC$ ELSE
+#else
       CALL fftrig (trigs, n, mode)
-!DEC$ ENDIF
+#endif
       END SUBROUTINE fftrig_g
