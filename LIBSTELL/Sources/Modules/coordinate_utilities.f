@@ -16,7 +16,7 @@
 !*******************************************************************************
 !  INTERFACE BLOCKS
 !*******************************************************************************
-      PUBLIC :: cart_to_cyl, cyl_to_cart, cyl_to_cart_vec,                     &
+      PUBLIC :: cart_to_cyl, cyl_to_cart, cyl_to_cart_vec,                     
      &          cood_utils_test
       PRIVATE :: check
 
@@ -212,7 +212,7 @@
 
 !  Test cyl_to_cart function. cart(0,1,-1) = cyl(1,Pi/2,-1)
       result = cyl_to_cart((/ 1.0d+0, pi/2.0d+0, -1.0d+0 /))
-      cood_utils_test =                                                        &
+      cood_utils_test =                                                        
      &   check(COS(pi/2.0d+0), result(1), 7, "cyl_to_cart")
       IF (.not.cood_utils_test) RETURN
       cood_utils_test = check(1.0d+0, result(2), 8, "cyl_to_cart")
@@ -221,7 +221,7 @@
       IF (.not.cood_utils_test) RETURN
 
 !  Test cyl_to_cart_vec function. cart(1,0,0) = cyl(1,0,0) @ phi=0
-      result = cyl_to_cart_vec((/ 1.0d+0, 0.0d+0, 0.0d+0 /),                   &
+      result = cyl_to_cart_vec((/ 1.0d+0, 0.0d+0, 0.0d+0 /),                   
      &                         (/ 1.0d+0, 0.0d+0, 0.0d+0 /))
       cood_utils_test = check(1.0d+0, result(1), 1, "cyl_to_cart_vec")
       IF (.not.cood_utils_test) RETURN
@@ -231,7 +231,7 @@
       IF (.not.cood_utils_test) RETURN
 
 !  Test cyl_to_cart_vec function. cart(-1,0,0) = cyl(0,1,0) @ phi=0
-      result = cyl_to_cart_vec((/ 1.0d+0, 0.0d+0, 0.0d+0 /),                   &
+      result = cyl_to_cart_vec((/ 1.0d+0, 0.0d+0, 0.0d+0 /),                   
      &                         (/ 0.0d+0, 1.0d+0, 0.0d+0 /))
       cood_utils_test = check(0.0d+0, result(1), 4, "cyl_to_cart_vec")
       IF (.not.cood_utils_test) RETURN
@@ -241,7 +241,7 @@
       IF (.not.cood_utils_test) RETURN
 
 !  Test cyl_to_cart_vec function. cart(0,0,1) = cyl(0,0,1) @ phi=Pi/2
-      result = cyl_to_cart_vec((/ 1.0d+0, pi/2.0d+0, 0.0d+0 /),                &
+      result = cyl_to_cart_vec((/ 1.0d+0, pi/2.0d+0, 0.0d+0 /),                
      &                         (/ 0.0d+0, 0.0d+0, 1.0d+0 /))
       cood_utils_test = check(0.0d+0, result(1), 7, "cyl_to_cart_vec")
       IF (.not.cood_utils_test) RETURN
@@ -282,11 +282,11 @@
       REAL(rprec), PARAMETER :: range = 1.0E-15_dp
 
 !  Start of executable code
-      check = (expected .eq. received) .or.                                    &
-     &        ((expected .lt. received + range) .and.                          &
+      check = (expected .eq. received) .or.                                    
+     &        ((expected .lt. received + range) .and.                          
      &         (expected .gt. received - range))
       IF (.not.check) THEN
-         write(*,*) "coordinate_utilities.f: ", name, " test", testNum,        &
+         write(*,*) "coordinate_utilities.f: ", name, " test", testNum,        
      &              "failed."
          write(*,*) "Expected", expected, "Received", received
       END IF

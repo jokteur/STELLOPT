@@ -49,7 +49,7 @@
 !*******************************************************************************
 #if PROFILE_ON
 !>  Array of buckets to hold the values.
-      TYPE (profiler_bucket), DIMENSION(profiler_bucket_size), SAVE            &
+      TYPE (profiler_bucket), DIMENSION(profiler_bucket_size), SAVE            
      &   :: buckets
 #endif
 
@@ -147,7 +147,7 @@
          ELSE IF (buckets(i)%symbol_name .eq. symbol_name) THEN
             buckets(i)%number_of_calls = buckets(i)%number_of_calls + 1
             buckets(i)%total_time = buckets(i)%total_time + time
-            buckets(i)%average_time = buckets(i)%total_time                    &
+            buckets(i)%average_time = buckets(i)%total_time                    
      &                              / buckets(i)%number_of_calls
 !$          CALL OMP_UNSET_LOCK(buckets(i)%lock)
             RETURN
@@ -167,7 +167,7 @@
          ELSE IF (buckets(i)%symbol_name .eq. symbol_name) THEN
             buckets(i)%number_of_calls = buckets(i)%number_of_calls + 1
             buckets(i)%total_time = buckets(i)%total_time + time
-            buckets(i)%average_time = buckets(i)%total_time                    &
+            buckets(i)%average_time = buckets(i)%total_time                    
      &                              / buckets(i)%number_of_calls
 !$          CALL OMP_UNSET_LOCK(buckets(i)%lock)
             RETURN
@@ -175,7 +175,7 @@
 !$       CALL OMP_UNSET_LOCK(buckets(i)%lock)
       END DO
 
-      WRITE (*,*) 'Profile table full: ' // TRIM(symbol_name) //               &
+      WRITE (*,*) 'Profile table full: ' // TRIM(symbol_name) //               
      &            ' could not be profiled.'
 #endif
 
@@ -237,7 +237,7 @@
 #if PROFILE_ON
       IF (high_index - low_index .lt. 2) THEN
 !  Since the table has been reduced to two elements, sort the sub table.
-         IF (buckets(high_index)%average_time .gt.                             &
+         IF (buckets(high_index)%average_time .gt.                             
      &       buckets(low_index)%average_time) THEN
 !  Swap the values
             swap_bucket = buckets(low_index)
@@ -259,7 +259,7 @@
       ALLOCATE(temp_buckets(low_index:high_index))
 
       DO i = low_index, high_index
-         IF (buckets(i1)%average_time .gt.                                     &
+         IF (buckets(i1)%average_time .gt.                                     
      &       buckets(i2)%average_time) THEN
 !  Take the value of the lower table and increment the lower index
             temp_buckets(i) = buckets(i1)
@@ -277,7 +277,7 @@
             IF (i2 .gt. high_index) THEN
 !  Merged the last value in the upper tabel the remining values are all from the
 !  lower.
-               temp_buckets(i + 1:high_index) =                                &
+               temp_buckets(i + 1:high_index) =                                
      &            buckets(i1:mid_index - 1)
                EXIT
             END IF
@@ -355,14 +355,14 @@
 
       DO i = 1, profiler_bucket_size
          IF (buckets(i)%symbol_name .ne. '') THEN
-            WRITE (iou, 1001) buckets(i)%symbol_name,                          &
-     &                        buckets(i)%average_time,                         &
-     &                        buckets(i)%total_time,                           &
+            WRITE (iou, 1001) buckets(i)%symbol_name,                          
+     &                        buckets(i)%average_time,                         
+     &                        buckets(i)%total_time,                           
      &                        buckets(i)%number_of_calls
          END IF
       END DO
 
-1000  FORMAT('Symbol Name',59x,'Average Time',2x,'TotalTime',5x,               &
+1000  FORMAT('Symbol Name',59x,'Average Time',2x,'TotalTime',5x,               
      &       'Num Calls')
 1001  FORMAT(a68,2x,es12.5,2x,es12.5,2x,i9)
 #endif

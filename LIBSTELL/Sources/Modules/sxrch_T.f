@@ -91,7 +91,7 @@
 !
 !  For d_type = 'sxrch' (soft x-ray chord)
 !-------------------------------------------------------------------------------
-      SUBROUTINE sxrch_desc_construct(this, chord_name,                        &
+      SUBROUTINE sxrch_desc_construct(this, chord_name,                        
      &                                xcart_i, xcart_f)             
 
          IMPLICIT NONE

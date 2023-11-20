@@ -305,7 +305,7 @@ C-----------------------------------------------
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
-      INTEGER :: j, istat, iread, ic1, ic2, irate, count_max,
+      INTEGER :: j, k, istat, iread, ic1, ic2, irate, count_max,
      1     jmin
       REAL(rprec), DIMENSION(num_lm_params) ::
      1      fnorm_min, pnorm_min, delta_min, par_min

@@ -98,7 +98,7 @@
 !  Start of executable code
       IF (.not.n1) THEN
          IF (myrank .eq. 0) THEN
-         WRITE (*,fmt) 'error: an assertion failed with this tag:',     &
+         WRITE (*,fmt) 'error: an assertion failed with this tag:',     
      &      string
          WRITE(*,*) ' n1 = ',n1
          END IF
@@ -116,7 +116,7 @@
             STOP 'program terminated by assert1'
 #endif
          ELSE
-            IF (myrank.eq.0)                                            &
+            IF (myrank.eq.0)                                            
      &      WRITE(*,*) ' end of warning error message from assert1'
          END IF
       END IF
@@ -142,7 +142,7 @@
 !  Start of executable code
       IF (.not.(n1 .and. n2)) THEN
          IF (myrank .eq. 0) THEN
-         WRITE (*,fmt) 'error: an assertion failed with this tag:',     &
+         WRITE (*,fmt) 'error: an assertion failed with this tag:',     
      &      string
          WRITE(*,*) ' n1, n2 = ',n1, n2
          END IF
@@ -160,7 +160,7 @@
             STOP 'program terminated by assert2'
 #endif
          ELSE
-            IF (myrank .eq. 0)                                          &
+            IF (myrank .eq. 0)                                          
      &      WRITE(*,*) ' end of warning error message from assert2'
          END IF
       END IF
@@ -186,7 +186,7 @@
 !  Start of executable code
       IF (.not.(n1 .and. n2 .and. n3)) THEN
          IF (myrank .eq. 0) THEN
-         WRITE (*,fmt) 'error: an assertion failed with this tag:',     &
+         WRITE (*,fmt) 'error: an assertion failed with this tag:',     
      &      string
          WRITE(*,*) ' n1, n2, n3 = ',n1, n2, n3
          END IF
@@ -204,7 +204,7 @@
             STOP 'program terminated by assert3'
 #endif
          ELSE
-            IF (myrank .eq. 0)                                          &
+            IF (myrank .eq. 0)                                          
      &      WRITE(*,*) ' end of warning error message from assert3'
          END IF
       END IF
@@ -230,7 +230,7 @@
 !  Start of executable code
       IF (.not. (n1 .and. n2 .and. n3 .and. n4)) THEN
          IF (myrank .eq. 0) THEN
-         WRITE (*,fmt) 'error: an assertion failed with this tag:',     &
+         WRITE (*,fmt) 'error: an assertion failed with this tag:',     
      &      string
          WRITE(*,*) ' n1, n2, n3, n4 = ',n1, n2, n3, n4
          END IF
@@ -248,7 +248,7 @@
             STOP 'program terminated by assert4'
 #endif
          ELSE
-            IF (myrank .eq. 0)                                          &
+            IF (myrank .eq. 0)                                          
      &      WRITE(*,*) ' end of warning error message from assert4'
          END IF
       END IF
@@ -275,7 +275,7 @@
 !  Start of executable code
       IF (.not.all(n)) THEN
          IF (myrank .eq. 0) THEN
-         WRITE (*,fmt) 'error: an assertion failed with this tag:',     &
+         WRITE (*,fmt) 'error: an assertion failed with this tag:',     
      &      string
          ntot = SIZE(n)
          WRITE (*,*) ntot, ' logicals in array. indices of .F. are:'
@@ -292,7 +292,7 @@
          lfatal = .TRUE.
          IF (PRESENT(err_class)) THEN
             first_char = err_class(1:1)
-            IF ((first_char .eq. 'w') .or. (first_char .eq. 'W'))       &
+            IF ((first_char .eq. 'w') .or. (first_char .eq. 'W'))       
      &         lfatal = .FALSE.
          ENDIF
          IF (lfatal) THEN
@@ -302,7 +302,7 @@
             STOP 'program terminated by assert_v'
 #endif            
          ELSE
-            IF (myrank .eq. 0)                                          &
+            IF (myrank .eq. 0)                                          
      &      WRITE(*,*) ' end of warning error message from assert_v'
          END IF
       END IF
@@ -335,7 +335,7 @@
 
 !  Start of executable code
       IF (.not.(n1 == n2)) THEN
-         WRITE (*,fmt) 'error: an assert_eq failed with this tag:',              &
+         WRITE (*,fmt) 'error: an assert_eq failed with this tag:',              
      &      string
          WRITE (*,*) ' n1, n2 = ',n1, n2
 !  Is error Fatal or Warning?
@@ -369,7 +369,7 @@
 
 !  Start of executable code
       IF (.not.(n1 == n2 .and. n2 == n3)) THEN
-         WRITE (*,fmt) 'error: an assert_eq failed with this tag:',              &
+         WRITE (*,fmt) 'error: an assert_eq failed with this tag:',              
      &      string
          WRITE (*,*) ' n1, n2, n3 = ',n1, n2, n3
 !  Is error Fatal or Warning?
@@ -403,7 +403,7 @@
 
 !  Start of executable code
       IF (.not.(n1 == n2 .and. n2 == n3 .and. n3 == n4)) THEN
-         WRITE (*,fmt) 'error: an assert_eq failed with this tag:',              &
+         WRITE (*,fmt) 'error: an assert_eq failed with this tag:',              
      &      string
          WRITE (*,*) ' n1, n2, n3, n4 = ',n1, n2, n3, n4
 !  Is error Fatal or Warning?
@@ -438,7 +438,7 @@
 
 !  Start of executable code
       IF (.not.(all(nn(2:) == nn(1)))) THEN
-         WRITE (*,fmt) 'error: an assert_eq failed with this tag:',              &
+         WRITE (*,fmt) 'error: an assert_eq failed with this tag:',              
      &      string
          ntot = SIZE(nn)
          WRITE (*,*) ntot, ' integers in the array.'
@@ -614,7 +614,7 @@
       REAL(rprec), PARAMETER                   :: tiny = 1.e-14_rprec
       REAL(rprec), PARAMETER                 :: verytiny = 1.e-28_rprec
       REAL(rprec), DIMENSION(:), ALLOCATABLE   :: work_svd, svec
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'svdproducts: '
 
 !  Start of executable code
@@ -626,7 +626,7 @@
       CALL assert(nrowb .ge. 2,sub_name // 'nrowb too small')
       CALL assert(ncolb .ge. 2,sub_name // 'ncolb too small')
       CALL assert_eq(ncolb,SIZE(svprod),sub_name // 'svprod wrong size')
-      CALL assert_eq(ncolb,SIZE(numzeros),sub_name //                          &
+      CALL assert_eq(ncolb,SIZE(numzeros),sub_name //                          
      &   'numzeros wrong size')
 
 !  Allocate space for the number-columns-reduced-by-one arrays
@@ -646,7 +646,7 @@
          c(1:nrow,1:jelim-1) = b(1:nrow,1:jelim-1)
          c(1:nrow,jelim:ncolb-1) = b(1:nrow,jelim+1:ncolb)
 
-         CALL dgesvd('None','None',nrow,ncol,c,nrow,                           &
+         CALL dgesvd('None','None',nrow,ncol,c,nrow,                           
      &      svec,c,nrow,c,ncol,work_svd,l_work_svd,info_svd)
          CALL assert_eq(0,info_svd,sub_name // 'dgesvd problem')
          svp = PRODUCT(svec)
@@ -709,7 +709,7 @@
 !  
       REAL(rprec) :: maxprod
       
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'most_redundant: '
 
 !-------------------------------------------------------------------------------
@@ -722,11 +722,11 @@
       ncola = dimlens(2)
       CALL assert(nrowa .ge. 2,sub_name // 'nrowa too small')
       CALL assert(ncola .ge. 2,sub_name // 'ncola too small')
-      CALL assert_eq(ncola,SIZE(ncol_array),sub_name //                        &
+      CALL assert_eq(ncola,SIZE(ncol_array),sub_name //                        
      &   'ncol_array wrong size')
-      CALL assert_eq(ncola,SIZE(svprod_array),sub_name //                      &
+      CALL assert_eq(ncola,SIZE(svprod_array),sub_name //                      
      &   'svprod_array wrong size')
-      CALL assert_eq(ncola,SIZE(j_col_elim),sub_name //                        &
+      CALL assert_eq(ncola,SIZE(j_col_elim),sub_name //                        
      &   'j_col_elim wrong size')
 
 !  Allocations for local arrays
@@ -749,7 +749,7 @@
 
 !  All Columns - do SVD and find ratio
       b = a
-      CALL dgesvd('None','None',nrow,ncol,b,nrow,                              &
+      CALL dgesvd('None','None',nrow,ncol,b,nrow,                              
      &   svec,b,nrow,b,ncol,work_svd,l_work_svd,info_svd)
       CALL assert_eq(0,info_svd,sub_name // 'dgesvd problem')
       
@@ -769,7 +769,7 @@
       DO ncolelim = 1,ncola-2
          ncolb = ncola + 1 - ncolelim
          b(1:nrow,1:ncolb) = atemp(1:nrow,1:ncolb)
-         CALL svdproducts(b(1:nrow,1:ncolb),svprod(1:ncolb),                   &
+         CALL svdproducts(b(1:nrow,1:ncolb),svprod(1:ncolb),                   
      &      numzeros(1:ncolb))
          minnz = MINVAL(numzeros(1:ncolb))
          k_minnz_a = MINLOC(numzeros(1:ncolb))

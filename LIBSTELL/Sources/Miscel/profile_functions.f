@@ -63,15 +63,15 @@
       
       INTEGER, PARAMETER          :: gln = 10
       INTEGER                     :: gli
-      REAL(rprec), DIMENSION(gln), PARAMETER :: glx = (/                       &
-     &   0.01304673574141414, 0.06746831665550774, 0.1602952158504878,         &
-     &   0.2833023029353764, 0.4255628305091844, 0.5744371694908156,           &
-     &   0.7166976970646236, 0.8397047841495122, 0.9325316833444923,           &
+      REAL(rprec), DIMENSION(gln), PARAMETER :: glx = (/                       
+     &   0.01304673574141414, 0.06746831665550774, 0.1602952158504878,         
+     &   0.2833023029353764, 0.4255628305091844, 0.5744371694908156,           
+     &   0.7166976970646236, 0.8397047841495122, 0.9325316833444923,           
      &   0.9869532642585859 /)
-      REAL(rprec), DIMENSION(gln), PARAMETER :: glw = (/                       &
-     &   0.03333567215434407, 0.0747256745752903, 0.1095431812579910,          &
-     &   0.1346333596549982, 0.1477621123573764, 0.1477621123573764,           &
-     &   0.1346333596549982, 0.1095431812579910, 0.0747256745752903,           &
+      REAL(rprec), DIMENSION(gln), PARAMETER :: glw = (/                       
+     &   0.03333567215434407, 0.0747256745752903, 0.1095431812579910,          
+     &   0.1346333596549982, 0.1477621123573764, 0.1477621123573764,           
+     &   0.1346333596549982, 0.1095431812579910, 0.0747256745752903,           
      &   0.03333567215434407 /)
       REAL(rprec) :: g1,g2,g3,g4,a8,a12
 
@@ -98,7 +98,7 @@
 !  Gauss-Legendre Quadrature to get I(s)
          DO gli = 1,gln
             xp = x * glx(gli)
-            pcurr = pcurr + glw(gli) * ac(0) * (exp(-(xp / ac(1)) ** 2)        &
+            pcurr = pcurr + glw(gli) * ac(0) * (exp(-(xp / ac(1)) ** 2)        
      &         - exp(-(1 / ac(1)) ** 2))
          END DO
          pcurr = pcurr * x     ! correct for x interval
@@ -140,11 +140,11 @@
       IF (x .ge. one) THEN
          pcurr = ac(0) + ac(1) + ac(5) + ac(9) + ac(13) + ac(17)
       ELSE
-          pcurr = ac(0) +                                                      &
-     &       (2/pi) * (ac(1) * atan(ac(2)*x**ac(3)/(1-x)**ac(4)) +             &
-     &                 ac(5) * atan(ac(6)*x**ac(7)/(1-x)**ac(8)) +             &
-     &                 ac(9) * atan(ac(10)*x**ac(11)/(1-x)**ac(12)) +          &
-     &                 ac(13) * atan(ac(14)*x**ac(15)/(1-x)**ac(16)) +         &
+          pcurr = ac(0) +                                                      
+     &       (2/pi) * (ac(1) * atan(ac(2)*x**ac(3)/(1-x)**ac(4)) +             
+     &                 ac(5) * atan(ac(6)*x**ac(7)/(1-x)**ac(8)) +             
+     &                 ac(9) * atan(ac(10)*x**ac(11)/(1-x)**ac(12)) +          
+     &                 ac(13) * atan(ac(14)*x**ac(15)/(1-x)**ac(16)) +         
      &                 ac(17) * atan(ac(18)*x**ac(19)/(1-x)**ac(20)))
       ENDIF
 
@@ -166,7 +166,7 @@
         IF (i < 4) STOP 'pcurr: check s-grid for curr-grid values!'
 !        call spline_akima(x,pcurr,scugrid,cugrid,i,iflag)
         CALL spline_akima(x,pcurr,ac_aux_s,ac_aux_f,i,iflag)
-        IF(iflag < 0)                                                          &
+        IF(iflag < 0)                                                          
      &       STOP 'pcurr: outside value from spline_akima requested'
 
       CASE('Akima_spline_Ip','akima_spline_ip') ! former ipcurr=12
@@ -306,7 +306,7 @@
          IF (TRIM(pcurr_type_lc) .ne. 'power_series') THEN
             WRITE(*,*) 'Unrecognized pcurr_type:', pcurr_type 
             WRITE(*,*) ' *** CHECK YOUR INPUT ***'
-            WRITE(*,*) 'Changing pcurr_type from ''',                          &
+            WRITE(*,*) 'Changing pcurr_type from ''',                          
      &         TRIM(pcurr_type), '''to ''power_series''.' 
             pcurr_type = 'power_series'
          END IF
@@ -373,11 +373,11 @@
       IF (x .ge. one) THEN
          piota = ai(0) + ai(1) + ai(5) + ai(9) + ai(13) + ai(17)
       ELSE
-          piota = ai(0) +                                                      &
-     &       (2/pi) * (ai(1) * atan(ai(2)*x**ai(3)/(1-x)**ai(4)) +             &
-     &                 ai(5) * atan(ai(6)*x**ai(7)/(1-x)**ai(8)) +             &
-     &                 ai(9) * atan(ai(10)*x**ai(11)/(1-x)**ai(12)) +          &
-     &                 ai(13) * atan(ai(14)*x**ai(15)/(1-x)**ai(16)) +         &
+          piota = ai(0) +                                                      
+     &       (2/pi) * (ai(1) * atan(ai(2)*x**ai(3)/(1-x)**ai(4)) +             
+     &                 ai(5) * atan(ai(6)*x**ai(7)/(1-x)**ai(8)) +             
+     &                 ai(9) * atan(ai(10)*x**ai(11)/(1-x)**ai(12)) +          
+     &                 ai(13) * atan(ai(14)*x**ai(15)/(1-x)**ai(16)) +         
      &                 ai(17) * atan(ai(18)*x**ai(19)/(1-x)**ai(20)))
       ENDIF
      
@@ -388,7 +388,7 @@
         if(i < 4) stop 'piota: check s-grid for iota-grid values!'
 !        call spline_akima(x,piota,siogrid,iogrid,i,iflag)
         call spline_akima(x,piota,ai_aux_s,ai_aux_f,i,iflag)
-        if(iflag < 0)                                                          &
+        if(iflag < 0)                                                          
      &       stop'piota: outside value from spline_akima requested'
      
       CASE('cubic_spline') ! former ipiota=13
@@ -433,7 +433,7 @@
 !       a1 is the iota value at s = 1
 !       a2 is the shift of iota(1/2) from the straight line value
 !          (Thus, a2 = 0 gives a linear iota profile.
-         piota = ai(0) * (one - x) + ai(1) * x + 4 * ai(2) *                   &
+         piota = ai(0) * (one - x) + ai(1) * x + 4 * ai(2) *                   
      &      x * (one - x)
 
       CASE('line_segment')
@@ -449,7 +449,7 @@
          IF (TRIM(piota_type_lc) .ne. 'power_series') THEN
             WRITE(*,*) 'Unrecognized piota_type:', piota_type 
             WRITE(*,*) ' *** CHECK YOUR INPUT ***'
-            WRITE(*,*) 'Changing piota_type from ''',                          &
+            WRITE(*,*) 'Changing piota_type from ''',                          
      &         TRIM(piota_type), '''to ''power_series''.' 
             piota_type = 'power_series'
          END IF
@@ -498,7 +498,7 @@
 
       USE stel_kinds
       USE stel_constants, ONLY: zero, one
-      USE vmec_input, ONLY: am, bloat, pres_scale, pmass_type,                 &
+      USE vmec_input, ONLY: am, bloat, pres_scale, pmass_type,                 
      &   am_aux_s, am_aux_f
 !  am is assumed to be dimensioned starting at zero.
       USE vparams, ONLY: mu0
@@ -528,7 +528,7 @@
 !  Below current as of 2010-05-26
 !  p(s) = (am(0) / c) * (exp(-(s/am(1))**2) - exp(-(1/am(1))**2)
 !  c =  (1 - exp(-(1/am(1))**2)     ! so that p(0) = am(0).
-         pmass = (am(0)/(one - exp(-(one / am(1)) ** 2))) *                    &
+         pmass = (am(0)/(one - exp(-(one / am(1)) ** 2))) *                    
      &      (exp(-(x / am(1)) ** 2) - exp(-(one / am(1)) ** 2))
      
       CASE ('two_power')
@@ -543,12 +543,12 @@
 !         pmass = two_power_gs(x, am)
 
       CASE ('two_Lorentz','two_lorentz') ! former ipmass=1
-       pmass = am(0)*(am(1)*(one/(one+(  x/am(2)**2)**am(3))**am(4)            &
-     &                      -one/(one+(one/am(2)**2)**am(3))**am(4))/          &
-     &                  (one-one/(one+(one/am(2)**2)**am(3))**am(4))+          &
-     &          (one-am(1))*(one/(one+(  x/am(5)**2)**am(6))**am(7)            &
-     &                      -one/(one+(one/am(5)**2)**am(6))**am(7))/          &
-     &                  (one-one/(one+(one/am(5)**2)**am(6))**am(7)))          &
+        pmass = am(0)*(am(1)*(one/(one+(  x/am(2)**2)**am(3))**am(4)            
+     &                      -one/(one+(one/am(2)**2)**am(3))**am(4))/          
+     &                  (one-one/(one+(one/am(2)**2)**am(3))**am(4))+          
+     &          (one-am(1))*(one/(one+(  x/am(5)**2)**am(6))**am(7)            
+     &                      -one/(one+(one/am(5)**2)**am(6))**am(7))/          
+     &                  (one-one/(one+(one/am(5)**2)**am(6))**am(7)))          
          
       CASE ('Akima_spline','akima_spline') ! former ipmass=11
 !        i = minloc(smagrid(2:ndatafmax),dim=1)  ! this is where zeros are again
@@ -556,7 +556,7 @@
         IF(i < 4) STOP 'pmass: check s-grid for mass-grid values!'
 !        call spline_akima(x,pmass,smagrid,magrid,i,iflag)
         CALL spline_akima(x,pmass,am_aux_s,am_aux_f,i,iflag)
-        IF(iflag < 0)                                                          &
+        IF(iflag < 0)                                                          
      &       STOP 'pmass: outside value from spline_akima requested'
 
       CASE ('cubic_spline') ! former ipmass=13
@@ -626,7 +626,7 @@
          IF (TRIM(pmass_type_lc) .ne. 'power_series') THEN
             WRITE(*,*) 'Unrecognized pmass_type:', pmass_type 
             WRITE(*,*) ' *** CHECK YOUR INPUT ***'
-            WRITE(*,*) 'Changing pmass_type from ''',                          &
+            WRITE(*,*) 'Changing pmass_type from ''',                          
      &         TRIM(pmass_type), '''to ''power_series''.' 
             pmass_type = 'power_series'
          END IF
@@ -662,24 +662,24 @@ C-----------------------------------------------
       SELECT CASE(TRIM(ph_type_lc))
       
       CASE ('gauss_trunc')
-         photp = (ah(0)/(one - exp(-(one / ah(1)) ** 2))) *                    &
+         photp = (ah(0)/(one - exp(-(one / ah(1)) ** 2))) *                    
      &      (exp(-(x / ah(1)) ** 2) - exp(-(one / ah(1)) ** 2))
       CASE ('two_power')
          photp = ah(0) * ((one-x**ah(1))**ah(2))
 
       CASE ('two_Lorentz','two_lorentz')
-       photp = ah(0)*(ah(1)*(one/(one+(  x/ah(2)**2)**ah(3))**ah(4)            &
-     &                      -one/(one+(one/ah(2)**2)**ah(3))**ah(4))/          &
-     &                  (one-one/(one+(one/ah(2)**2)**ah(3))**ah(4))+          &
-     &          (one-ah(1))*(one/(one+(  x/ah(5)**2)**ah(6))**ah(7)            &
-     &                      -one/(one+(one/ah(5)**2)**ah(6))**ah(7))/          &
+       photp = ah(0)*(ah(1)*(one/(one+(  x/ah(2)**2)**ah(3))**ah(4)            
+     &                      -one/(one+(one/ah(2)**2)**ah(3))**ah(4))/          
+     &                  (one-one/(one+(one/ah(2)**2)**ah(3))**ah(4))+          
+     &          (one-ah(1))*(one/(one+(  x/ah(5)**2)**ah(6))**ah(7)            
+     &                      -one/(one+(one/ah(5)**2)**ah(6))**ah(7))/          
      &                  (one-one/(one+(one/ah(5)**2)**ah(6))**ah(7))) 
          
       CASE ('Akima_spline','akima_spline')
         i = minloc(ah_aux_s(2:),dim=1)  ! this is where zeros are again
         IF(i < 4) STOP 'photp: check s-grid for ah-grid values!'
         CALL spline_akima(x,photp,ah_aux_s,ah_aux_f,i,iflag)
-        IF(iflag < 0)                                                          &
+        IF(iflag < 0)                                                          
      &       STOP 'photp: outside value from spline_akima requested'
 
       CASE ('cubic_spline')
@@ -738,7 +738,7 @@ C-----------------------------------------------
          IF (TRIM(ph_type_lc) .ne. 'power_series') THEN
             WRITE(*,*) 'Unrecognized ph_type:', ph_type 
             WRITE(*,*) ' *** CHECK YOUR INPUT ***'
-            WRITE(*,*) 'Changing ph_type from ''',                          &
+            WRITE(*,*) 'Changing ph_type from ''',                          
      &         TRIM(ph_type), '''to ''power_series''.' 
             ph_type = 'power_series'
          END IF
@@ -776,24 +776,24 @@ C-----------------------------------------------
       SELECT CASE(TRIM(pt_type_lc))
       
       CASE ('gauss_trunc')
-         ptrat = (at(0)/(one - exp(-(one / at(1)) ** 2))) *                    &
+         ptrat = (at(0)/(one - exp(-(one / at(1)) ** 2))) *                    
      &      (exp(-(x / at(1)) ** 2) - exp(-(one / at(1)) ** 2))
       CASE ('two_power')
          ptrat = at(0) * ((one-x**at(1))**at(2))
 
       CASE ('two_Lorentz','two_lorentz')
-       ptrat = at(0)*(at(1)*(one/(one+(  x/at(2)**2)**at(3))**at(4)            &
-     &                      -one/(one+(one/at(2)**2)**at(3))**at(4))/          &
-     &                  (one-one/(one+(one/at(2)**2)**at(3))**at(4))+          &
-     &          (one-at(1))*(one/(one+(  x/at(5)**2)**at(6))**at(7)            &
-     &                      -one/(one+(one/at(5)**2)**at(6))**at(7))/          &
+       ptrat = at(0)*(at(1)*(one/(one+(  x/at(2)**2)**at(3))**at(4)            
+     &                      -one/(one+(one/at(2)**2)**at(3))**at(4))/          
+     &                  (one-one/(one+(one/at(2)**2)**at(3))**at(4))+          
+     &          (one-at(1))*(one/(one+(  x/at(5)**2)**at(6))**at(7)            
+     &                      -one/(one+(one/at(5)**2)**at(6))**at(7))/          
      &                  (one-one/(one+(one/at(5)**2)**at(6))**at(7))) 
          
       CASE ('Akima_spline','akima_spline')
         i = minloc(at_aux_s(2:),dim=1)  ! this is where zeros are again
         IF(i < 4) STOP 'ptrat: check s-grid for ah-grid values!'
         CALL spline_akima(x,ptrat,at_aux_s,at_aux_f,i,iflag)
-        IF(iflag < 0)                                                          &
+        IF(iflag < 0)                                                          
      &       STOP 'ptrat: outside value from spline_akima requested'
 
       CASE ('cubic_spline')
@@ -852,7 +852,7 @@ C-----------------------------------------------
          IF (TRIM(pt_type_lc) .ne. 'power_series') THEN
             WRITE(*,*) 'Unrecognized pt_type:', pt_type 
             WRITE(*,*) ' *** CHECK YOUR INPUT ***'
-            WRITE(*,*) 'Changing pt_type from ''',                          &
+            WRITE(*,*) 'Changing pt_type from ''',                          
      &         TRIM(pt_type), '''to ''power_series''.' 
             pt_type = 'power_series'
          END IF
@@ -888,24 +888,24 @@ C-----------------------------------------------
       SELECT CASE(TRIM(ph_type_lc))
       
       CASE ('gauss_trunc')
-         protf = (ah(0)/(one - exp(-(one / ah(1)) ** 2))) *                    &
+         protf = (ah(0)/(one - exp(-(one / ah(1)) ** 2))) *                    
      &      (exp(-(x / ah(1)) ** 2) - exp(-(one / ah(1)) ** 2))
       CASE ('two_power')
          protf = ah(0) * ((one-x**ah(1))**ah(2))
 
       CASE ('two_Lorentz','two_lorentz')
-       protf = ah(0)*(ah(1)*(one/(one+(  x/ah(2)**2)**ah(3))**ah(4)            &
-     &                      -one/(one+(one/ah(2)**2)**ah(3))**ah(4))/          &
-     &                  (one-one/(one+(one/ah(2)**2)**ah(3))**ah(4))+          &
-     &          (one-ah(1))*(one/(one+(  x/ah(5)**2)**ah(6))**ah(7)            &
-     &                      -one/(one+(one/ah(5)**2)**ah(6))**ah(7))/          &
+       protf = ah(0)*(ah(1)*(one/(one+(  x/ah(2)**2)**ah(3))**ah(4)            
+     &                      -one/(one+(one/ah(2)**2)**ah(3))**ah(4))/          
+     &                  (one-one/(one+(one/ah(2)**2)**ah(3))**ah(4))+          
+     &          (one-ah(1))*(one/(one+(  x/ah(5)**2)**ah(6))**ah(7)            
+     &                      -one/(one+(one/ah(5)**2)**ah(6))**ah(7))/          
      &                  (one-one/(one+(one/ah(5)**2)**ah(6))**ah(7))) 
          
       CASE ('Akima_spline','akima_spline')
         i = minloc(ah_aux_s(2:),dim=1)  ! this is where zeros are again
         IF(i < 4) STOP 'protf: check s-grid for ah-grid values!'
         CALL spline_akima(x,protf,ah_aux_s,ah_aux_f,i,iflag)
-        IF(iflag < 0)                                                          &
+        IF(iflag < 0)                                                          
      &       STOP 'protf: outside value from spline_akima requested'
 
       CASE ('cubic_spline')
@@ -964,7 +964,7 @@ C-----------------------------------------------
          IF (TRIM(ph_type_lc) .ne. 'power_series') THEN
             WRITE(*,*) 'Unrecognized ph_type:', ph_type 
             WRITE(*,*) ' *** CHECK YOUR INPUT ***'
-            WRITE(*,*) 'Changing ph_type from ''',                          &
+            WRITE(*,*) 'Changing ph_type from ''',                          
      &         TRIM(ph_type), '''to ''power_series''.' 
             ph_type = 'power_series'
          END IF

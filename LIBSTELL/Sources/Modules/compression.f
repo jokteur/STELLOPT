@@ -24,16 +24,16 @@
       REAL (rprec), PARAMETER :: compression_max_percentage = 100.0
 
 !>  Postfix for the data buffer.
-      CHARACTER (len=*), PARAMETER ::                                          &
+      CHARACTER (len=*), PARAMETER ::                                          
      &   compression_data_buffer_post = "data_buffer"
 !>  Postfix for the data buffer.
-      CHARACTER (len=*), PARAMETER ::                                          &
+      CHARACTER (len=*), PARAMETER ::                                          
      &   compression_u_buffer_post = "u_buffer"
 !>  Postfix for the data buffer.
-      CHARACTER (len=*), PARAMETER ::                                          &
+      CHARACTER (len=*), PARAMETER ::                                          
      &   compression_wvt_buffer_post = "wvt_buffer"
 !>  Postfix for the data buffer.
-      CHARACTER (len=*), PARAMETER ::                                          &
+      CHARACTER (len=*), PARAMETER ::                                          
      &   compression_data_dim_post = "data_dim"
 
 !*******************************************************************************
@@ -71,7 +71,7 @@
 !  INTERFACE BLOCKS
 !*******************************************************************************
       INTERFACE compression_construct
-         MODULE PROCEDURE compression_construct_new,                           &
+         MODULE PROCEDURE compression_construct_new,                           
      &                    compression_construct_netcdf
       END INTERFACE
 
@@ -142,10 +142,10 @@
       svd_work = 0.0
 
 !  Find the optimal work size.
-      CALL dgesvd('All', 'All', m, n,                                          &
-     &            compression_construct_new%data_buffer, m,                    &
-     &            w_svd, compression_construct_new%u_buffer, m,                &
-     &            compression_construct_new%wvt_buffer, n, svd_work, -1,       &
+      CALL dgesvd('All', 'All', m, n,                                          
+     &            compression_construct_new%data_buffer, m,                    
+     &            w_svd, compression_construct_new%u_buffer, m,                
+     &            compression_construct_new%wvt_buffer, n, svd_work, -1,       
      &            status)
       work_size = INT(svd_work(1))
       DEALLOCATE(svd_work)
@@ -153,12 +153,12 @@
       svd_work = 0.0
 
 !  Factor the matrix to M = U * W * V^T
-      CALL dgesvd('All', 'All', m, n,                                          &
-     &            compression_construct_new%data_buffer, m,                    &
-     &            w_svd, compression_construct_new%u_buffer, m,                &
-     &            compression_construct_new%wvt_buffer, n, svd_work,           &
+      CALL dgesvd('All', 'All', m, n,                                          
+     &            compression_construct_new%data_buffer, m,                    
+     &            w_svd, compression_construct_new%u_buffer, m,                
+     &            compression_construct_new%wvt_buffer, n, svd_work,           
      &            work_size, status)
-      CALL assert_eq(0, status, 'dgesvd problem when compressing ' //          &
+      CALL assert_eq(0, status, 'dgesvd problem when compressing ' //          
      &                          'buffer')
 
       DEALLOCATE(svd_work)
@@ -235,26 +235,26 @@
 
 !  Store the U buffer. The reduced U buffer now only needs m x r storage space.
          ALLOCATE(compression_construct_new%data_buffer(m,work_size))
-         compression_construct_new%data_buffer =                               &
+         compression_construct_new%data_buffer =                               
      &      compression_construct_new%u_buffer(:,1:work_size)
          DEALLOCATE(compression_construct_new%u_buffer)
          ALLOCATE(compression_construct_new%u_buffer(m,work_size))
-         compression_construct_new%u_buffer =                                  &
+         compression_construct_new%u_buffer =                                  
      &      compression_construct_new%data_buffer
          DEALLOCATE(compression_construct_new%data_buffer)
 
 !  Store the VT buffer. The reduced VT buffer now only needs r x n storage
 !  space.
          ALLOCATE(compression_construct_new%data_buffer(work_size,n))
-         compression_construct_new%data_buffer =                               &
+         compression_construct_new%data_buffer =                               
      &      compression_construct_new%wvt_buffer(1:work_size,:)
          DEALLOCATE(compression_construct_new%wvt_buffer)
          ALLOCATE(compression_construct_new%wvt_buffer(work_size,n))
 
 !  Multiply W.VT and store in the WVT buffer.
          DO i = 1, n
-            compression_construct_new%wvt_buffer(:,i) =                        &
-     &         w_svd(1:work_size) *                                            &
+            compression_construct_new%wvt_buffer(:,i) =                        
+     &         w_svd(1:work_size) *                                            
      &         compression_construct_new%data_buffer(:,i)
          END DO
 
@@ -296,42 +296,42 @@
 
       dim_lengths = -1
 
-      CALL cdf_inquire(ncid, TRIM(name) // compression_data_buffer_post,       &
+      CALL cdf_inquire(ncid, TRIM(name) // compression_data_buffer_post,       
      &                 dim_lengths)
       IF (ALL(dim_lengths .gt. 0)) THEN
-         ALLOCATE(                                                             &
-     &      compression_construct_netcdf%data_buffer(dim_lengths(1),           &
+         ALLOCATE(                                                             
+     &      compression_construct_netcdf%data_buffer(dim_lengths(1),           
      &                                               dim_lengths(2)))
-         CALL cdf_read(ncid,                                                   &
-     &                 TRIM(name) // compression_data_buffer_post,             &
+         CALL cdf_read(ncid,                                                   
+     &                 TRIM(name) // compression_data_buffer_post,             
      &                 compression_construct_netcdf%data_buffer)
          RETURN
       END IF
 
-      CALL cdf_inquire(ncid, TRIM(name) // compression_u_buffer_post,          &
+      CALL cdf_inquire(ncid, TRIM(name) // compression_u_buffer_post,          
      &                 dim_lengths)
       IF (ALL(dim_lengths .gt. 0)) THEN
-         ALLOCATE(                                                             &
-     &      compression_construct_netcdf%u_buffer(dim_lengths(1),              &
+         ALLOCATE(                                                             
+     &      compression_construct_netcdf%u_buffer(dim_lengths(1),              
      &                                            dim_lengths(2)))
-         CALL cdf_read(ncid, TRIM(name) // compression_u_buffer_post,          &
+         CALL cdf_read(ncid, TRIM(name) // compression_u_buffer_post,          
      &                 compression_construct_netcdf%u_buffer)
 
-         CALL cdf_inquire(ncid,                                                &
-     &                    TRIM(name) // compression_wvt_buffer_post,           &
+         CALL cdf_inquire(ncid,                                                
+     &                    TRIM(name) // compression_wvt_buffer_post,           
      &                    dim_lengths)
-         ALLOCATE(                                                             &
-     &      compression_construct_netcdf%wvt_buffer(dim_lengths(1),            &
+         ALLOCATE(                                                             
+     &      compression_construct_netcdf%wvt_buffer(dim_lengths(1),            
      &                                              dim_lengths(2)))
-         CALL cdf_read(ncid, TRIM(name) // compression_wvt_buffer_post,        &
+         CALL cdf_read(ncid, TRIM(name) // compression_wvt_buffer_post,        
      &                 compression_construct_netcdf%wvt_buffer)
          RETURN
       END IF
 
-      CALL cdf_inquire(ncid, TRIM(name) // compression_data_dim_post,          &
+      CALL cdf_inquire(ncid, TRIM(name) // compression_data_dim_post,          
      &                 dim_lengths(1:1))
       ALLOCATE( compression_construct_netcdf%data_dim(dim_lengths(1)))
-      CALL cdf_read(ncid, TRIM(name) // compression_data_dim_post,             &
+      CALL cdf_read(ncid, TRIM(name) // compression_data_dim_post,             
      &              compression_construct_netcdf%data_dim)
 
       END FUNCTION
@@ -471,7 +471,7 @@
 
 !  If control has reached this point, the data is compressed. Uncompress it by
 !  U.WVT.
-      ALLOCATE(this%data_buffer(SIZE(this%u_buffer, 1),                        &
+      ALLOCATE(this%data_buffer(SIZE(this%u_buffer, 1),                        
      &                          SIZE(this%wvt_buffer, 2)))
 
       this%data_buffer = MATMUL(this%u_buffer, this%wvt_buffer)
@@ -526,17 +526,17 @@
 
 !  Start of executable code
       IF (ASSOCIATED(this%data_buffer)) THEN
-         CALL cdf_define(ncid,                                                 &
-     &                   TRIM(name) // compression_data_buffer_post,           &
+         CALL cdf_define(ncid,                                                 
+     &                   TRIM(name) // compression_data_buffer_post,           
      &                   this%data_buffer)
       ELSE IF (ASSOCIATED(this%u_buffer)) THEN
-         CALL cdf_define(ncid, TRIM(name) // compression_u_buffer_post,        &
+         CALL cdf_define(ncid, TRIM(name) // compression_u_buffer_post,        
      &                   this%u_buffer)
-         CALL cdf_define(ncid,                                                 &
-     &                   TRIM(name) // compression_wvt_buffer_post,            &
+         CALL cdf_define(ncid,                                                 
+     &                   TRIM(name) // compression_wvt_buffer_post,            
      &                   this%wvt_buffer)
       ELSE
-         CALL cdf_define(ncid, TRIM(name) // compression_data_dim_post,        &
+         CALL cdf_define(ncid, TRIM(name) // compression_data_dim_post,        
      &                   this%data_dim)
       END IF
 
@@ -563,20 +563,20 @@
 !  Start of executable code
       IF (ASSOCIATED(this%data_buffer)) THEN
 
-         CALL cdf_write(ncid,                                                  &
-     &                  TRIM(name) // compression_data_buffer_post,            &
+         CALL cdf_write(ncid,                                                  
+     &                  TRIM(name) // compression_data_buffer_post,            
      &                  this%data_buffer)
 
       ELSE IF (ASSOCIATED(this%u_buffer)) THEN
 
-         CALL cdf_write(ncid, TRIM(name) // compression_u_buffer_post,         &
+         CALL cdf_write(ncid, TRIM(name) // compression_u_buffer_post,         
      &                  this%u_buffer)
-         CALL cdf_write(ncid, TRIM(name) // compression_wvt_buffer_post,       &
+         CALL cdf_write(ncid, TRIM(name) // compression_wvt_buffer_post,       
      &                  this%wvt_buffer)
 
       ELSE
 
-         CALL cdf_write(ncid, TRIM(name) // compression_data_dim_post,         &
+         CALL cdf_write(ncid, TRIM(name) // compression_data_dim_post,         
      &                  this%data_dim)
 
       END IF

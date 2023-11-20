@@ -425,11 +425,11 @@ c     Get mpi parameters
       lfirst_lm = .true.
 !DEC$ IF DEFINED (MPI_OPT)
       IF (myid .eq. master) WRITE (6, 1000) numprocs
- 1000 FORMAT (/,' Beginning Levenberg-Marquardt Iterations',/,
-     1        ' Number of Processors: ',i4,//,
-!     1        ' Number of Processors: ',i4,' (1 controller proc)',//,
-     2        70('='),/,2x,'Iteration',3x,'Processor',7x,'Chi-Sq',7x,
-     3       'LM Parameter',6x,'Delta Tol'/,70('='))
+!  1000 FORMAT (/,' Beginning Levenberg-Marquardt Iterations',/,
+!      1        ' Number of Processors: ',i4,//,
+! !     1        ' Number of Processors: ',i4,' (1 controller proc)',//,
+!      2        70('='),/,2x,'Iteration',3x,'Processor',7x,'Chi-Sq',7x,
+!      3       'LM Parameter',6x,'Delta Tol'/,70('='))
 !DEC$ ELSE
       WRITE (6, 1000) max_processors
  1000 FORMAT (/,' Beginning Levenberg-Marquardt Iterations',/,

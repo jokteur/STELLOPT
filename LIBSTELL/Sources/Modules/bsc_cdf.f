@@ -72,29 +72,29 @@
 !-------------------------------------------------------------------------------
 
       CHARACTER (LEN=*),  PARAMETER :: 
-     &  vn_c_type = 'c_type',                                                  &
-     &  vn_s_name = 's_name',                                                  &
-     &  vn_l_name = 'l_name',                                                  &
-     &  vn_current = 'current',                                                &         
-     &  vn_raux = 'raux',                                                      &            
-     &  vn_xnod = 'xnod',                                                      &            
-     &  vn_ehnod = 'ehnod',                                                    &    
-     &  vn_rcirc = 'rcirc',                                                    &        
-     &  vn_xcent = 'xcent',                                                    &        
-     &  vn_enhat = 'enhat',                                                    &
+     &  vn_c_type = 'c_type',                                                  
+     &  vn_s_name = 's_name',                                                  
+     &  vn_l_name = 'l_name',                                                  
+     &  vn_current = 'current',                                                
+     &  vn_raux = 'raux',                                                      
+     &  vn_xnod = 'xnod',                                                      
+     &  vn_ehnod = 'ehnod',                                                    
+     &  vn_rcirc = 'rcirc',                                                    
+     &  vn_xcent = 'xcent',                                                    
+     &  vn_enhat = 'enhat',                                                    
      &  vn_ave_n_area = 'ave_n_area'
 
       CHARACTER (LEN=64), PRIVATE :: 
-     &  vn_c_type_use,                                                         &
-     &  vn_s_name_use,                                                         &
-     &  vn_l_name_use,                                                         &
-     &  vn_current_use,                                                        &         
-     &  vn_raux_use,                                                           &            
-     &  vn_xnod_use,                                                           &            
-     &  vn_ehnod_use,                                                          &    
-     &  vn_rcirc_use,                                                          &        
-     &  vn_xcent_use,                                                          &        
-     &  vn_enhat_use,                                                          &
+     &  vn_c_type_use,                                                         
+     &  vn_s_name_use,                                                         
+     &  vn_l_name_use,                                                         
+     &  vn_current_use,                                                        
+     &  vn_raux_use,                                                           
+     &  vn_xnod_use,                                                           
+     &  vn_ehnod_use,                                                          
+     &  vn_rcirc_use,                                                          
+     &  vn_xcent_use,                                                          
+     &  vn_enhat_use,                                                          
      &  vn_ave_n_area_use
 
 !*******************************************************************************
@@ -164,7 +164,7 @@
          IF (ASSOCIATED(this%xnod)) THEN
             CALL cdf_define(lunit, TRIM(vn_xnod_use), this%xnod)
          END IF ! this%xnod ASSOCIATED
-         CALL cdf_define(lunit, TRIM(vn_ave_n_area_use),                       &
+         CALL cdf_define(lunit, TRIM(vn_ave_n_area_use),                       
      &         this%ave_n_area)
       
       END SELECT
@@ -277,7 +277,7 @@
          IF (ASSOCIATED(this%xnod)) THEN
             CALL cdf_write(lunit, TRIM(vn_xnod_use), this%xnod)
          END IF ! this%xnod ASSOCIATED
-         CALL cdf_write(lunit, TRIM(vn_ave_n_area_use),                        &
+         CALL cdf_write(lunit, TRIM(vn_ave_n_area_use),                        
      &       this%ave_n_area)      
       
       END SELECT
@@ -355,7 +355,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      CHARACTER(len=*), PARAMETER  :: sub_name =                               &
+      CHARACTER(len=*), PARAMETER  :: sub_name =                               
      &  'bsc_cdf_read_coil: '
       CHARACTER(len=32)            :: prefix_use
       INTEGER, DIMENSION(3) :: dimlens
@@ -410,14 +410,14 @@
          ELSE
             n2 = dimlens(2)
          ENDIF
-         CALL bsc_construct(this,c_type,s_name,l_name,current,                 &
+         CALL bsc_construct(this,c_type,s_name,l_name,current,                 
      &   xnod(1:3,1:n2),raux=raux)
 
       CASE ('fil_circ', 'fcirc') ! Filamentary Circle Variables
          CALL cdf_read(iou, TRIM(vn_rcirc_use),rcirc)
          CALL cdf_read(iou, TRIM(vn_xcent_use),xcent)
          CALL cdf_read(iou, TRIM(vn_enhat_use),enhat)
-         CALL bsc_construct(this,c_type,s_name,l_name,current,                 &
+         CALL bsc_construct(this,c_type,s_name,l_name,current,                 
      &   rcirc = rcirc,xcent = xcent,enhat = enhat,raux = raux)
 
       CASE ('fil_rogo') ! Rogowskis
@@ -426,7 +426,7 @@
          CALL assert_eq(0,ier1,sub_name // 'alloc xnod')
          CALL cdf_read(iou, TRIM(vn_xnod_use), xnod)
          CALL cdf_read(iou, TRIM(vn_ave_n_area_use),ave_n_area)
-         CALL bsc_construct(this,c_type,s_name,l_name,current,                 &
+         CALL bsc_construct(this,c_type,s_name,l_name,current,                 
      &      xnod,raux = raux,anturns = one,xsarea = ave_n_area)
       
       END SELECT
@@ -463,7 +463,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'bsc_cdf_defvn_coil: '
 
 !-----------------------------------------------

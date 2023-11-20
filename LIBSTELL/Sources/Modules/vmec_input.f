@@ -30,7 +30,7 @@
       CHARACTER(len=20) :: pcurr_type  !  len=12 -> len=20 J Hanson 2010-03-16
       CHARACTER(len=20) :: piota_type
       CHARACTER(len=20) :: pmass_type
-      REAL(rprec), DIMENSION(ndatafmax) :: am_aux_s, am_aux_f,                 &
+      REAL(rprec), DIMENSION(ndatafmax) :: am_aux_s, am_aux_f,                 
      &   ai_aux_s, ai_aux_f, ac_aux_s, ac_aux_f
 
 !     ANISOTROPIC AMPLITUDES: AH=PHOT/PTHERMAL, AT=TPERP/TPAR

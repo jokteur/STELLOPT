@@ -160,7 +160,7 @@
 !>  @param[out] ilow   Index of the lower bound.
 !>  @param[out] ihigh  Index of the upper bound.
 !-------------------------------------------------------------------------------
-      PURE RECURSIVE                                                           &
+      PURE RECURSIVE                                                           
      &SUBROUTINE get_indices(x, xx, lBound, uBound, ilow, ihigh)
 
       IMPLICIT NONE
@@ -247,7 +247,7 @@
       INTEGER, INTENT(in)                   :: ihigh
 
 !  Start of executable code
-      offset = (xx(ihigh)*yy(ilow) - xx(ilow)*yy(ihigh))                       &
+      offset = (xx(ihigh)*yy(ilow) - xx(ilow)*yy(ihigh))                       
      &       / (xx(ihigh) - xx(ilow))
 
       END FUNCTION
@@ -282,7 +282,7 @@
       IF (xx(ilow) .eq. xx(ihigh)) THEN
          y_value = yy(ihigh)
       ELSE
-         y_value = slope(yy, xx, ilow, ihigh)*x                                &
+         y_value = slope(yy, xx, ilow, ihigh)*x                                
      &           + offset(yy, xx, ilow, ihigh)
       END IF
 
@@ -320,8 +320,8 @@
       IF (xx(ilow) .eq. xx(ihigh)) THEN
          y_value_int = 0.0
       ELSE
-         y_value_int = slope(yy, xx, ilow, ihigh)                              &
-     &               / 2.0*(x1**2.0 - x0**2.0)                                 &
+         y_value_int = slope(yy, xx, ilow, ihigh)                              
+     &               / 2.0*(x1**2.0 - x0**2.0)                                 
      &               + offset(yy, xx, ilow, ihigh)*(x1 - x0)
       END IF
 
@@ -352,218 +352,218 @@
 
 !  Start of executable code
 !  Test slope function. yy(0.0,1.0) and xx(0.0,1.0) should have a slope of 1.0
-      result = slope((/ 0.0d+0, 1.0d+0 /),                                     &
-     &               (/ 0.0d+0, 1.0d+0 /),                                     &
+      result = slope((/ 0.0d+0, 1.0d+0 /),                                     
+     &               (/ 0.0d+0, 1.0d+0 /),                                     
      &               1, 2)
       line_seg_test = check(1.0d+0, result, 1, "slope()")
       IF (.not.line_seg_test) RETURN
 !  Test slope function. yy(1.0,0.0) and xx(0.0,1.0) should have a slope of -1.0
-      result = slope((/ 1.0d+0, 0.0d+0 /),                                     &
-     &               (/ 0.0d+0, 1.0d+0 /),                                     &
+      result = slope((/ 1.0d+0, 0.0d+0 /),                                     
+     &               (/ 0.0d+0, 1.0d+0 /),                                     
      &               1, 2)
       line_seg_test = check(-1.0d+0, result, 2, "slope()")
       IF (.not.line_seg_test) RETURN
 !  Test slope function. yy(1.0,1.0) and xx(0.0,1.0) should have a slope of 0.0
-      result = slope((/ 1.0d+0, 1.0d+0 /),                                     &
-     &               (/ 0.0d+0, 1.0d+0 /),                                     &
+      result = slope((/ 1.0d+0, 1.0d+0 /),                                     
+     &               (/ 0.0d+0, 1.0d+0 /),                                     
      &               1, 2)
       line_seg_test = check(0.0d+0, result, 3, "slope()")
       IF (.not.line_seg_test) RETURN
 
 !  Test slope function. yy(0.0,1.0) and xx(1.0,2.0) should have a slope of 1.0
-      result = slope((/ 0.0d+0, 1.0d+0 /),                                     &
-     &               (/ 1.0d+0, 2.0d+0 /),                                     &
+      result = slope((/ 0.0d+0, 1.0d+0 /),                                     
+     &               (/ 1.0d+0, 2.0d+0 /),                                     
      &               1, 2)
       line_seg_test = check(1.0d+0, result, 4, "slope()")
 
 !  Test offset function. yy(0.0,1.0) and xx(0.0,1.0) should have an offset of 0.0
-      result = offset((/ 0.0d+0, 1.0d+0 /),                                    &
-     &                (/ 0.0d+0, 1.0d+0 /),                                    &
+      result = offset((/ 0.0d+0, 1.0d+0 /),                                    
+     &                (/ 0.0d+0, 1.0d+0 /),                                    
      &                1, 2)
       line_seg_test = check(0.0d+0, result, 1, "offset()")
       IF (.not.line_seg_test) RETURN
 !  Test offset function. yy(1.0,0.0) and xx(0.0,1.0) should have an offset of 1.0
-      result = offset((/ 1.0d+0, 0.0d+0 /),                                    &
-     &                (/ 0.0d+0, 1.0d+0 /),                                    &
+      result = offset((/ 1.0d+0, 0.0d+0 /),                                    
+     &                (/ 0.0d+0, 1.0d+0 /),                                    
      &                1, 2)
       line_seg_test = check(1.0d+0, result, 2, "offset()")
       IF (.not.line_seg_test) RETURN
 !  Test offset function. yy(2.0,1.0) and xx(1.0,2.0) should have an offset of 3.0
-      result = offset((/ 2.0d+0, 1.0d+0 /),                                    &
-     &                (/ 1.0d+0, 2.0d+0 /),                                    &
+      result = offset((/ 2.0d+0, 1.0d+0 /),                                    
+     &                (/ 1.0d+0, 2.0d+0 /),                                    
      &                1, 2)
       line_seg_test = check(3.0d+0, result, 3, "offset()")
       IF (.not.line_seg_test) RETURN
 
 !  Test y_value function. yy(0.0,2.0) and xx(0.0,2.0) should have a value of 1.0
 !  at x = 1.0
-      result = y_value(1.0d+0,                                                 &
-     &                 (/ 0.0d+0, 2.0d+0 /),                                   &
-     &                 (/ 0.0d+0, 2.0d+0 /),                                   &
+      result = y_value(1.0d+0,                                                 
+     &                 (/ 0.0d+0, 2.0d+0 /),                                   
+     &                 (/ 0.0d+0, 2.0d+0 /),                                   
      &                 1, 2)
       line_seg_test = check(1.0d+0, result, 1, "y_value()")
       IF (.not.line_seg_test) RETURN
 !  Test y_value function. yy(1.0,2.0) and xx(1.0,2.0) should have a value of 0.0
 !  at x = 0.0
-      result = y_value(0.0d+0,                                                 &
-     &                 (/ 1.0d+0, 2.0d+0 /),                                   &
-     &                 (/ 1.0d+0, 2.0d+0 /),                                   &
+      result = y_value(0.0d+0,                                                 
+     &                 (/ 1.0d+0, 2.0d+0 /),                                   
+     &                 (/ 1.0d+0, 2.0d+0 /),                                   
      &                 1, 2)
       line_seg_test = check(0.0d+0, result, 2, "y_value()")
       IF (.not.line_seg_test) RETURN
 !  Test y_value function. yy(0.0,1.0) and xx(0.0,1.0) should have a value of 3.0
 !  at x = 3.0
-      result = y_value(3.0d+0,                                                 &
-     &                 (/ 0.0d+0, 1.0d+0 /),                                   &
-     &                 (/ 0.0d+0, 1.0d+0 /),                                   &
+      result = y_value(3.0d+0,                                                 
+     &                 (/ 0.0d+0, 1.0d+0 /),                                   
+     &                 (/ 0.0d+0, 1.0d+0 /),                                   
      &                 1, 2)
       line_seg_test = check(3.0d+0, result, 3, "y_value()")
       IF (.not.line_seg_test) RETURN
 
 !  Test y_value_int function. yy(1.0,1.0) and xx(0.0,1.0) should have a value of
 !  1.0 at x1 = 1.0 to x0 = 0.0
-      result = y_value_int(0.0d+0, 1.0d+0,                                     &
-     &                    (/ 1.0d+0, 1.0d+0 /),                                &
-     &                    (/ 0.0d+0, 1.0d+0 /),                                &
+      result = y_value_int(0.0d+0, 1.0d+0,                                     
+     &                    (/ 1.0d+0, 1.0d+0 /),                                
+     &                    (/ 0.0d+0, 1.0d+0 /),                                
      &                    1, 2)
       line_seg_test = check(1.0d+0, result, 1, "y_value_int()")
       IF (.not.line_seg_test) RETURN
 
 !  Test y_value_int function. yy(1.0,1.0) and xx(1.0,2.0) should have a value of
 !  1.0 at x1 = 1.0 to x0 = 0.0
-      result = y_value_int(0.0d+0, 1.0d+0,                                     &
-     &                    (/ 1.0d+0, 1.0d+0 /),                                &
-     &                    (/ 1.0d+0, 2.0d+0 /),                                &
+      result = y_value_int(0.0d+0, 1.0d+0,                                     
+     &                    (/ 1.0d+0, 1.0d+0 /),                                
+     &                    (/ 1.0d+0, 2.0d+0 /),                                
      &                    1, 2)
       line_seg_test = check(1.0d+0, result, 2, "y_value_int()")
       IF (.not.line_seg_test) RETURN
 !  Test y_value_int function. yy(1.0,1.0) and xx(0.0,1.0) should have a value of
 !  1.0 at x1 = 2.0 to x0 = 1.0
-      result = y_value_int(1.0d+0, 2.0d+0,                                     &
-     &                    (/ 1.0d+0, 1.0d+0 /),                                &
-     &                    (/ 0.0d+0, 1.0d+0 /),                                &
+      result = y_value_int(1.0d+0, 2.0d+0,                                     
+     &                    (/ 1.0d+0, 1.0d+0 /),                                
+     &                    (/ 0.0d+0, 1.0d+0 /),                                
      &                    1, 2)
       line_seg_test = check(1.0d+0, result, 3, "y_value_int()")
       IF (.not.line_seg_test) RETURN
 !  Test y_value_int function. yy(0.0,1.0) and xx(0.0,1.0) should have a value of
 !  0.5 at x1 = 1.0 to x0 = 0.0
-      result = y_value_int(0.0d+0, 1.0d+0,                                     &
-     &                    (/ 0.0d+0, 1.0d+0 /),                                &
-     &                    (/ 0.0d+0, 1.0d+0 /),                                &
+      result = y_value_int(0.0d+0, 1.0d+0,                                     
+     &                    (/ 0.0d+0, 1.0d+0 /),                                
+     &                    (/ 0.0d+0, 1.0d+0 /),                                
      &                    1, 2)
       line_seg_test = check(0.5d+0, result, 4, "y_value_int()")
       IF (.not.line_seg_test) RETURN
 !  Test y_value_int function. yy(1.0,2.0) and xx(0.0,1.0) should have a value of
 !  1.5 at x1 = 1.0 to x0 = 0.0
-      result = y_value_int(0.0d+0, 1.0d+0,                                     &
-     &                    (/ 1.0d+0, 2.0d+0 /),                                &
-     &                    (/ 0.0d+0, 1.0d+0 /),                                &
+      result = y_value_int(0.0d+0, 1.0d+0,                                     
+     &                    (/ 1.0d+0, 2.0d+0 /),                                
+     &                    (/ 0.0d+0, 1.0d+0 /),                                
      &                    1, 2)
       line_seg_test = check(1.5d+0, result, 5, "y_value_int()")
       IF (.not.line_seg_test) RETURN
 !  Test y_value_int function. yy(1.0,2.0) and xx(1.0,2.0) should have a value of
 !  0.5 at x1 = 1.0 to x0 = 0.0
-      result = y_value_int(0.0d+0, 1.0d+0,                                     &
-     &                    (/ 1.0d+0, 2.0d+0 /),                                &
-     &                    (/ 1.0d+0, 2.0d+0 /),                                &
+      result = y_value_int(0.0d+0, 1.0d+0,                                     
+     &                    (/ 1.0d+0, 2.0d+0 /),                                
+     &                    (/ 1.0d+0, 2.0d+0 /),                                
      &                    1, 2)
       line_seg_test = check(0.5d+0, result, 6, "y_value_int()")
       IF (.not.line_seg_test) RETURN
 !  Test y_value_int function. yy(0.0,1.0) and xx(0.0,1.0) should have a value of
 !  1.5 at x1 = 2.0 to x0 = 1.0
-      result = y_value_int(1.0d+0, 2.0d+0,                                     &
-     &                    (/ 1.0d+0, 2.0d+0 /),                                &
-     &                    (/ 1.0d+0, 2.0d+0 /),                                &
+      result = y_value_int(1.0d+0, 2.0d+0,                                     
+     &                    (/ 1.0d+0, 2.0d+0 /),                                
+     &                    (/ 1.0d+0, 2.0d+0 /),                                
      &                    1, 2)
       line_seg_test = check(1.5d+0, result, 7, "y_value_int()")
       IF (.not.line_seg_test) RETURN
 
 !  Test line_seg function. yy(1.0,1.0,0.0,0.0) and xx(0.0,1.0,2.0,3.0) should
 !  have a value of 1.0 at x = 0.5
-      CALL line_seg(0.5d+0, result,                                            &
-     &              (/ 0.0d+0, 1.0d+0, 2.0d+0, 3.0d+0 /),                      &
-     &              (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                      &
+      CALL line_seg(0.5d+0, result,                                            
+     &              (/ 0.0d+0, 1.0d+0, 2.0d+0, 3.0d+0 /),                      
+     &              (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                      
      &              4)
       line_seg_test = check(1.0d+0, result, 1, "line_seg()")
       IF (.not.line_seg_test) RETURN
 !  Test line_seg function. yy(1.0,1.0,0.0,0.0) and xx(0.0,1.0,2.0,3.0) should
 !  have a value of 0.0 at x = 2.5
-      CALL line_seg(2.5d+0, result,                                            &
-     &              (/ 0.0d+0, 1.0d+0, 2.0d+0, 3.0d+0 /),                      &
-     &              (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                      &
+      CALL line_seg(2.5d+0, result,                                            
+     &              (/ 0.0d+0, 1.0d+0, 2.0d+0, 3.0d+0 /),                      
+     &              (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                      
      &              4)
       line_seg_test = check(0.0d+0, result, 2, "line_seg()")
       IF (.not.line_seg_test) RETURN
 !  Test line_seg function. yy(1.0,1.0,0.0,0.0) and xx(0.0,1.0,2.0,3.0) should
 !  have a value of 0.5 at x = 1.5
-      CALL line_seg(1.5d+0, result,                                            &
-     &              (/ 0.0d+0, 1.0d+0, 2.0d+0, 3.0d+0 /),                      &
-     &              (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                      &
+      CALL line_seg(1.5d+0, result,                                            
+     &              (/ 0.0d+0, 1.0d+0, 2.0d+0, 3.0d+0 /),                      
+     &              (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                      
      &              4)
       line_seg_test = check(0.5d+0, result, 3, "line_seg()")
       IF (.not.line_seg_test) RETURN
 !  Test line_seg function. yy(1.0,1.0,0.0,0.0) and xx(1.0,2.0,3.0,4.0) should
 !  have a value of 1.0 at x = 0.0
-      CALL line_seg(0.0d+0, result,                                            &
-     &              (/ 1.0d+0, 2.0d+0, 3.0d+0, 4.0d+0 /),                      &
-     &              (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                      &
+      CALL line_seg(0.0d+0, result,                                            
+     &              (/ 1.0d+0, 2.0d+0, 3.0d+0, 4.0d+0 /),                      
+     &              (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                      
      &              4)
       line_seg_test = check(1.0d+0, result, 4, "line_seg()")
       IF (.not.line_seg_test) RETURN
 !  Test line_seg function. yy(1.0,1.0,0.0,0.0) and xx(0.0,1.0,2.0,3.0) should
 !  have a value of 0.0 at x = 4.0
-      CALL line_seg(4.0d+0, result,                                            &
-     &              (/ 0.0d+0, 1.0d+0, 2.0d+0, 3.0d+0 /),                      &
-     &              (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                      &
+      CALL line_seg(4.0d+0, result,                                            
+     &              (/ 0.0d+0, 1.0d+0, 2.0d+0, 3.0d+0 /),                      
+     &              (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                      
      &              4)
       line_seg_test = check(0.0d+0, result, 5, "line_seg()")
       IF (.not.line_seg_test) RETURN
 
 !  Test line_seg_int function. yy(1.0,1.0,0.0,0.0) and xx(0.0,1.0,2.0,3.0) should
 !  have a value of 0.5 at x = 0.5
-      CALL line_seg_int(0.5d+0, result,                                        &
-     &                  (/ 0.0d+0, 1.0d+0, 2.0d+0, 3.0d+0 /),                  &
-     &                  (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                  &
+      CALL line_seg_int(0.5d+0, result,                                        
+     &                  (/ 0.0d+0, 1.0d+0, 2.0d+0, 3.0d+0 /),                  
+     &                  (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                  
      &                  4)
       line_seg_test = check(0.5d+0, result, 1, "line_seg_int()")
       IF (.not.line_seg_test) RETURN
 !  Test line_seg_int function. yy(1.0,1.0,0.0,0.0) and xx(0.0,1.0,2.0,3.0) should
 !  have a value of 1.375 at x = 1.5
-      CALL line_seg_int(1.5d+0, result,                                        &
-     &                  (/ 0.0d+0, 1.0d+0, 2.0d+0, 3.0d+0 /),                  &
-     &                  (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                  &
+      CALL line_seg_int(1.5d+0, result,                                        
+     &                  (/ 0.0d+0, 1.0d+0, 2.0d+0, 3.0d+0 /),                  
+     &                  (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                  
      &                  4)
       line_seg_test = check(1.375d+0, result, 2, "line_seg_int()")
       IF (.not.line_seg_test) RETURN
 !  Test line_seg_int function. yy(1.0,1.0,0.0,0.0) and xx(0.0,1.0,2.0,3.0) should
 !  have a value of 1.5 at x = 2.5
-      CALL line_seg_int(2.5d+0, result,                                        &
-     &                  (/ 0.0d+0, 1.0d+0, 2.0d+0, 3.0d+0 /),                  &
-     &                  (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                  &
+      CALL line_seg_int(2.5d+0, result,                                        
+     &                  (/ 0.0d+0, 1.0d+0, 2.0d+0, 3.0d+0 /),                  
+     &                  (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                  
      &                  4)
       line_seg_test = check(1.5d+0, result, 3, "line_seg_int()")
       IF (.not.line_seg_test) RETURN
 !  Test line_seg_int function. yy(1.0,1.0,0.0,0.0) and xx(1.0,2.0,3.0,4.0) should
 !  have a value of 0.5 at x = 0.5
-      CALL line_seg_int(0.5d+0, result,                                        &
-     &                  (/ 1.0d+0, 2.0d+0, 3.0d+0, 4.0d+0 /),                  &
-     &                  (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                  &
+      CALL line_seg_int(0.5d+0, result,                                        
+     &                  (/ 1.0d+0, 2.0d+0, 3.0d+0, 4.0d+0 /),                  
+     &                  (/ 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0 /),                  
      &                  4)
       line_seg_test = check(0.5d+0, result, 4, "line_seg_int()")
       IF (.not.line_seg_test) RETURN
 !  Test line_seg_int function. yy(1.0,0.0,0.0,1.0) and xx(0.0,1.0,2.0,3.0) should
 !  have a value of 2.5 at x = 4.0
-      CALL line_seg_int(4.0d+0, result,                                        &
-     &                  (/ 0.0d+0, 1.0d+0, 2.0d+0, 3.0d+0 /),                  &
-     &                  (/ 1.0d+0, 0.0d+0, 0.0d+0, 1.0d+0 /),                  &
+      CALL line_seg_int(4.0d+0, result,                                        
+     &                  (/ 0.0d+0, 1.0d+0, 2.0d+0, 3.0d+0 /),                  
+     &                  (/ 1.0d+0, 0.0d+0, 0.0d+0, 1.0d+0 /),                  
      &                  4)
       line_seg_test = check(2.5d+0, result, 5, "line_seg_int()")
       IF (.not.line_seg_test) RETURN
 !  Test line_seg_int function. yy(1.0,0.0,0.0,1.0) and xx(1.0,2.0,3.0,4.0) should
 !  have a value of 4.0 at x = 5.0
-      CALL line_seg_int(5.0d+0, result,                                        &
-     &                  (/ 1.0d+0, 2.0d+0, 3.0d+0, 4.0d+0 /),                  &
-     &                  (/ 1.0d+0, 0.0d+0, 0.0d+0, 1.0d+0 /),                  &
+      CALL line_seg_int(5.0d+0, result,                                        
+     &                  (/ 1.0d+0, 2.0d+0, 3.0d+0, 4.0d+0 /),                  
+     &                  (/ 1.0d+0, 0.0d+0, 0.0d+0, 1.0d+0 /),                  
      &                  4)
       line_seg_test = check(4.0d+0, result, 6, "line_seg_int()")
       IF (.not.line_seg_test) RETURN
@@ -599,7 +599,7 @@
 !  Start of executable code
       check = expected .eq. received
       IF (.not.check) THEN
-         WRITE(*,*) "line_segment_mod.f: ", name, " test", testNum,            &
+         WRITE(*,*) "line_segment_mod.f: ", name, " test", testNum,            
      &              "failed."
          WRITE(*,*) "Expected", expected, "Received", received
       END IF

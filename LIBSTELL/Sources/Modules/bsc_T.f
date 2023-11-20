@@ -55,7 +55,7 @@
 !-------------------------------------------------------------------------------
 !  Make type declarations and constants Private, so there are no conflicts.
 !-------------------------------------------------------------------------------
-      PRIVATE rprec, iprec, cprec, pi, twopi, one, zero, bsc_k2_def,           &
+      PRIVATE rprec, iprec, cprec, pi, twopi, one, zero, bsc_k2_def,           
      &   bsc_k2inv_def, bsc_mach_eps
 
 !-------------------------------------------------------------------------------
@@ -179,7 +179,7 @@
 !  Generic construct
 !-------------------------------------------------------------------------------
       INTERFACE bsc_construct
-         MODULE PROCEDURE bsc_construct_coil, bsc_construct_coilcoll,          &
+         MODULE PROCEDURE bsc_construct_coil, bsc_construct_coilcoll,          
      &                    bsc_construct_rs
       END INTERFACE
 
@@ -187,7 +187,7 @@
 !  Generic destroy
 !-------------------------------------------------------------------------------
       INTERFACE bsc_destroy
-         MODULE PROCEDURE bsc_destroy_coil, bsc_destroy_coilcoll,              &
+         MODULE PROCEDURE bsc_destroy_coil, bsc_destroy_coilcoll,              
      &                    bsc_destroy_coil_a
       END INTERFACE
 
@@ -195,8 +195,8 @@
 !  Generic bsc_rot_shift (Rotation and Shift)
 !-------------------------------------------------------------------------------
       INTERFACE bsc_rot_shift
-         MODULE PROCEDURE bsc_rot_shift_pt, bsc_rot_shift_pts,                 &
-     &                    bsc_rot_shift_coil,                                  & 
+         MODULE PROCEDURE bsc_rot_shift_pt, bsc_rot_shift_pts,                 
+     &                    bsc_rot_shift_coil,                                  
      &                    bsc_rot_shift_coil_a, bsc_rot_shift_coilcoll
       END INTERFACE
 
@@ -218,7 +218,7 @@
 !  Generic bsc_fluxba (Magnetic Flux of a through coil b)
 !-------------------------------------------------------------------------------
       INTERFACE bsc_fluxba
-         MODULE PROCEDURE bsc_fluxba_coil, bsc_fluxba_coil_a,                  &
+         MODULE PROCEDURE bsc_fluxba_coil, bsc_fluxba_coil_a,                  
      &   bsc_fluxba_coilcoll
       END INTERFACE
                
@@ -251,7 +251,7 @@
 !  For c_type = 'fil_rogo' (filamentary Rogowski coils)
 !     Much of the coding is the same as for fil_loop coils.
 !-------------------------------------------------------------------------------
-      SUBROUTINE bsc_construct_coil(this,c_type,s_name,l_name,current,         &
+      SUBROUTINE bsc_construct_coil(this,c_type,s_name,l_name,current,         
      &   xnod,rcirc,xcent,enhat,raux,anturns,xsarea,sen)
 
       IMPLICIT NONE
@@ -346,7 +346,7 @@
             ELSE
                IF (PRESENT(sen)) THEN
 !  Average the sensitivity of the missing nodes.
-                  sens_temp(itemp) = SUM(sen(itemp2:i - 1))                    &
+                  sens_temp(itemp) = SUM(sen(itemp2:i - 1))                    
      &                             / SIZE(sen(itemp2:i - 1))
                   itemp2 = i
                END IF
@@ -376,7 +376,7 @@
 !  Close (wrap) fil_loops
          IF ((c_type .eq.'fil_loop') .or. (c_type .eq.'floop')) THEN
             IF (itemp .eq. 2) THEN
-               WRITE (6,*) ' WARNING: bsc_construct: one straight ',           &
+               WRITE (6,*) ' WARNING: bsc_construct: one straight ',           
      &                  ' filament for coil: ', TRIM(s_name)
                WRITE (6,*) ' (this is a straight coil filament)'
             ELSE  !  Here - need to close (wrap) the coil
@@ -413,15 +413,15 @@
 
 !  Calculations for the other arrays (not included as arguments)
 !  Compute dxnod
-         this % dxnod(1:3,1:nm1) = this % xnod(1:3,2:n)                        &
+         this % dxnod(1:3,1:nm1) = this % xnod(1:3,2:n)                        
      &                           - this % xnod(1:3,1:nm1)
 
 !  Compute lsqnod = dxnod*dxnod
-         this % lsqnod(1:nm1) = this % dxnod(1,1:nm1)**2 +                     &
+         this % lsqnod(1:nm1) = this % dxnod(1,1:nm1)**2 +                     
      &      this % dxnod(2,1:nm1)**2 + this % dxnod(3,1:nm1)**2          
-         IF (ANY(this % lsqnod(1:nm1) .eq. zero))                              &
+         IF (ANY(this % lsqnod(1:nm1) .eq. zero))                              
      &      STOP 'FATAL: bsc_construct_coil : lsqnod must be nonzero'
-         this % eps_sq = bsc_mach_eps *                                        &
+         this % eps_sq = bsc_mach_eps *                                        
      &                   MINVAL(this % lsqnod(1:nm1))
 !  JDH 11-21-03. Change EPSILON(-) to bsc_mach_eps
 !  JDH 11-21-03. Not sure just how this % eps_sq will get used.
@@ -431,7 +431,7 @@
 
 !  Compute ehnod
          DO i = 1,3
-            this % ehnod(i,1:nm1) = this % dxnod(i,1:nm1) /                    &                     
+            this % ehnod(i,1:nm1) = this % dxnod(i,1:nm1) /                    
      &         this % lnod(1:nm1)                                     
          END DO
       
@@ -551,7 +551,7 @@
 !  shift           :   real(rprec), array (size 3) shift vector for the 
 !                      translation of the coil   
 !-------------------------------------------------------------------------------
-      SUBROUTINE bsc_construct_rs(this,theta,phi,rot_ang,                      &
+      SUBROUTINE bsc_construct_rs(this,theta,phi,rot_ang,                      
      &                                 c_of_rot,shift)
       IMPLICIT NONE
 
@@ -602,20 +602,20 @@
       onemcos = 1 - cosrot
 
       this % rot_matrix(1,1) = cosrot + onemcos * omega(1) ** 2
-      this % rot_matrix(1,2) = sinrot * omega(3) +                             &
+      this % rot_matrix(1,2) = sinrot * omega(3) +                             
      &                  onemcos * omega(1) * omega(2)
-      this % rot_matrix(1,3) = -sinrot * omega(2) +                            &
+      this % rot_matrix(1,3) = -sinrot * omega(2) +                            
      &                  onemcos * omega(1) * omega(3)
 
-      this % rot_matrix(2,1) = -sinrot * omega(3) +                            &
+      this % rot_matrix(2,1) = -sinrot * omega(3) +                            
      &                  onemcos * omega(1) * omega(2)
       this % rot_matrix(2,2) = cosrot + onemcos * omega(2) ** 2
-      this % rot_matrix(2,3) = sinrot * omega(1) +                             &
+      this % rot_matrix(2,3) = sinrot * omega(1) +                             
      &                  onemcos * omega(2) * omega(3)
 
-      this % rot_matrix(3,1) = sinrot * omega(2) +                             & 
+      this % rot_matrix(3,1) = sinrot * omega(2) +                             
      &                  onemcos * omega(1) * omega(3)
-      this % rot_matrix(3,2) = -sinrot * omega(1) +                            &
+      this % rot_matrix(3,2) = -sinrot * omega(1) +                            
      &                  onemcos * omega(2) * omega(3)
       this % rot_matrix(3,3) = cosrot + onemcos * omega(3) ** 2
 
@@ -754,9 +754,9 @@
 
 !  Pointers components of bsc_coil.
 !  Only bother with this coding if coil is a fil_loop or fil_rogo
-      IF ((right % c_type .eq. 'fil_loop') .or.                                &
-     &    (right % c_type .eq. 'floop') .or.                                   &
-     &    (right % c_type .eq. 'fil_rogo') .or.                                &
+      IF ((right % c_type .eq. 'fil_loop') .or.                                
+     &    (right % c_type .eq. 'floop') .or.                                   
+     &    (right % c_type .eq. 'fil_rogo') .or.                                
      &    (right % c_type .eq. 'fil_rogo_s')) THEN
        
 !  Find the SIZE of the pointer arrays.
@@ -987,7 +987,7 @@
             END IF   
          
          CASE DEFAULT 
-            WRITE(*,*) 'WARNING: bsc_rot_shift_pts: xyz_dim has not a',        &
+            WRITE(*,*) 'WARNING: bsc_rot_shift_pts: xyz_dim has not a',        
      &                  'valid value'         
          END SELECT
       
@@ -997,7 +997,7 @@
          ELSE IF (js2 == 3) THEN
             xyz_dim_use = 2
          ELSE
-            WRITE(*,*) 'ERROR: bsc_rot_shift_pts: points have no ',            &
+            WRITE(*,*) 'ERROR: bsc_rot_shift_pts: points have no ',            
      &                  'dimension of length 3'         
             STOP
          END IF      
@@ -1009,19 +1009,19 @@
 
       SELECT CASE (xyz_dim_use)
       CASE (1)
-         this(1:3,1:js2) = this(1:3,1:js2) -                                   &
+         this(1:3,1:js2) = this(1:3,1:js2) -                                   
      &                     SPREAD(my_rs % c_of_rot,2,js2)
          this_temp = MATMUL(my_rs % rot_matrix, this)
          this(1:3,1:js2) = this_temp(1:3,1:js2) + SPREAD(shift_2,2,js2)
 
       CASE (2)
-         this(1:is1,1:3) = this(1:is1,1:3) -                                   &
+         this(1:is1,1:3) = this(1:is1,1:3) -                                   
      &                     SPREAD(my_rs % c_of_rot,1,is1)     
          this_temp = MATMUL(this,TRANSPOSE(my_rs % rot_matrix))
          this(1:is1,1:3) = this_temp(1:is1,1:3) + SPREAD(shift_2,1,is1)
 
       CASE DEFAULT
-         WRITE(*,*) 'FATAL ERROR: bsc_rot_shift_pts: xyz_dim_use is',          &
+         WRITE(*,*) 'FATAL ERROR: bsc_rot_shift_pts: xyz_dim_use is',          
      &                 ' not a valid value (1 or 2)'         
 
       END SELECT
@@ -1075,7 +1075,7 @@
          CALL bsc_rot_shift_coil_fil_circ(this,my_rs)
 
       CASE DEFAULT 
-         WRITE(*,*) 'FATAL: bsc_rot_shift_coil: c_type unrecognized:',         &
+         WRITE(*,*) 'FATAL: bsc_rot_shift_coil: c_type unrecognized:',         
      &     this % c_type
          STOP
       END SELECT
@@ -1109,11 +1109,11 @@
 !  Recompute dxnod, ehat vectors for rotated coils
 !  lnod and lsqnod should be invariant (check this?)
 
-      this % dxnod(1:3,1:nm1) = this % xnod(1:3,2:nwire)                       &
+      this % dxnod(1:3,1:nm1) = this % xnod(1:3,2:nwire)                       
      &                        - this % xnod(1:3,1:nm1)
 
       DO i = 1,3
-         this % ehnod(i,1:nm1) = this % dxnod(i,1:nm1) /                       &                     
+         this % ehnod(i,1:nm1) = this % dxnod(i,1:nm1) /                       
      &         this % lnod(1:nm1)                                     
       END DO
       
@@ -1238,7 +1238,7 @@
          CALL bsc_b_coil_fil_loop(this,x,a)
 
       CASE DEFAULT
-         WRITE(*,*) 'FATAL: bsc_a_coil: c_type unrecognized:',                 &
+         WRITE(*,*) 'FATAL: bsc_a_coil: c_type unrecognized:',                 
      &     this % c_type
          STOP
       END SELECT
@@ -1277,8 +1277,8 @@
       nm1 = n - 1
 
 !  Form array of relative vector lengths
-      capR = SQRT((x(1) - this % xnod(1,1:n))**2                               &
-     &     +      (x(2) - this % xnod(2,1:n))**2                               &
+      capR = SQRT((x(1) - this % xnod(1,1:n))**2                               
+     &     +      (x(2) - this % xnod(2,1:n))**2                               
      &     +      (x(3) - this % xnod(3,1:n))**2)
 
 !  Form lnfactor
@@ -1355,8 +1355,8 @@
          CALL bsc_cei(emone,rf,rd)
          brackg = two_third * rd - rf
       ELSE                                  ! small m, use power series in m
-         brackg = pio16 * em * (c_gb1 + em * (c_gb2 + em *                     &
-     &      (c_gb3  + em * (c_gb4 + em * (c_gb5 + em * (c_gb6 + em *           &
+         brackg = pio16 * em * (c_gb1 + em * (c_gb2 + em *                     
+     &      (c_gb3  + em * (c_gb4 + em * (c_gb5 + em * (c_gb6 + em *           
      &      c_gb7))))))
       END IF
       aphi = 4 * radcc * f * brackg
@@ -1364,11 +1364,11 @@
 !  Now convert to global cylindrical coordinates.
 !  First, find the phi_prime_hat by taking the cross
 !  product of z_prime_hat and rho_prime_hat
-      phiphat(1) = this % enhat(2) * rhophat(3) -                              &
+      phiphat(1) = this % enhat(2) * rhophat(3) -                              
      &   this % enhat(3) * rhophat(2)
-      phiphat(2) = this % enhat(3) * rhophat(1) -                              &
+      phiphat(2) = this % enhat(3) * rhophat(1) -                              
      &   this % enhat(1) * rhophat(3)
-      phiphat(3) = this % enhat(1) * rhophat(2) -                              &
+      phiphat(3) = this % enhat(1) * rhophat(2) -                              
      &   this % enhat(2) * rhophat(1)
       a(1:3) = phiphat(1:3) * aphi
 
@@ -1488,16 +1488,16 @@
       
       CASE ('fil_rogo')
 !  Rogowski. Not yet implemented
-         WRITE(*,*) 'WARNING: bsc_b_coil: NOT YET IMPLEMENTED',                &
+         WRITE(*,*) 'WARNING: bsc_b_coil: NOT YET IMPLEMENTED',                
      &     this % c_type
 
       CASE ('fil_rogo_s')
 !  Rogowski. Not yet implemented
-         WRITE(*,*) 'WARNING: bsc_b_coil: NOT YET IMPLEMENTED',                &
+         WRITE(*,*) 'WARNING: bsc_b_coil: NOT YET IMPLEMENTED',                
      &     this % c_type
 
       CASE DEFAULT
-         WRITE(*,*) 'FATAL: bsc_b_coil: c_type unrecognized:',                 &
+         WRITE(*,*) 'FATAL: bsc_b_coil: c_type unrecognized:',                 
      &     this % c_type
          STOP
       END SELECT
@@ -1546,8 +1546,8 @@
       
 !  Form array of relative vector lengths
 !JDH Quick Fix 2007-05-24
-      capR(1:n) = SQRT(MAX(this % eps_sq,capRv(1,1:n) * capRv(1,1:n) +         &
-     &                 capRv(2,1:n) * capRv(2,1:n) +                           &
+      capR(1:n) = SQRT(MAX(this % eps_sq,capRv(1,1:n) * capRv(1,1:n) +         
+     &                 capRv(2,1:n) * capRv(2,1:n) +                           
      &                 capRv(3,1:n) * capRv(3,1:n)))                                          
 !      capR(1:n) = SQRT(capRv(1,1:n) * capRv(1,1:n) +                           &
 !     &                 capRv(2,1:n) * capRv(2,1:n) +                           &
@@ -1557,13 +1557,13 @@
       DO i = 1, 3
          j = mod(i,3_iprec) + 1
          k = mod(j,3_iprec) + 1
-         crossv(i,1:nm1) = this % dxnod(j,1:nm1) * capRv(k,1:nm1)              &
+         crossv(i,1:nm1) = this % dxnod(j,1:nm1) * capRv(k,1:nm1)              
      &                   - this % dxnod(k,1:nm1) * capRv(j,1:nm1)                                
       END DO
 
       R1p2(1:nm1) = capR(1:nm1) + capR(2:n)
-      Rfactor(1:nm1) = 2 * R1p2(1:nm1) / (capR(1:nm1) * capR(2:n) *            &
-     &      MAX(R1p2(1:nm1)*R1p2(1:nm1) - this % lsqnod(1:nm1),                &
+      Rfactor(1:nm1) = 2 * R1p2(1:nm1) / (capR(1:nm1) * capR(2:n) *            
+     &      MAX(R1p2(1:nm1)*R1p2(1:nm1) - this % lsqnod(1:nm1),                
      &          this % eps_sq))
 
 ! Sum for B field
@@ -1594,12 +1594,12 @@
 
       REAL(rprec), DIMENSION(3) :: rprime, rhoprime, rhophat, phiphat
       REAL(rprec) :: zprime, fsq, fcube, em, emone, cfcube, geofac1
-      REAL(rprec) :: rhopmsq, rhopmag, f, rf, rd, brackg, brackh,              &
+      REAL(rprec) :: rhopmsq, rhopmag, f, rf, rd, brackg, brackh,              
      &   brfac1, brho, bz, aphi, radcc, add_on, fac1, fac2
      
 !  Coefficients for power series in m
       REAL(rprec) :: c_bz0, c_bz1, c_bz2, c_bz3, c_bz4, c_bz5, c_bz6
-      REAL(rprec) :: cb_bz0, cb_bz1, cb_bz2, cb_bz3, cb_bz4, cb_bz5,           &
+      REAL(rprec) :: cb_bz0, cb_bz1, cb_bz2, cb_bz3, cb_bz4, cb_bz5,           
      &   cb_bz6
       REAL(rprec), PARAMETER :: c_brho1 = one
       REAL(rprec), PARAMETER :: c_brho2 = 5._rprec / 4
@@ -1648,16 +1648,16 @@
 !  in bsc_cei
          CALL bsc_cei(emone,rf,rd)
          brackg = two_third * rd - rf
-         brackh = sixth * (-(1 + 3 * emone) * rd +                             &
+         brackh = sixth * (-(1 + 3 * emone) * rd +                             
      &      3 * (1 + emone) * rf) / emone
          brfac1 = brackg + 2 * brackh
          brho = cfcube * zprime * brfac1
-         bz = cfcube * (brackg * (geofac1 + radcc)                             &
+         bz = cfcube * (brackg * (geofac1 + radcc)                             
      &      + brackh * (geofac1 - rhopmag))
       ELSE                                          ! small m, use power series
          fac2 = pi3o16 * zprime * cfcube
-         brho = fac2 * em * (c_brho1 + em * (c_brho2 +                         &
-     &      em * (c_brho3 + em * (c_brho4 + em * (c_brho5 + em *               &
+         brho = fac2 * em * (c_brho1 + em * (c_brho2 +                         
+     &      em * (c_brho3 + em * (c_brho4 + em * (c_brho5 + em *               
      &      (c_brho6 + em * c_brho7))))))
          fac1 = cfcube * radcc * fsq * pio4
          add_on = zprime ** 2 + (radcc + rhopmag) * (radcc - rhopmag)
@@ -1675,7 +1675,7 @@
          c_bz4 = ca_bz4 * cb_bz4
          c_bz5 = ca_bz5 * cb_bz5
          c_bz6 = ca_bz6 * cb_bz6
-         bz = fac1 * (c_bz0 + em * (c_bz1 + em * (c_bz2 +                      &
+         bz = fac1 * (c_bz0 + em * (c_bz1 + em * (c_bz2 +                      
      &      em * (c_bz3 + em * (c_bz4 + em * (c_bz5 + em * c_bz6))))))
       END IF
 
@@ -1772,7 +1772,7 @@
 !-------------------------------------------------------------------------------
 !  Magnetic Flux for a single coil
 !-------------------------------------------------------------------------------
-      SUBROUTINE bsc_fluxba_coil(coil_a,coil_b,len_integerate,flux,            &
+      SUBROUTINE bsc_fluxba_coil(coil_a,coil_b,len_integerate,flux,            
      &   bsc_k2)
       IMPLICIT NONE
 
@@ -1792,7 +1792,7 @@
       REAL(rprec), OPTIONAL, INTENT(in) :: bsc_k2
       
 !  Local Variable Declaration
-      REAL(rprec), DIMENSION(:,:), POINTER :: positions => null(),             &
+      REAL(rprec), DIMENSION(:,:), POINTER :: positions => null(),             
      &  tangents => null(), avecs => null()
       REAL(rprec), DIMENSION(:), POINTER :: sens => null()
       INTEGER(iprec) :: i, npoints
@@ -1802,7 +1802,7 @@
 !  Get array of positions at which to evaluate the vector potential
 !  Subroutine also allocates space to the pointers: positions, tangents, and
 !  avecs.
-      CALL bsc_flux_pos(coil_b,len_integerate,positions,tangents,              &
+      CALL bsc_flux_pos(coil_b,len_integerate,positions,tangents,              
      &   avecs,sens,npoints)
 
 !  Calculate vector potentials
@@ -1818,7 +1818,7 @@
       END SELECT
 
 !  Do summations
-      CALL bsc_flux_sum(coil_b,positions,tangents,avecs,sens,npoints,          &
+      CALL bsc_flux_sum(coil_b,positions,tangents,avecs,sens,npoints,          
      &                  flux)
 
 !  Rescale if bsc_k2 present
@@ -1835,7 +1835,7 @@
 !-------------------------------------------------------------------------------
 !  Magnetic Flux for an array of coils
 !-------------------------------------------------------------------------------
-      SUBROUTINE bsc_fluxba_coil_a(coil_a,coil_b,len_integerate,flux,          &
+      SUBROUTINE bsc_fluxba_coil_a(coil_a,coil_b,len_integerate,flux,          
      &   bsc_k2)
       IMPLICIT NONE
 
@@ -1855,7 +1855,7 @@
       REAL(rprec), OPTIONAL, INTENT(in) :: bsc_k2
       
 !  Local Variable Declaration
-      REAL(rprec), DIMENSION(:,:), POINTER :: positions => null(),             &
+      REAL(rprec), DIMENSION(:,:), POINTER :: positions => null(),             
      &  tangents => null(), avecs => null()
       REAL(rprec), DIMENSION(:),POINTER :: sens => null()
       INTEGER(iprec) :: i, npoints
@@ -1865,7 +1865,7 @@
 !  Get array of positions at which to evaluate the vector potential
 !  Subroutine also allocates space to the pointers: positions, tangents, and
 !  avecs.
-      CALL bsc_flux_pos(coil_b,len_integerate,positions,tangents,              &
+      CALL bsc_flux_pos(coil_b,len_integerate,positions,tangents,              
      &   avecs,sens,npoints)
 
 !  Calculate vector potentials
@@ -1881,7 +1881,7 @@
       END SELECT
 
 !  Do summations
-      CALL bsc_flux_sum(coil_b,positions,tangents,avecs,sens,npoints,          &
+      CALL bsc_flux_sum(coil_b,positions,tangents,avecs,sens,npoints,          
      &                  flux)
 
 !  Rescale if bsc_k2 present
@@ -1898,7 +1898,7 @@
 !-------------------------------------------------------------------------------
 !  Magnetic Flux for a coil collection
 !-------------------------------------------------------------------------------
-      SUBROUTINE bsc_fluxba_coilcoll(coil_a,coil_b,len_integerate,flux,        &
+      SUBROUTINE bsc_fluxba_coilcoll(coil_a,coil_b,len_integerate,flux,        
      &   bsc_k2)
       IMPLICIT NONE
 
@@ -1918,7 +1918,7 @@
       REAL(rprec), OPTIONAL, INTENT(in) :: bsc_k2
       
 !  Local Variable Declaration
-      REAL(rprec), DIMENSION(:,:), POINTER :: positions => null(),             &
+      REAL(rprec), DIMENSION(:,:), POINTER :: positions => null(),             
      &  tangents => null(), avecs => null()
       REAl(rprec), DIMENSION(:), POINTER :: sens => null()
       INTEGER(iprec) :: i, npoints
@@ -1928,7 +1928,7 @@
 !  Get array of positions at which to evaluate the vector potential
 !  Subroutine also allocates space to the pointers: positions, tangents, avecs
 !  and sens.
-      CALL bsc_flux_pos(coil_b,len_integerate,positions,tangents,              &
+      CALL bsc_flux_pos(coil_b,len_integerate,positions,tangents,              
      &   avecs,sens,npoints)
 
 !  Calculate vector potentials
@@ -1944,7 +1944,7 @@
       END SELECT
 
 !  Do summations
-      CALL bsc_flux_sum(coil_b,positions,tangents,avecs,sens,npoints,          &
+      CALL bsc_flux_sum(coil_b,positions,tangents,avecs,sens,npoints,          
      &                  flux)
 
 !  Rescale if bsc_k2 present
@@ -1962,7 +1962,7 @@
 !-------------------------------------------------------------------------------
 !  Subroutine to find positions and tangents for second coil
 !-------------------------------------------------------------------------------
-      SUBROUTINE bsc_flux_pos(coil_b,len_integrate,positions,                  &
+      SUBROUTINE bsc_flux_pos(coil_b,len_integrate,positions,                  
      &   tangents,avecs,sens,npoints)
       IMPLICIT NONE
 !  This subroutine will return positions and tangents to the coil coil_b.
@@ -1981,7 +1981,7 @@
 !  Required Arguments
       TYPE (bsc_coil), INTENT(in) :: coil_b
       REAL(rprec), INTENT(in) :: len_integrate
-      REAL(rprec), DIMENSION(:,:), POINTER :: positions, tangents,             &
+      REAL(rprec), DIMENSION(:,:), POINTER :: positions, tangents,             
      &   avecs
       REAL(rprec), DIMENSION(:), POINTER :: sens
       INTEGER(iprec), INTENT(out) ::  npoints
@@ -1989,7 +1989,7 @@
 !  Local Variable Declaration
       INTEGER(iprec) :: i, j, iseg, npoints_this_segment, n_denom
       INTEGER(iprec) :: nseg
-      REAL(rprec), DIMENSION(3) :: xhatlocal, yhatlocal, zhatlocal,            &
+      REAL(rprec), DIMENSION(3) :: xhatlocal, yhatlocal, zhatlocal,            
      &  rhohat, phihat
       REAL(rprec) :: dphi, phi, cphi, sphi, frac_denom
       INTEGER(iprec), PARAMETER :: npcirc = 60   ! zzz - Picked out of a hat
@@ -2004,7 +2004,7 @@
          ELSE
             npoints = 0
             DO iseg = 1,SIZE(coil_b % lnod)
-               npoints_this_segment = coil_b % lnod(iseg) /                    &
+               npoints_this_segment = coil_b % lnod(iseg) /                    
      &             len_integrate + 1
                npoints = npoints + npoints_this_segment
             END DO
@@ -2022,7 +2022,7 @@
       IF (ASSOCIATED(positions)) DEALLOCATE(positions)
       IF (ASSOCIATED(tangents)) DEALLOCATE(tangents)
       IF (ASSOCIATED(avecs)) DEALLOCATE(avecs)
-      ALLOCATE(positions(3,npoints),tangents(3,npoints),                       &
+      ALLOCATE(positions(3,npoints),tangents(3,npoints),                       
      &   avecs(3,npoints),sens(npoints))
 
 !  For fil_loops, points spaced throughout the segment
@@ -2041,22 +2041,22 @@
             IF (len_integrate .le. zero) THEN
                npoints_this_segment = 1
             ELSE
-               npoints_this_segment = coil_b % lnod(iseg) /                    &
+               npoints_this_segment = coil_b % lnod(iseg) /                    
      &             len_integrate + 1
             ENDIF
             IF (npoints_this_segment .eq. 1) THEN
-               positions(1:3,i) = coil_b % xnod(1:3,iseg) +                    &
+               positions(1:3,i) = coil_b % xnod(1:3,iseg) +                    
      &            0.5 * coil_b % dxnod(1:3,iseg)
                tangents(1:3,i) = coil_b % dxnod(1:3,iseg)
                sens(i) = coil_b % sens(iseg)
                i = i + 1
             ELSEIF (npoints_this_segment .eq. 2) THEN
-               positions(1:3,i) = coil_b % xnod(1:3,iseg) +                    &
+               positions(1:3,i) = coil_b % xnod(1:3,iseg) +                    
      &             0.25 * coil_b % dxnod(1:3,iseg)
                tangents(1:3,i) = 0.5 * coil_b % dxnod(1:3,iseg)
                sens(i) = coil_b % sens(iseg)
                i = i + 1
-               positions(1:3,i) = coil_b % xnod(1:3,iseg) +                    &
+               positions(1:3,i) = coil_b % xnod(1:3,iseg) +                    
      &            0.75 * coil_b % dxnod(1:3,iseg)
                tangents(1:3,i) = 0.5 * coil_b % dxnod(1:3,iseg)
                sens(i) = coil_b % sens(iseg)
@@ -2064,23 +2064,23 @@
             ELSE                            ! Here, 3 or more points per segment
                n_denom = npoints_this_segment - 1
                frac_denom = one / n_denom
-               positions(1:3,i) = coil_b % xnod(1:3,iseg) +                    &
+               positions(1:3,i) = coil_b % xnod(1:3,iseg) +                    
      &            0.25 * frac_denom * coil_b % dxnod(1:3,iseg)
-               tangents(1:3,i) = 0.5 * frac_denom *                            &
+               tangents(1:3,i) = 0.5 * frac_denom *                            
      &            coil_b % dxnod(1:3,iseg)
                sens(i) = coil_b % sens(iseg)
                i = i + 1               
                DO j = 2,npoints_this_segment - 1
-                  positions(1:3,i) = coil_b % xnod(1:3,iseg) +                 &
+                  positions(1:3,i) = coil_b % xnod(1:3,iseg) +                 
      &               frac_denom * (j-1) * coil_b % dxnod(1:3,iseg)   
-                  tangents(1:3,i) = frac_denom *                               &
+                  tangents(1:3,i) = frac_denom *                               
      &                coil_b % dxnod(1:3,iseg)
                   sens(i) = coil_b % sens(iseg)
                   i = i + 1
                END DO
-               positions(1:3,i) = coil_b % xnod(1:3,iseg) +                    &
+               positions(1:3,i) = coil_b % xnod(1:3,iseg) +                    
      &            (1 - 0.25 * frac_denom) * coil_b % dxnod(1:3,iseg)
-               tangents(1:3,i) = 0.5 * frac_denom *                            &
+               tangents(1:3,i) = 0.5 * frac_denom *                            
      &            coil_b % dxnod(1:3,iseg)
                sens(i) = coil_b % sens(iseg)
                i = i + 1
@@ -2099,7 +2099,7 @@
             sphi = sin(phi)
             rhohat = cphi * xhatlocal + sphi * yhatlocal
             phihat = - sphi * xhatlocal + cphi * yhatlocal
-            positions(1:3,i) = coil_b % xcent(1:3) + coil_b % rcirc *          &
+            positions(1:3,i) = coil_b % xcent(1:3) + coil_b % rcirc *          
      &         rhohat
             tangents(1:3,i) = coil_b % rcirc * dphi * phihat
          END DO
@@ -2111,7 +2111,7 @@
 !-------------------------------------------------------------------------------
 !  Subroutine to find do summations for flux
 !-------------------------------------------------------------------------------
-      SUBROUTINE bsc_flux_sum(coil_b,positions,tangents,avecs,sens,            &
+      SUBROUTINE bsc_flux_sum(coil_b,positions,tangents,avecs,sens,            
      &                        npoints,flux)
       IMPLICIT NONE
 !  This subroutine will compute some sums
@@ -2121,7 +2121,7 @@
 
 !  Required Arguments
       TYPE (bsc_coil), INTENT(in) :: coil_b
-      REAL(rprec), DIMENSION(:,:), POINTER :: positions, tangents,             &
+      REAL(rprec), DIMENSION(:,:), POINTER :: positions, tangents,             
      &   avecs
       REAL(rprec), DIMENSION(:), POINTER :: sens
       INTEGER(iprec), INTENT(in) ::  npoints
@@ -2172,8 +2172,8 @@
       
 !  Local Variable Declaration
       REAL(rprec) :: xt, yt, zt, sum, x
-      REAL(rprec) :: alamb, fac, sqrtx, sqrty, sqrtz, avef, recavef,           &
-     &     delxf, delyf, delzf, e2f, e3f, aved, recaved, delxd,                &
+      REAL(rprec) :: alamb, fac, sqrtx, sqrty, sqrtz, avef, recavef,           
+     &     delxf, delyf, delzf, e2f, e3f, aved, recaved, delxd,                
      &     delyd, delzd, ead, ebd, ecd, edd, eed
       INTEGER(iprec) :: iter
       INTEGER(iprec), PARAMETER :: niter = 5
@@ -2232,9 +2232,9 @@
       ecd = ead - ebd
       edd = ead - 6._rprec * ebd
       eed = edd + ecd + ecd
-      rd = 3._rprec * sum + fac * (one + edd * (- c1d + c5d * edd -            &
-     &   c6d * delzd * eed) + delzd * (c2d * eed + delzd *                     &
-     &   (- c3d * ecd + delzd * c4d * ead))) * recaved *                       &
+      rd = 3._rprec * sum + fac * (one + edd * (- c1d + c5d * edd -            
+     &   c6d * delzd * eed) + delzd * (c2d * eed + delzd *                     
+     &   (- c3d * ecd + delzd * c4d * ead))) * recaved *                       
      &   SQRT(recaved)
 
       avef = third * (xt + yt + zt)
@@ -2244,7 +2244,7 @@
       delzf = one - zt * recavef
       e2f = delxf * delyf - delzf ** 2
       e3f = delxf * delyf * delzf
-      rf = (one + (c1f * e2f - c2f - c3f * e3f) *                              &
+      rf = (one + (c1f * e2f - c2f - c3f * e3f) *                              
      &   e2f + c4f * e3f) * SQRT(recavef)
 
       END SUBROUTINE bsc_cei
@@ -2261,7 +2261,7 @@
 
 !  Required Arguments
       REAL(rprec), DIMENSION(3), INTENT(in) :: zlocal
-      REAL(rprec), DIMENSION(3), INTENT(out) :: xhatlocal, yhatlocal,          &
+      REAL(rprec), DIMENSION(3), INTENT(out) :: xhatlocal, yhatlocal,          
      &   zhatlocal
       
 !  Local Variable Declaration
@@ -2296,11 +2296,11 @@
       xhatlocal = fac * xloc
 
 !  Cross product to determine yhatlocal
-      yhatlocal(1) = zhatlocal(2) * xhatlocal(3) -                             &
+      yhatlocal(1) = zhatlocal(2) * xhatlocal(3) -                             
      &   zhatlocal(3) * xhatlocal(2)
-      yhatlocal(2) = zhatlocal(3) * xhatlocal(1) -                             &
+      yhatlocal(2) = zhatlocal(3) * xhatlocal(1) -                             
      &   zhatlocal(1) * xhatlocal(3)
-      yhatlocal(3) = zhatlocal(1) * xhatlocal(2) -                             &
+      yhatlocal(3) = zhatlocal(1) * xhatlocal(2) -                             
      &   zhatlocal(2) * xhatlocal(1)
 
       END SUBROUTINE bsc_triplet
@@ -2339,12 +2339,12 @@
          nm1 = MAX(1, nwire-1)
          coil_length =  SUM(this % lnod(1:nm1))
          DO i = 1,3
-            mean_r(i) = DOT_PRODUCT(this % lnod(1:nm1),                        &
-     &         this % xnod(i,1:nm1) + 0.5 * this % dxnod(i,1:nm1)) /           & 
+            mean_r(i) = DOT_PRODUCT(this % lnod(1:nm1),                        
+     &         this % xnod(i,1:nm1) + 0.5 * this % dxnod(i,1:nm1)) /           
      &         coil_length
          END DO
       CASE DEFAULT 
-         WRITE(*,*) 'FATAL: bsc_mean_r:                                        & 
+         WRITE(*,*) 'FATAL: bsc_mean_r:                                        
      &   c_type unrecognized:', this % c_type
          STOP
       END SELECT
@@ -2386,7 +2386,7 @@
             mean_xnod(i) = SUM(this % xnod(i,1:nm1)) / nm1
          END DO
       CASE DEFAULT 
-         WRITE(*,*) 'FATAL: bsc_mean_r:                                        & 
+         WRITE(*,*) 'FATAL: bsc_mean_r:                                        
      &   c_type unrecognized:', this % c_type
          STOP
       END SELECT
@@ -2508,7 +2508,7 @@
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      REAL(rprec), PARAMETER :: c3 = one/3,                                    &
+      REAL(rprec), PARAMETER :: c3 = one/3,                                    
      &   c5 = one/5, c7 = one/7, c9 = one/9, c11 = one/11
       REAL(rprec), PARAMETER :: threshold = 0.1_rprec
              !(MAX ALLOWED: 1/3, LOG(1+x), x < 1)
@@ -2542,7 +2542,7 @@
 !     (TEST CASE: 11.2 s ON PC, MAX ERR = 1.305E-10 FOR THRESHOLD = 0.2,
 !                                         1.6E-14   FOR THRESHOLD = 0.1)
 
-             x1(i) = 2 * x1(i) * (one + x2 * (c3 + x2 * (c5 + x2 * (c7         &
+             x1(i) = 2 * x1(i) * (one + x2 * (c3 + x2 * (c5 + x2 * (c7         
      &                                + x2 * (c9 + x2 * c11)))))
          ELSE
 

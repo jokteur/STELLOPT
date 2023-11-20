@@ -73,7 +73,7 @@
 !  Create the coil (DO NOT CLOSE IT!)
          nc = SIZE(xpt,2)
          ALLOCATE (single_coil)
-         CALL bsc_construct(single_coil,'fil_loop','','',                      &
+         CALL bsc_construct(single_coil,'fil_loop','','',                      
      &         extcur_in(1),xpt(1:3,1:nc))
        
       ELSE
@@ -114,7 +114,7 @@
 !  OPEN COILS.EXT (COIL_FILE)
 !
       iou_coil = iou_coil0
-      CALL safe_open(iou_coil, istat, TRIM(coil_file), 'old',                  &
+      CALL safe_open(iou_coil, istat, TRIM(coil_file), 'old',                  
      &   'formatted')
       IF (istat .ne. 0) STOP 'Error opening input coil file'
 
@@ -159,7 +159,7 @@
 !  READ IN NUMBER OF FIELD PERIODS
       READ (iou_coil, '(a)' , iostat=istat) line
       istat = INDEX(line, 'periods')
-      IF (istat .eq. 0)                                                        &
+      IF (istat .eq. 0)                                                        
      &   STOP 'First line of coils file must contain # periods'
       READ (line, *, iostat=istat) group, nfp_bs
 
@@ -168,7 +168,7 @@
       
 !   First pass through the input file, to find out how many coil groups, 
 !   and the maximum number of nodes in ANY one coil.
-      CALL read_coils_pass1(iou_coil, nextcur, nmaxnodes, ngroup,              &
+      CALL read_coils_pass1(iou_coil, nextcur, nmaxnodes, ngroup,              
      &                      local_lgrps, n_line_skip)
 
 !   Now that we know how many coil groups there are, ALLOCATE
@@ -184,7 +184,7 @@
 
 !   Second pass through the file. Read ALL the coils, and store
 !   them in the appropriate groups.
-      CALL read_coils_pass2(iou_coil, nmaxnodes, coil_group, ngroup,           &
+      CALL read_coils_pass2(iou_coil, nmaxnodes, coil_group, ngroup,           
      &                      local_lgrps, n_line_skip)
  
       CALL safe_close(iou_coil) !Close the file when done
@@ -194,7 +194,7 @@
 !*******************************************************************************
 !----------------------------------------------------------------------
 
-      SUBROUTINE read_coils_pass1 (iou, n_coilgroups, nmaxnodes, ngroup,       & 
+      SUBROUTINE read_coils_pass1 (iou, n_coilgroups, nmaxnodes, ngroup,       
      &                             lgrps, n_skip)
 !     Subroutine to do a first pass read of the "coils" file. The purpose is
 !     to find the number of coil groups, and the maximum number of
@@ -321,7 +321,7 @@
 !*******************************************************************************
 !----------------------------------------------------------------------
 
-      SUBROUTINE read_coils_pass2 (iou, nmaxnodes, coil_group, ngroup,         &
+      SUBROUTINE read_coils_pass2 (iou, nmaxnodes, coil_group, ngroup,         
      &                             lgrps, n_skip)
 !     Subroutine to do a second pass read of the coils file. The data is then 
 !     used tocreate a filamentary loop coil (fil_loop). The fil_loop is then appended 
@@ -421,7 +421,7 @@
 !     For most of the file, they won't be there, and istat will be nonzero
 !     But, when igroup and group_id are there, istat will be zero.
 !     This is the indication of the END of a coil 
-         READ(line,*,iostat=istat) xnod_in(1:3,inodes), currin,                &              
+         READ(line,*,iostat=istat) xnod_in(1:3,inodes), currin,                
      &     igroup, group_id
          lparsed = (istat .eq. 0)
          IF (lparsed) THEN
@@ -435,7 +435,7 @@
             ELSE 
                index1 = MINLOC(ABS(igroup - ngroup(:)))
                id_group = index1(1)
-               IF (igroup .ne. ngroup(id_group))                               & 
+               IF (igroup .ne. ngroup(id_group))                               
      &            STOP 'ID_GROUP != IGROUP in coils_dot_pass2'
             END IF
 
@@ -450,13 +450,13 @@
                this_xcent(1:3) = (/ zero, zero, xnod_in(3,1) /)
                this_enhat(1:3) = (/ zero, zero, 1.0_rprec /)
                this_rcirc = xnod_in(1,1)
-               CALL bsc_construct(coil_temp,'fil_circ',s_name,'',              &                   
-     &            currin_first, rcirc = this_rcirc,                            &
+               CALL bsc_construct(coil_temp,'fil_circ',s_name,'',              
+     &            currin_first, rcirc = this_rcirc,                            
      &            xcent = this_xcent(1:3),enhat = this_enhat(1:3))
 
             CASE (2) ! Two point filament - treat like infinite straight coil
                nnod = inodes
-               CALL bsc_construct(coil_temp,'fil_loop',s_name,'',              &                   
+               CALL bsc_construct(coil_temp,'fil_loop',s_name,'',              
      &            currin_first,xnod_in(1:3,1:nnod))
 
             CASE DEFAULT ! Filamentary loop
@@ -464,7 +464,7 @@
 !     first point of the coil. bsc_construct assumes that the
 !     coil is not yet closed, so don't include the last point
                nnod = inodes - 1
-               CALL bsc_construct(coil_temp,'fil_loop',s_name,'',              &                   
+               CALL bsc_construct(coil_temp,'fil_loop',s_name,'',              
      &            currin_first,xnod_in(1:3,1:nnod))
 
             END SELECT

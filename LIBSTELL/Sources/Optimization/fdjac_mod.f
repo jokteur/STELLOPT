@@ -563,7 +563,7 @@ C-----------------------------------------------
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
-      INTEGER :: j, istat, iread, ic1, ic2, irate, count_max
+      INTEGER :: j, k, istat, iread, ic1, ic2, irate, count_max
       REAL(rprec) :: eps, epsmch, h, dpmpar, temp, cur_norm
 C-----------------------------------------------
 C   E x t e r n a l   F u n c t i o n s

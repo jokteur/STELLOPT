@@ -41,9 +41,9 @@
          MODULE PROCEDURE check_log, check_real, check_int
       END INTERFACE
 
-      PUBLIC :: path_construct, path_append_vertex, path_destruct,             &
+      PUBLIC :: path_construct, path_append_vertex, path_destruct,             
      &          path_test, path_integrate
-      PRIVATE :: check, check_real, check_log, check_int,                      &
+      PRIVATE :: check, check_real, check_log, check_int,                      
      &           integrate, search, test_function
 
       CONTAINS
@@ -151,7 +151,7 @@
 !>                                     integration function.
 !>  @returns The total integrated path to the end.
 !-------------------------------------------------------------------------------
-      RECURSIVE FUNCTION path_integrate(this, integration_function,            &
+      RECURSIVE FUNCTION path_integrate(this, integration_function,            
      &                                  context) RESULT(total)
 
       IMPLICIT NONE
@@ -161,7 +161,7 @@
       TYPE (vertex), INTENT(inout)  :: this
       CHARACTER (len=1), INTENT(in) :: context(:)
       INTERFACE
-         FUNCTION integration_function(context, xcart, dxcart,                 &
+         FUNCTION integration_function(context, xcart, dxcart,                 
      &                                 length, dx)
          USE stel_kinds
          REAL (rprec) :: integration_function
@@ -173,9 +173,9 @@
 
 !  Start of executable code
       If (ASSOCIATED(this%next)) THEN
-         total = path_integrate(this%next, integration_function,               &
+         total = path_integrate(this%next, integration_function,               
      &                          context)
-         total = total + integrate(context, this, this%next,                   &
+         total = total + integrate(context, this, this%next,                   
      &                             integration_function)
       ELSE
          total = 0.0
@@ -199,7 +199,7 @@
 !>  @returns The vertex position along the path where the search condition was
 !>           found.
 !-------------------------------------------------------------------------------
-      RECURSIVE FUNCTION path_search(this, search_function, context,           &
+      RECURSIVE FUNCTION path_search(this, search_function, context,           
      &                               found) RESULT(xcart)
 
       REAL (rprec), DIMENSION(3)    :: xcart
@@ -220,10 +220,10 @@
       found = .false.
 
       IF (ASSOCIATED(this%next)) THEN
-         found = search(context, this, this%next, search_function,             &
+         found = search(context, this, this%next, search_function,             
      &                  xcart)
          IF (.not.found) THEN
-            xcart = path_search(this%next, search_function, context,           &
+            xcart = path_search(this%next, search_function, context,           
      &                          found)
          END IF
       END IF
@@ -248,7 +248,7 @@
 !>                                  integrand.
 !>  @returns The path integrated value between the vertex1 and vertex2.
 !-------------------------------------------------------------------------------
-      FUNCTION integrate(context, vertex1, vertex2,                            &
+      FUNCTION integrate(context, vertex1, vertex2,                            
      &                   integration_function)
 
       IMPLICIT NONE
@@ -259,7 +259,7 @@
       TYPE (vertex), INTENT(in)    :: vertex1
       TYPE (vertex), INTENT(in)    :: vertex2
       INTERFACE
-         FUNCTION integration_function(context, xcart, dxcart,                 &
+         FUNCTION integration_function(context, xcart, dxcart,                 
      &                                 length, dx)
          USE stel_kinds
          REAL (rprec) :: integration_function
@@ -297,8 +297,8 @@
       DO i = 1, nsteps
          xcart = xcart + dxcart
          length = length + dx
-         integrate = integrate                                                 &
-     &             + integration_function(context, xcart, dxcart,              &
+         integrate = integrate                                                 
+     &             + integration_function(context, xcart, dxcart,              
      &                                    length, dx)
       ENDDO
 
@@ -368,7 +368,7 @@
 !  Found an interval. Bisect the interval until the length is machine precision.
             DO WHILE (SQRT(DOT_PRODUCT(dxcart, dxcart)) .gt. dxFine)
                dxcart = dxcart/2.0
-               IF (.not.search_function(context, xcart,                        &
+               IF (.not.search_function(context, xcart,                        
      &                                  xcart + dxcart)) THEN
                   xcart = xcart + dxcart
                END IF
@@ -412,72 +412,72 @@
       IF (.not.path_test) RETURN
 
 !  Test to make sure first vertex is created.
-      CALL path_append_vertex(test_path,                                       &
+      CALL path_append_vertex(test_path,                                       
      &                        (/ 1.0_rprec, 2.0_rprec, 3.0_rprec /))
-      path_test = check(.true., ASSOCIATED(test_path), 1,                      &
+      path_test = check(.true., ASSOCIATED(test_path), 1,                      
      &                  "path_append_vertex")
       IF (.not.path_test) RETURN
-      path_test = check(1.0_rprec, test_path%position(1), 2,                   &
+      path_test = check(1.0_rprec, test_path%position(1), 2,                   
      &                  "path_append_vertex")
       IF (.not.path_test) RETURN
-      path_test = check(2.0_rprec, test_path%position(2), 3,                   &
+      path_test = check(2.0_rprec, test_path%position(2), 3,                   
      &                  "path_append_vertex")
       IF (.not.path_test) RETURN
-      path_test = check(3.0_rprec, test_path%position(3), 4,                   &
+      path_test = check(3.0_rprec, test_path%position(3), 4,                   
      &                  "path_append_vertex")
       IF (.not.path_test) RETURN
 
 !  Test to make sure second vertex is appended.
-      CALL path_append_vertex(test_path,                                       &
+      CALL path_append_vertex(test_path,                                       
      &                        (/ 4.0_rprec, 5.0_rprec, 6.0_rprec /))
-      path_test = check(.true., ASSOCIATED(test_path%next), 5,                 &
+      path_test = check(.true., ASSOCIATED(test_path%next), 5,                 
      &                  "path_append_vertex")
       IF (.not.path_test) RETURN
-      path_test = check(1.0_rprec, test_path%position(1), 6,                   &
+      path_test = check(1.0_rprec, test_path%position(1), 6,                   
      &                  "path_append_vertex")
       IF (.not.path_test) RETURN
-      path_test = check(2.0_rprec, test_path%position(2), 7,                   &
+      path_test = check(2.0_rprec, test_path%position(2), 7,                   
      &                  "path_append_vertex")
       IF (.not.path_test) RETURN
-      path_test = check(3.0_rprec, test_path%position(3), 8,                   &
+      path_test = check(3.0_rprec, test_path%position(3), 8,                   
      &                  "path_append_vertex")
       IF (.not.path_test) RETURN
-      path_test = check(4.0_rprec, test_path%next%position(1), 9,              &
+      path_test = check(4.0_rprec, test_path%next%position(1), 9,              
      &                  "path_append_vertex")
       IF (.not.path_test) RETURN
-      path_test = check(5.0_rprec, test_path%next%position(2), 10,             &
+      path_test = check(5.0_rprec, test_path%next%position(2), 10,             
      &                  "path_append_vertex")
       IF (.not.path_test) RETURN
-      path_test = check(6.0_rprec, test_path%next%position(3), 11,             &
+      path_test = check(6.0_rprec, test_path%next%position(3), 11,             
      &                  "path_append_vertex")
       IF (.not.path_test) RETURN
 
 !  Test to make sure third vertex is appended.
-      CALL path_append_vertex(test_path,                                       &
+      CALL path_append_vertex(test_path,                                       
      &                        (/ 7.0_rprec, 8.0_rprec, 9.0_rprec /))
-      path_test = check(.true., ASSOCIATED(test_path%next%next),               &
+      path_test = check(.true., ASSOCIATED(test_path%next%next),               
      &                  12, "path_append_vertex")
       IF (.not.path_test) RETURN
-      path_test = check(7.0_rprec, test_path%next%next%position(1), 12,        &
+      path_test = check(7.0_rprec, test_path%next%next%position(1), 12,        
      &                  "path_append_vertex")
       IF (.not.path_test) RETURN
-      path_test = check(8.0_rprec, test_path%next%next%position(2), 13,        &
+      path_test = check(8.0_rprec, test_path%next%next%position(2), 13,        
      &                  "path_append_vertex")
       IF (.not.path_test) RETURN
-      path_test = check(9.0_rprec, test_path%next%next%position(3), 14,        &
+      path_test = check(9.0_rprec, test_path%next%next%position(3), 14,        
      &                  "path_append_vertex")
       IF (.not.path_test) RETURN
 
 !  Test to make sure path object is destroyed.
       CALL path_destruct(test_path)
-      path_test = check(.false., ASSOCIATED(test_path), 1,                     &
+      path_test = check(.false., ASSOCIATED(test_path), 1,                     
      &                  "path_destruct")
       IF (.not.path_test) RETURN
 
 !  Test path integration.
-      CALL path_append_vertex(test_path,                                       &
+      CALL path_append_vertex(test_path,                                       
      &                        (/ 1.0_rprec, 0.0_rprec, 0.0_rprec /))
-      CALL path_append_vertex(test_path,                                       &
+      CALL path_append_vertex(test_path,                                       
      &                        (/ 0.0_rprec, 0.0_rprec, 0.0_rprec /))
       result = path_integrate(test_path, test_function, context)
       path_test = check(400.0_rprec, result, 1, "path_integrate")
@@ -514,7 +514,7 @@
 !  Start of executable code
       check_log = expected .eqv. received
       IF (.not.check_log) THEN
-         write(*,*) "integration_path.f: ", name, " test", testNum,            &
+         write(*,*) "integration_path.f: ", name, " test", testNum,            
      &              "failed."
          write(*,*) "Expected", expected, "Received", received
       END IF
@@ -547,7 +547,7 @@
 !  Start of executable code
       check_real = expected .eq. received
       IF (.not.check_real) THEN
-         write(*,*) "integration_path.f: ", name, " test", testNum,            &
+         write(*,*) "integration_path.f: ", name, " test", testNum,            
      &              "failed."
          write(*,*) "Expected", expected, "Received", received
       END IF
@@ -580,7 +580,7 @@
 !  Start of executable code
       check_int = expected .eq. received
       IF (.not.check_int) THEN
-         write(*,*) "integration_path.f: ", name, " test", testNum,            &
+         write(*,*) "integration_path.f: ", name, " test", testNum,            
      &              "failed."
          write(*,*) "Expected", expected, "Received", received
       END IF

@@ -63,7 +63,7 @@
 !-------------------------------------------------------------------------------
       two_power_gs = 1.0
       DO i = 3, 18, 3
-         two_power_gs = two_power_gs +                                         &
+         two_power_gs = two_power_gs +                                         
      &                  b(i)*exp(-((x - b(i+1))/b(i+2))**2)
       END DO
       two_power_gs = two_power_gs*two_power(x,b)
@@ -113,7 +113,7 @@
 ! Test two_power_gs function for x = 0.4, b = {1,1,1,0,0,1} is twopower(x,b)
       b(0:5) = (/ 1.0d+0, 1.0d+0, 1.0d+0, 0.0d+0, 0.0d+0, 1.0d+0 /)
       result = two_power_gs(0.4d+0, b)
-      function_test = check(two_power(0.4d+0, b),                              &
+      function_test = check(two_power(0.4d+0, b),                              
      &                      result,1,"two_power_gs")
       IF (.not.function_test) RETURN
 
@@ -141,7 +141,7 @@
 !-------------------------------------------------------------------------------
       check = expected .eq. received
       IF (.not.check) THEN
-         write(*,*) "functions.f: ", name, " test", testNum,                   &
+         write(*,*) "functions.f: ", name, " test", testNum,                   
      &              "failed."
          write(*,*) "Expected", expected, "Received", received
       END IF

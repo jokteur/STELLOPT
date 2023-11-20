@@ -90,84 +90,84 @@
 !  Variable Names for netCDF. Make them Private.
 !-------------------------------------------------------------------------------
 
-      CHARACTER (LEN=*), PRIVATE, PARAMETER ::                                 &
-     &  vn_s_name = 'mddc_desc_s_name',                                        &            
-     &  vn_l_name = 'mddc_desc_l_name',                                        &            
-     &  vn_units = 'mddc_desc_units',                                          &            
-     &  vn_sigma_default = 'mddc_desc_sigma_default',                          &            
-     &  vn_l_mdcoil_def = 'mddc_desc_l_mdcoil_def',                            &            
-     &  vn_mddc_type = 'mddc_desc_mddc_type',                                  &            
+      CHARACTER (LEN=*), PRIVATE, PARAMETER ::                                 
+     &  vn_s_name = 'mddc_desc_s_name',                                        
+     &  vn_l_name = 'mddc_desc_l_name',                                        
+     &  vn_units = 'mddc_desc_units',                                          
+     &  vn_sigma_default = 'mddc_desc_sigma_default',                          
+     &  vn_l_mdcoil_def = 'mddc_desc_l_mdcoil_def',                            
+     &  vn_mddc_type = 'mddc_desc_mddc_type',                                  
      &  vn_flux_factor = 'mddc_desc_flux_factor'
 
-      CHARACTER (LEN=64), PRIVATE ::                                           &
-     &  vn_s_name_use,                                                         &
-     &  vn_l_name_use,                                                         &
-     &  vn_units_use,                                                          &         
-     &  vn_sigma_default_use,                                                  &            
-     &  vn_l_mdcoil_def_use,                                                   &            
-     &  vn_mddc_type_use,                                                      &            
+      CHARACTER (LEN=64), PRIVATE ::                                           
+     &  vn_s_name_use,                                                         
+     &  vn_l_name_use,                                                         
+     &  vn_units_use,                                                          
+     &  vn_sigma_default_use,                                                  
+     &  vn_l_mdcoil_def_use,                                                   
+     &  vn_mddc_type_use,                                                      
      &  vn_flux_factor_use                   
 
-      CHARACTER (LEN=*), PRIVATE, PARAMETER ::                                 &
+      CHARACTER (LEN=*), PRIVATE, PARAMETER ::                                 
      &  vn_desc_s_name = 'mddc_data_desc_s_name'
 
-      CHARACTER (LEN=64), PRIVATE ::                                           &
+      CHARACTER (LEN=64), PRIVATE ::                                           
      &  vn_desc_s_name_use
 
-      CHARACTER (LEN=*), PRIVATE, PARAMETER ::                                 &
-     &  vn_code_name = 'mddc_mrf_code_name',                                   &
-     &  vn_code_version = 'mddc_mrf_code_version',                             &
-     &  vn_date_run = 'mddc_mrf_date_run',                                     &         
-     &  vn_field_coils_id = 'mddc_mrf_field_coils_id',                         &         
-     &  vn_n_field_cg = 'mddc_mrf_n_field_cg',                                 &         
-     &  vn_rdiag_coilg_1 = 'mddc_mrf_rdiag_coilg_1',                           &         
-     &  vn_extcur_mg = 'mddc_mrf_extcur_mg',                                   &         
-     &  vn_ir = 'mddc_mrf_ir',                                                 &         
-     &  vn_jz = 'mddc_mrf_jz',                                                 &         
-     &  vn_kp = 'mddc_mrf_kp',                                                 &         
-     &  vn_kp_store = 'mddc_mrf_kp_store',                                     &         
-     &  vn_rmin = 'mddc_mrf_rmin',                                             &         
-     &  vn_rmax = 'mddc_mrf_rmax',                                             &         
-     &  vn_zmin = 'mddc_mrf_zmin',                                             &         
-     &  vn_zmax = 'mddc_mrf_zmax',                                             &         
-     &  vn_n_field_periods = 'mddc_mrf_n_field_periods',                       &         
-     &  vn_lstell_sym = 'mddc_mrf_lstell_sym',                                 &         
-     &  vn_a_r = 'mddc_mrf_a_r',                                               &         
-     &  vn_a_f = 'mddc_mrf_a_f',                                               &         
-     &  vn_a_z = 'mddc_mrf_a_z',                                               &
-     &  vn_use_con_shell = 'mddc_mrf_use_con_shell',                           &
-     &  vn_a_s_r = 'mddc_mrf_a_s_r',                                           &
-     &  vn_a_s_f = 'mddc_mrf_a_s_f',                                           &
-     &  vn_a_s_z = 'mddc_mrf_a_s_z',                                           &
-     &  vn_kp_shell = 'mddc_mrf_kp_shell',                                     &
+      CHARACTER (LEN=*), PRIVATE, PARAMETER ::                                 
+     &  vn_code_name = 'mddc_mrf_code_name',                                   
+     &  vn_code_version = 'mddc_mrf_code_version',                             
+     &  vn_date_run = 'mddc_mrf_date_run',                                     
+     &  vn_field_coils_id = 'mddc_mrf_field_coils_id',                         
+     &  vn_n_field_cg = 'mddc_mrf_n_field_cg',                                 
+     &  vn_rdiag_coilg_1 = 'mddc_mrf_rdiag_coilg_1',                           
+     &  vn_extcur_mg = 'mddc_mrf_extcur_mg',                                   
+     &  vn_ir = 'mddc_mrf_ir',                                                 
+     &  vn_jz = 'mddc_mrf_jz',                                                 
+     &  vn_kp = 'mddc_mrf_kp',                                                 
+     &  vn_kp_store = 'mddc_mrf_kp_store',                                     
+     &  vn_rmin = 'mddc_mrf_rmin',                                             
+     &  vn_rmax = 'mddc_mrf_rmax',                                             
+     &  vn_zmin = 'mddc_mrf_zmin',                                             
+     &  vn_zmax = 'mddc_mrf_zmax',                                             
+     &  vn_n_field_periods = 'mddc_mrf_n_field_periods',                       
+     &  vn_lstell_sym = 'mddc_mrf_lstell_sym',                                 
+     &  vn_a_r = 'mddc_mrf_a_r',                                               
+     &  vn_a_f = 'mddc_mrf_a_f',                                               
+     &  vn_a_z = 'mddc_mrf_a_z',                                               
+     &  vn_use_con_shell = 'mddc_mrf_use_con_shell',                           
+     &  vn_a_s_r = 'mddc_mrf_a_s_r',                                           
+     &  vn_a_s_f = 'mddc_mrf_a_s_f',                                           
+     &  vn_a_s_z = 'mddc_mrf_a_s_z',                                           
+     &  vn_kp_shell = 'mddc_mrf_kp_shell',                                     
      &  vn_kp_shell_store = 'mddc_mrf_kp_shell_store'
 
-      CHARACTER (LEN=64), PRIVATE ::                                           &
-     &  vn_code_name_use,                                                      &
-     &  vn_code_version_use,                                                   &
-     &  vn_date_run_use,                                                       &
-     &  vn_field_coils_id_use,                                                 &
-     &  vn_n_field_cg_use,                                                     &
-     &  vn_rdiag_coilg_1_use,                                                  &
-     &  vn_extcur_mg_use,                                                      &
-     &  vn_ir_use,                                                             &
-     &  vn_jz_use,                                                             &
-     &  vn_kp_use,                                                             &
-     &  vn_kp_store_use,                                                       &
-     &  vn_rmin_use,                                                           &
-     &  vn_rmax_use,                                                           &
-     &  vn_zmin_use,                                                           &
-     &  vn_zmax_use,                                                           &
-     &  vn_n_field_periods_use,                                                &
-     &  vn_lstell_sym_use,                                                     &
-     &  vn_a_r_use,                                                            &
-     &  vn_a_f_use,                                                            &
-     &  vn_a_z_use,                                                            &
-     &  vn_use_con_shell_use,                                                  &
-     &  vn_a_s_r_use,                                                          &
-     &  vn_a_s_f_use,                                                          &
-     &  vn_a_S_z_use,                                                          &
-     &  vn_kp_shell_use,                                                       &
+      CHARACTER (LEN=64), PRIVATE ::                                           
+     &  vn_code_name_use,                                                      
+     &  vn_code_version_use,                                                   
+     &  vn_date_run_use,                                                       
+     &  vn_field_coils_id_use,                                                 
+     &  vn_n_field_cg_use,                                                     
+     &  vn_rdiag_coilg_1_use,                                                  
+     &  vn_extcur_mg_use,                                                      
+     &  vn_ir_use,                                                             
+     &  vn_jz_use,                                                             
+     &  vn_kp_use,                                                             
+     &  vn_kp_store_use,                                                       
+     &  vn_rmin_use,                                                           
+     &  vn_rmax_use,                                                           
+     &  vn_zmin_use,                                                           
+     &  vn_zmax_use,                                                           
+     &  vn_n_field_periods_use,                                                
+     &  vn_lstell_sym_use,                                                     
+     &  vn_a_r_use,                                                            
+     &  vn_a_f_use,                                                            
+     &  vn_a_z_use,                                                            
+     &  vn_use_con_shell_use,                                                  
+     &  vn_a_s_r_use,                                                          
+     &  vn_a_s_f_use,                                                          
+     &  vn_a_S_z_use,                                                          
+     &  vn_kp_shell_use,                                                       
      &  vn_kp_shell_store_use
 
 !-------------------------------------------------------------------------------
@@ -189,7 +189,7 @@
 !  Generic Define
 !-------------------------------------------------------------------------------
       INTERFACE mddc_cdf_define
-         MODULE PROCEDURE mddc_cdf_define_desc,                                &
+         MODULE PROCEDURE mddc_cdf_define_desc,                                
      &                    mddc_cdf_define_mrf
          END INTERFACE
 
@@ -197,7 +197,7 @@
 !  Generic Write
 !-------------------------------------------------------------------------------
       INTERFACE mddc_cdf_write
-         MODULE PROCEDURE mddc_cdf_write_desc,                                 &
+         MODULE PROCEDURE mddc_cdf_write_desc,                                 
      &                    mddc_cdf_write_mrf
          END INTERFACE
 
@@ -205,7 +205,7 @@
 !  Generic Read
 !-------------------------------------------------------------------------------
       INTERFACE mddc_cdf_read
-         MODULE PROCEDURE mddc_cdf_read_desc,                                  &
+         MODULE PROCEDURE mddc_cdf_read_desc,                                  
      &                    mddc_cdf_read_mrf
          END INTERFACE
 !-------------------------------------------------------------------------------
@@ -234,7 +234,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'mddc_cdf_define_desc: '
       CHARACTER(len=32) :: prefix_use
 
@@ -256,13 +256,13 @@
       CALL cdf_define(iou, TRIM(vn_s_name_use), this % s_name)
       CALL cdf_define(iou, TRIM(vn_l_name_use), this % l_name)
       CALL cdf_define(iou, TRIM(vn_units_use), this % units)
-      CALL cdf_define(iou, TRIM(vn_sigma_default_use),                         &
+      CALL cdf_define(iou, TRIM(vn_sigma_default_use),                         
      &   this % sigma_default)
-      CALL cdf_define(iou, TRIM(vn_l_mdcoil_def_use),                          &
+      CALL cdf_define(iou, TRIM(vn_l_mdcoil_def_use),                          
      &      this % l_mdcoil_def)
-      CALL cdf_define(iou, TRIM(vn_mddc_type_use),                             &
+      CALL cdf_define(iou, TRIM(vn_mddc_type_use),                             
      &      this % mddc_type)
-      CALL cdf_define(iou, TRIM(vn_flux_factor_use),                           &
+      CALL cdf_define(iou, TRIM(vn_flux_factor_use),                           
      &      this % flux_factor)
 
 !  bsc_coil and mrf
@@ -295,7 +295,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'mddc_cdf_define_mrf: '
       CHARACTER(len=32) :: prefix_use
 
@@ -315,14 +315,14 @@
          
 ! Define Components
       CALL cdf_define(iou, TRIM(vn_code_name_use), this % code_name)
-      CALL cdf_define(iou, TRIM(vn_code_version_use),                          &
+      CALL cdf_define(iou, TRIM(vn_code_version_use),                          
      &   this % code_version)
       CALL cdf_define(iou, TRIM(vn_date_run_use), this % date_run)
-      CALL cdf_define(iou, TRIM(vn_field_coils_id_use),                        &
+      CALL cdf_define(iou, TRIM(vn_field_coils_id_use),                        
      &   this % field_coils_id)
-      CALL cdf_define(iou, TRIM(vn_n_field_cg_use),                            &
+      CALL cdf_define(iou, TRIM(vn_n_field_cg_use),                            
      &   this % n_field_cg)
-      CALL cdf_define(iou, TRIM(vn_rdiag_coilg_1_use),                         &
+      CALL cdf_define(iou, TRIM(vn_rdiag_coilg_1_use),                         
      &   this % rdiag_coilg_1)
       CALL cdf_define(iou, TRIM(vn_extcur_mg_use), this % extcur_mg)
       CALL cdf_define(iou, TRIM(vn_ir_use), this % ir)
@@ -333,15 +333,15 @@
       CALL cdf_define(iou, TRIM(vn_rmax_use), this % rmax)
       CALL cdf_define(iou, TRIM(vn_zmin_use), this % zmin)
       CALL cdf_define(iou, TRIM(vn_zmax_use), this % zmax)
-      CALL cdf_define(iou, TRIM(vn_n_field_periods_use),                       &
+      CALL cdf_define(iou, TRIM(vn_n_field_periods_use),                       
      &   this % n_field_periods)
-      CALL cdf_define(iou, TRIM(vn_lstell_sym_use),                            &
+      CALL cdf_define(iou, TRIM(vn_lstell_sym_use),                            
      &   this % lstell_sym)
       CALL cdf_define(iou, TRIM(vn_a_r_use), this % a_r)
       CALL cdf_define(iou, TRIM(vn_a_f_use), this % a_f)
       CALL cdf_define(iou, TRIM(vn_a_z_use), this % a_z)
 
-      CALL cdf_define(iou, TRIM(vn_use_con_shell_use),                         &
+      CALL cdf_define(iou, TRIM(vn_use_con_shell_use),                         
      &                this%use_con_shell)
       IF (this%use_con_shell) THEN
          CALL cdf_define(iou, TRIM(vn_kp_shell_use), this % kp_shell)
@@ -377,7 +377,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'mddc_cdf_write_desc: '
       CHARACTER(len=32) :: prefix_use
 
@@ -398,13 +398,13 @@
       CALL cdf_write(iou, TRIM(vn_s_name_use), this % s_name)
       CALL cdf_write(iou, TRIM(vn_l_name_use), this % l_name)
       CALL cdf_write(iou, TRIM(vn_units_use), this % units)
-      CALL cdf_write(iou, TRIM(vn_sigma_default_use),                         &
+      CALL cdf_write(iou, TRIM(vn_sigma_default_use),                         
      &   this % sigma_default)
-      CALL cdf_write(iou, TRIM(vn_l_mdcoil_def_use),                          &
+      CALL cdf_write(iou, TRIM(vn_l_mdcoil_def_use),                          
      &      this % l_mdcoil_def)
-      CALL cdf_write(iou, TRIM(vn_mddc_type_use),                             &
+      CALL cdf_write(iou, TRIM(vn_mddc_type_use),                             
      &      this % mddc_type)
-      CALL cdf_write(iou, TRIM(vn_flux_factor_use),                           &
+      CALL cdf_write(iou, TRIM(vn_flux_factor_use),                           
      &      this % flux_factor)
 
 !  bsc_coil and mrf
@@ -437,7 +437,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'mddc_cdf_write_mrf: '
       CHARACTER(len=32) :: prefix_use
 
@@ -457,14 +457,14 @@
          
 ! Write Components
       CALL cdf_write(iou, TRIM(vn_code_name_use), this % code_name)
-      CALL cdf_write(iou, TRIM(vn_code_version_use),                           &
+      CALL cdf_write(iou, TRIM(vn_code_version_use),                           
      &   this % code_version)
       CALL cdf_write(iou, TRIM(vn_date_run_use), this % date_run)
-      CALL cdf_write(iou, TRIM(vn_field_coils_id_use),                         &
+      CALL cdf_write(iou, TRIM(vn_field_coils_id_use),                         
      &   this % field_coils_id)
-      CALL cdf_write(iou, TRIM(vn_n_field_cg_use),                             &
+      CALL cdf_write(iou, TRIM(vn_n_field_cg_use),                             
      &   this % n_field_cg)
-      CALL cdf_write(iou, TRIM(vn_rdiag_coilg_1_use),                          &
+      CALL cdf_write(iou, TRIM(vn_rdiag_coilg_1_use),                          
      &   this % rdiag_coilg_1)
       CALL cdf_write(iou, TRIM(vn_extcur_mg_use), this % extcur_mg)
       CALL cdf_write(iou, TRIM(vn_ir_use), this % ir)
@@ -475,19 +475,19 @@
       CALL cdf_write(iou, TRIM(vn_rmax_use), this % rmax)
       CALL cdf_write(iou, TRIM(vn_zmin_use), this % zmin)
       CALL cdf_write(iou, TRIM(vn_zmax_use), this % zmax)
-      CALL cdf_write(iou, TRIM(vn_n_field_periods_use),                        &
+      CALL cdf_write(iou, TRIM(vn_n_field_periods_use),                        
      &   this % n_field_periods)
-      CALL cdf_write(iou, TRIM(vn_lstell_sym_use),                             &
+      CALL cdf_write(iou, TRIM(vn_lstell_sym_use),                             
      &   this % lstell_sym)
       CALL cdf_write(iou, TRIM(vn_a_r_use), this % a_r)
       CALL cdf_write(iou, TRIM(vn_a_f_use), this % a_f)
       CALL cdf_write(iou, TRIM(vn_a_z_use), this % a_z)
 
-      CALL cdf_write(iou, TRIM(vn_use_con_shell_use),                          &
+      CALL cdf_write(iou, TRIM(vn_use_con_shell_use),                          
      &               this%use_con_shell)
       IF (this%use_con_shell) THEN
          CALL cdf_write(iou, TRIM(vn_kp_shell_use), this % kp_shell)
-         CALL cdf_write(iou, TRIM(vn_kp_shell_store_use),                      &
+         CALL cdf_write(iou, TRIM(vn_kp_shell_store_use),                      
      &                  this % kp_shell_store)
 
          CALL cdf_write(iou, TRIM(vn_a_s_r_use), this % a_s_r)
@@ -522,7 +522,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'mddc_cdf_read_desc: '
       CHARACTER(len=32) :: prefix_use
       INTEGER, DIMENSION(3) :: dimlens
@@ -571,7 +571,7 @@
       
 
 ! Create the mddc_desc, this
-      CALL mddc_desc_construct(this,s_name,l_name,units,                       &
+      CALL mddc_desc_construct(this,s_name,l_name,units,                       
      &   sigma_default,mddc_type,mdcoil,mrf,flux_factor)
 
 !  Destroy the local bsc_coil mdcoil, and mrf to avoid memory leakage
@@ -634,12 +634,12 @@
       INTEGER                                    :: kp_shell_store
 
 ! Declare local variables
-      INTEGER           :: ir1, ir2, ir3, if1, if2, if3, iz1,           &
+      INTEGER           :: ir1, ir2, ir3, if1, if2, if3, iz1,           
      &    iz2, iz3
       INTEGER           :: ier1, ier2, ier3
       INTEGER                             :: n_field_cg_decl    
 
-      CHARACTER(len=*), PARAMETER  :: sub_name =                               &
+      CHARACTER(len=*), PARAMETER  :: sub_name =                               
      &  'mddc_cdf_read_data: '
 
 !-----------------------------------------------
@@ -668,9 +668,9 @@
 
       CALL cdf_inquire(iou, TRIM(vn_rdiag_coilg_1_use),dimlens)
       n_field_cg_decl = dimlens(1)
-      CALL assert_eq(0,dimlens(2),dimlens(3),                                  &
+      CALL assert_eq(0,dimlens(2),dimlens(3),                                  
      &   sub_name // 'Unexpected rdiag_coilg_1 dimensions')
-      CALL assert_eq(n_field_cg,n_field_cg_decl,                               &
+      CALL assert_eq(n_field_cg,n_field_cg_decl,                               
      &   sub_name // 'Disagreement rdiag_coilg_1 dimensions')
       ALLOCATE(rdiag_coilg_1(n_field_cg),STAT=ier1)
       CALL assert_eq(0,ier1,sub_name // 'alloc rdiag_coilg_1')
@@ -678,9 +678,9 @@
 
       CALL cdf_inquire(iou, TRIM(vn_extcur_mg_use),dimlens)
       n_field_cg_decl = dimlens(1)
-      CALL assert_eq(0,dimlens(2),dimlens(3),                                  &
+      CALL assert_eq(0,dimlens(2),dimlens(3),                                  
      &   sub_name // 'Unexpected extcur_mg dimensions')
-      CALL assert_eq(n_field_cg,n_field_cg_decl,                               &
+      CALL assert_eq(n_field_cg,n_field_cg_decl,                               
      &   sub_name // 'Disagreement extcur_mg dimensions')
       ALLOCATE(extcur_mg(n_field_cg),STAT=ier1)
       CALL assert_eq(0,ier1,sub_name // 'alloc extcur_mg')
@@ -701,11 +701,11 @@
       ir1 = dimlens(1)
       ir2 = dimlens(2)
       ir3 = dimlens(3)
-      CALL assert_eq(ir,ir1,                                                   &
+      CALL assert_eq(ir,ir1,                                                   
      &   sub_name // 'Disagreement ir a_r dimensions')
-      CALL assert_eq(jz,ir2,                                                   &
+      CALL assert_eq(jz,ir2,                                                   
      &   sub_name // 'Disagreement jz a_r dimensions')
-      CALL assert_eq(kp_store,ir3,                                             &
+      CALL assert_eq(kp_store,ir3,                                             
      &   sub_name // 'Disagreement kp_store a_r dimensions')
       ALLOCATE(a_r(ir1,ir2,ir3),STAT=ier1)
       CALL assert_eq(0,ier1,sub_name // 'alloc a_r')
@@ -715,11 +715,11 @@
       if1 = dimlens(1)
       if2 = dimlens(2)
       if3 = dimlens(3)
-      CALL assert_eq(ir,if1,                                                   &
+      CALL assert_eq(ir,if1,                                                   
      &   sub_name // 'Disagreement ir a_f dimensions')
-      CALL assert_eq(jz,if2,                                                   &
+      CALL assert_eq(jz,if2,                                                   
      &   sub_name // 'Disagreement jz a_f dimensions')
-      CALL assert_eq(kp_store,if3,                                             &
+      CALL assert_eq(kp_store,if3,                                             
      &   sub_name // 'Disagreement kp_store a_f dimensions')
       ALLOCATE(a_f(if1,if2,if3),STAT=ier1)
       CALL assert_eq(0,ier1,sub_name // 'alloc a_f')
@@ -729,11 +729,11 @@
       iz1 = dimlens(1)
       iz2 = dimlens(2)
       iz3 = dimlens(3)
-      CALL assert_eq(ir,iz1,                                                   &
+      CALL assert_eq(ir,iz1,                                                   
      &   sub_name // 'Disagreement ir a_z dimensions')
-      CALL assert_eq(jz,iz2,                                                   &
+      CALL assert_eq(jz,iz2,                                                   
      &   sub_name // 'Disagreement jz a_z dimensions')
-      CALL assert_eq(kp_store,iz3,                                             &
+      CALL assert_eq(kp_store,iz3,                                             
      &   sub_name // 'Disagreement kp_store a_z dimensions')
       ALLOCATE(a_z(iz1,iz2,iz3),STAT=ier1)
       CALL assert_eq(0,ier1,sub_name // 'alloc a_z')
@@ -743,7 +743,7 @@
       SELECT CASE (code_version)
 
          CASE ('MRC 2014-09-28')
-            CALL cdf_read(iou, TRIM(vn_use_con_shell_use),                     &
+            CALL cdf_read(iou, TRIM(vn_use_con_shell_use),                     
      &                    use_con_shell)
 
             IF (use_con_shell) THEN
@@ -774,9 +774,9 @@
       END SELECT
 
 ! Create the mddc_mrf, this
-      CALL mddc_mrf_construct(this,code_name,code_version,                     &
-     &  date_run,field_coils_id,rdiag_coilg_1,extcur_mg,kp,                    &
-     &  rmin,rmax,zmin,zmax,n_field_periods,lstell_sym,a_r,a_f,a_z,            &
+      CALL mddc_mrf_construct(this,code_name,code_version,                     
+     &  date_run,field_coils_id,rdiag_coilg_1,extcur_mg,kp,                    
+     &  rmin,rmax,zmin,zmax,n_field_periods,lstell_sym,a_r,a_f,a_z,            
      &  use_con_shell, a_s_r, a_s_f, a_s_z, kp_shell)
 
 ! Deallocate the local pointers
@@ -815,7 +815,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'mddc_cdf_defvn_desc: '
 
 !-----------------------------------------------
@@ -826,13 +826,13 @@
       vn_s_name_use = mddc_cdf_mknam(prefix_use,vn_s_name)
       vn_l_name_use = mddc_cdf_mknam(prefix_use,vn_l_name)
       vn_units_use = mddc_cdf_mknam(prefix_use,vn_units)
-      vn_sigma_default_use = mddc_cdf_mknam(prefix_use,                        &
+      vn_sigma_default_use = mddc_cdf_mknam(prefix_use,                        
      &   vn_sigma_default)
-      vn_l_mdcoil_def_use = mddc_cdf_mknam(prefix_use,                         &
+      vn_l_mdcoil_def_use = mddc_cdf_mknam(prefix_use,                         
      &   vn_l_mdcoil_def)
-      vn_mddc_type_use = mddc_cdf_mknam(prefix_use,                            &
+      vn_mddc_type_use = mddc_cdf_mknam(prefix_use,                            
      &   vn_mddc_type)
-      vn_flux_factor_use = mddc_cdf_mknam(prefix_use,                          &
+      vn_flux_factor_use = mddc_cdf_mknam(prefix_use,                          
      &   vn_flux_factor)
       
       RETURN
@@ -857,7 +857,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'mddc_cdf_defvn_mrf: '
 
 !-----------------------------------------------
@@ -866,14 +866,14 @@
 
 ! Define all variable names
       vn_code_name_use = mddc_cdf_mknam(prefix_use,vn_code_name)
-      vn_code_version_use = mddc_cdf_mknam(prefix_use,                         &
+      vn_code_version_use = mddc_cdf_mknam(prefix_use,                         
      &   vn_code_version)
       vn_date_run_use = mddc_cdf_mknam(prefix_use,vn_date_run)
-      vn_field_coils_id_use = mddc_cdf_mknam(prefix_use,                       &
+      vn_field_coils_id_use = mddc_cdf_mknam(prefix_use,                       
      &   vn_field_coils_id)
-      vn_n_field_cg_use = mddc_cdf_mknam(prefix_use,                           &
+      vn_n_field_cg_use = mddc_cdf_mknam(prefix_use,                           
      &   vn_n_field_cg)
-      vn_rdiag_coilg_1_use = mddc_cdf_mknam(prefix_use,                        &
+      vn_rdiag_coilg_1_use = mddc_cdf_mknam(prefix_use,                        
      &   vn_rdiag_coilg_1)
       vn_extcur_mg_use = mddc_cdf_mknam(prefix_use,vn_extcur_mg)
       vn_ir_use = mddc_cdf_mknam(prefix_use,vn_ir)
@@ -884,7 +884,7 @@
       vn_rmax_use = mddc_cdf_mknam(prefix_use,vn_rmax)
       vn_zmin_use = mddc_cdf_mknam(prefix_use,vn_zmin)
       vn_zmax_use = mddc_cdf_mknam(prefix_use,vn_zmax)
-      vn_n_field_periods_use = mddc_cdf_mknam(prefix_use,                      &
+      vn_n_field_periods_use = mddc_cdf_mknam(prefix_use,                      
      &   vn_n_field_periods)
       vn_lstell_sym_use = mddc_cdf_mknam(prefix_use,vn_lstell_sym)
       vn_a_r_use = mddc_cdf_mknam(prefix_use,vn_a_r)
@@ -895,7 +895,7 @@
       vn_a_s_f_use = mddc_cdf_mknam(prefix_use,vn_a_s_f)
       vn_a_s_z_use = mddc_cdf_mknam(prefix_use,vn_a_s_z)
       vn_kp_shell_use = mddc_cdf_mknam(prefix_use,vn_kp_shell)
-      vn_kp_shell_store_use = mddc_cdf_mknam(prefix_use,                       &
+      vn_kp_shell_store_use = mddc_cdf_mknam(prefix_use,                       
      &                                       vn_kp_shell_store)
 
       RETURN

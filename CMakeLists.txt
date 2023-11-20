@@ -16,7 +16,9 @@ add_compile_definitions(MPI_OPT NETCDF LHDF5)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp -fallow-argument-mismatch -Wno-argument-mismatch -fPIC -O2 -fexternal-blas -fbacktrace -fcheck=all,no-array-temps")
-    # -fcheck=all,no-array-temps 
+    set(Fortran_FreeFORM_FLAGS "-ffree-form -ffree-line-length-none")
+    set(Fortran_FixedFORM_FLAGS "-ffixed-form -ffixed-line-length-none")
 endif()
+#TODO: Intel, MSVC, Clang
 
 add_subdirectory(LIBSTELL)

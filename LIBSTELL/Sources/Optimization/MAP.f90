@@ -33,13 +33,13 @@
 !        ier         Error flag
 !        iunit       File unit number
 !----------------------------------------------------------------------
-!DEC$ IF DEFINED (MPI_OPT)
+#if defined (MPI_OPT)
       INTEGER :: status(MPI_STATUS_size)                     !mpi stuff
       INTEGER :: myid, numprocs
-!DEC$ ELSE
+#else
       INTEGER, PARAMETER :: myid = 0
       INTEGER, PARAMETER :: numprocs = 1
-!DEC$ ENDIF
+#endif
       INTEGER :: num_search, i, j, itemp, ierr_mpi, numsent, iflag, &
                  num_recd, dex1, dex2, ierr, iunit
       INTEGER , ALLOCATABLE :: bin_step(:)

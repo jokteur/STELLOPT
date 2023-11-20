@@ -59,7 +59,7 @@
 #if defined(__GFORTRAN__) || defined(__INTEL_COMPILER)
       error = RENAME(TRIM(file_source), TRIM(file_dest))
 #else
-      CALL system(cmd // TRIM(file_source) // ' ' // file_dest,           &
+      CALL system(cmd // TRIM(file_source) // ' ' // file_dest,           
      &            error)
 #endif
       END SUBROUTINE
@@ -110,9 +110,9 @@
 
          INTEGER, PARAMETER :: length = 300
          INTEGER (c_int)    :: copy_file_c
-         CHARACTER (kind=c_char,len=1), DIMENSION(length), INTENT(in) ::       &
+         CHARACTER (kind=c_char,len=1), DIMENSION(length), INTENT(in) ::       
      &      src
-         CHARACTER (kind=c_char,len=1), DIMENSION(length), INTENT(in) ::       &
+         CHARACTER (kind=c_char,len=1), DIMENSION(length), INTENT(in) ::       
      &      dest
          END FUNCTION
       END INTERFACE
@@ -120,7 +120,7 @@
 
 !  Start of executable code
 #if defined(FAST_COPY)
-      error = copy_file_c(TRIM(file_source) // C_NULL_CHAR,                    &
+      error = copy_file_c(TRIM(file_source) // C_NULL_CHAR,                    
      &                    TRIM(file_dest) // C_NULL_CHAR)
 #else
 
@@ -153,12 +153,12 @@
 
       max_block_size = MIN(block_size, file_size)
 
-      CALL safe_open(io_source, error, file_source, 'old',                     &
-     &               'unformatted', record_in=max_block_size,                  &
+      CALL safe_open(io_source, error, file_source, 'old',                     
+     &               'unformatted', record_in=max_block_size,                  
      &               access_in='direct')
       IF (error .ne. 0) WRITE (*,1002) TRIM(file_source)
 
-      CALL safe_open(io_dest, error, file_dest, 'new', 'unformatted',          &
+      CALL safe_open(io_dest, error, file_dest, 'new', 'unformatted',          
      &               record_in=max_block_size, access_in='direct')
       IF (error .ne. 0) WRITE (*,1003) TRIM(file_dest)
 
@@ -178,9 +178,9 @@
 !  The block size may not bet an even multiple of the file size. Copy the
 !  remaining part in 1 byte chunks.
       IF (file_size - (i_rec - 1)*max_block_size .gt. 0) THEN
-         OPEN (unit=io_source, file=file_source, status='old',                 &
+         OPEN (unit=io_source, file=file_source, status='old',                 
      &         access='direct', recl=1)
-         OPEN (unit=io_dest, file=file_dest, status='old',                     &
+         OPEN (unit=io_dest, file=file_dest, status='old',                     
      &         access='direct', recl=1)
 
          DO i_rec = i_rec, file_size
@@ -331,12 +331,12 @@
 !    * A single backslash, for example, "\directory" or "\file.txt". This is
 !      also referred to as an absolute path.
 !
-      is_absolute_path = (path(1:2)         .eq. '\\') .or.                    &
-     &                   (INDEX(path, ':\') .eq. 0)    .or.                    &
+      is_absolute_path = (path(1:2)         .eq. '\\') .or.                    
+     &                   (INDEX(path, ':\') .eq. 0)    .or.                    
      &                   (path(1:1)         .eq. '\')
 #else
 !  On unix systems, an absolute path starts with either / or ~
-      is_absolute_path = (path(1:1) .eq. '/') .or.                             &
+      is_absolute_path = (path(1:1) .eq. '/') .or.                             
      &                   (path(1:1) .eq. '~')
 #endif
 
@@ -360,10 +360,10 @@
 
 !  Start of executable code
 #if defined(WIN32)
-      get_path_of_file =                                                       &
+      get_path_of_file =                                                       
      &   file(1:(INDEX(TRIM(file), '\', back = .true.) - 1))
 #else
-      get_path_of_file =                                                       &
+      get_path_of_file =                                                       
      &   file(1:(INDEX(TRIM(file), '/', back = .true.) - 1))
 #endif
 

@@ -96,9 +96,9 @@
 !
 !  For d_type = 'ipch' (interferometry-polarimetry chord)
 !-------------------------------------------------------------------------------
-      SUBROUTINE ipch_desc_construct(this, chord_name,                         &
-     &                               xcart_i, xcart_f,                         &
-     &                               ip_type, wavelength,                      &
+      SUBROUTINE ipch_desc_construct(this, chord_name,                         
+     &                               xcart_i, xcart_f,                         
+     &                               ip_type, wavelength,                      
      &                               inDegrees)
 
          IMPLICIT NONE

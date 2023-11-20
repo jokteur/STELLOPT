@@ -109,10 +109,10 @@
 !  Generic construct
 !-------------------------------------------------------------------------------
       INTERFACE diagnostic_construct
-         MODULE PROCEDURE diagnostic_desc_construct_mddc,                      &
-     &                    diagnostic_desc_construct_sxrch,                     &     
-     &                    diagnostic_desc_construct_ipch,                      &     
-     &                    diagnostic_desc_cnstrct_thscte,                      &
+         MODULE PROCEDURE diagnostic_desc_construct_mddc,                      
+     &                    diagnostic_desc_construct_sxrch,                     
+     &                    diagnostic_desc_construct_ipch,                      
+     &                    diagnostic_desc_cnstrct_thscte,                      
      &                    diagnostic_desc_construct_extcurz
          END INTERFACE
 
@@ -143,7 +143,7 @@
 !
 !  For d_type = 'mddc' (magnetic diagnostic-dot coil)
 !-------------------------------------------------------------------------------
-      SUBROUTINE diagnostic_desc_construct_mddc(this,d_type,s_name,            &
+      SUBROUTINE diagnostic_desc_construct_mddc(this,d_type,s_name,            
      &   l_name, units,sigma_default,mddc)
 
 !  NB. 
@@ -162,7 +162,7 @@
       TYPE (mddc_desc), INTENT(in)               :: mddc
 
 !  Declare local variables
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'diagnostic_desc_construct_mddc: '
 
 !  Start of executable code
@@ -183,7 +183,7 @@
          this % mddc =  mddc
 
       CASE DEFAULT
-         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   &
+         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   
      &      char=d_type)
       END SELECT ! Different coding depending on d_type
       
@@ -191,7 +191,7 @@
       END SUBROUTINE diagnostic_desc_construct_mddc
 
 !======================================================================
-      SUBROUTINE diagnostic_desc_construct_sxrch(this,d_type,s_name,           &
+      SUBROUTINE diagnostic_desc_construct_sxrch(this,d_type,s_name,           
      &   l_name, units,sigma_default,sxrch)
 !-------------------------------------------------------------------------------
 !  Construct a diagnostic_desc with sxrch diagnostic
@@ -215,7 +215,7 @@
       TYPE (sxrch_desc), INTENT(in)               :: sxrch
       
 !  Declare local variables
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'diagnostic_desc_construct_sxrch: '
 
 !  Start of executable code
@@ -236,7 +236,7 @@
          this % sxrch =  sxrch
 
       CASE DEFAULT
-         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   &
+         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   
      &      char=d_type)
       END SELECT ! Different coding depending on d_type
      
@@ -245,7 +245,7 @@
 
 !======================================================================
 
-      SUBROUTINE diagnostic_desc_construct_extcurz(this,d_type,                &
+      SUBROUTINE diagnostic_desc_construct_extcurz(this,d_type,                
      &   s_name,l_name,units,sigma_default,extcurz,s0,u0)
 
       IMPLICIT NONE
@@ -261,7 +261,7 @@
       REAL(rprec), INTENT(in)               :: s0, u0
       
       ! local variables
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'diagnostic_desc_construct_extcurz: '
 
       ! destroy the extcurz component
@@ -281,14 +281,14 @@
          this % extcurz % s0 = s0
          this % extcurz % u0 = u0
       CASE DEFAULT
-         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   &
+         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   
      &      char=d_type)
       END SELECT
 
       END SUBROUTINE diagnostic_desc_construct_extcurz
 
 !======================================================================
-      SUBROUTINE diagnostic_desc_construct_ipch(this,d_type,s_name,            &
+      SUBROUTINE diagnostic_desc_construct_ipch(this,d_type,s_name,            
      &   l_name, units,sigma_default,ipch)
 !-------------------------------------------------------------------------------
 !  Construct a diagnostic_desc with ipch diagnostic
@@ -312,7 +312,7 @@
       TYPE (ipch_desc), INTENT(in)               :: ipch
       
 !  Declare local variables
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'diagnostic_desc_construct_ipch: '
 
 !  Start of executable code
@@ -333,7 +333,7 @@
          this % ipch =  ipch
 
       CASE DEFAULT
-         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   &
+         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   
      &      char=d_type)
       END SELECT ! Different coding depending on d_type
      
@@ -341,7 +341,7 @@
       END SUBROUTINE diagnostic_desc_construct_ipch
 
 !======================================================================
-      SUBROUTINE diagnostic_desc_cnstrct_thscte(this,d_type,s_name,          &
+      SUBROUTINE diagnostic_desc_cnstrct_thscte(this,d_type,s_name,          
      &   l_name, units,sigma_default,thscte)
 !-------------------------------------------------------------------------------
 !  Construct a diagnostic_desc with thscte diagnostic
@@ -365,7 +365,7 @@
       TYPE (thscte_desc), INTENT(in)             :: thscte
       
 !  Declare local variables
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'diagnostic_desc_cnstrct_thscte: '
 
 !  Start of executable code
@@ -386,7 +386,7 @@
          this % thscte =  thscte
 
       CASE DEFAULT
-         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   &
+         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   
      &      char=d_type)
       END SELECT ! Different coding depending on d_type
      
@@ -406,7 +406,7 @@
       TYPE (diagnostic_desc), INTENT(inout) :: this
 
 !  Declare local variables
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'diagnostic_desc_destroy: '
 
 !  Start of executable code
@@ -439,7 +439,7 @@
          CALL extcurz_desc_destroy(this % extcurz)
          
       CASE DEFAULT
-         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   &
+         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   
      &      char=this % d_type)
       END SELECT ! Different coding depending on d_type
 
@@ -463,7 +463,7 @@
       TYPE (diagnostic_desc), INTENT (in) :: right
       
 !  Declare temporary variables
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'diagnostic_desc_assign: '
          
 !  Start of executable code
@@ -507,17 +507,17 @@
       CHARACTER (len=60) :: id
 
 !  Declare Format array  modified GJH 2010-01-15
-      CHARACTER(len=*), PARAMETER, DIMENSION(10) :: fmt1 = (/                  &
-     & '(" start diagnostic_desc write, called with id = ",a)',                &
-     & '(" d_type = ",a)                                     ',                &
-     & '(" s_name = ",a)                                     ',                &
-     & '(" l_name = ",a)                                     ',                &
-     & '(" units = ",a)                                      ',                &
-     & '(" mddc s_name = ",a)                                ',                &
-     & '(" sxrch s_name = ",a)                               ',                & 
-     & '(" ipch s_name = ",a)                                ',                & 
-     & '(" thscte s_name = ",a)                              ',                & 
-     & '(" end diagnostic_desc write, called with id = ",a)  '                 &
+      CHARACTER(len=*), PARAMETER, DIMENSION(10) :: fmt1 = (/                  
+     & '(" start diagnostic_desc write, called with id = ",a)',                
+     & '(" d_type = ",a)                                     ',                
+     & '(" s_name = ",a)                                     ',                
+     & '(" l_name = ",a)                                     ',                
+     & '(" units = ",a)                                      ',                
+     & '(" mddc s_name = ",a)                                ',                
+     & '(" sxrch s_name = ",a)                               ',                
+     & '(" ipch s_name = ",a)                                ',                
+     & '(" thscte s_name = ",a)                              ',                
+     & '(" end diagnostic_desc write, called with id = ",a)  '                 
      &  /) 
 
 !  start of executable code

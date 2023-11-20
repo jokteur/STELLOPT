@@ -195,72 +195,72 @@ CEAL    !       deviation weighting defaults
       
 
 !     PPPL+ORNL Alphabetized Namelist
-      NAMELIST /optimum/ ac_mask, aemis, amplw_bw, aseedcur,             &
-     &   at_mask, ah_mask,                                               &
-     &   b00_scale, bal_theta0, bal_zeta0, coil_separation,              &
-     &   diagno_control, data_diagno, dkes_efield, dkes_nu, emis_chord,  &
-     &   emis_file, epsfcn, factor_p_prof, fboot, helicity, jboot, kjj,  &
-     &   kpp, l_legendre, laspect_max, lanimec, lani_bcrit, lani_tperp,  &
-     &   lani_phot, lbal_opt, lballoon_flip,                             &
-     &   lballoon_mask, lballoon_opt, lbeta_min, lbmn, lbootsj_opt,      &
-     &   lbootstrap, lboundary, lcoil_complex, lcoil_geom, lcoil_opt,    &
-     &   lcur_opt_edge0, lcur_prof_opt, lcurprof_opt, ldiag_opt,         &
-     &   ldiagno_opt, ldkes_mask, ldkes_opt, ldsubr_opt, ledge_current,  &
-     &   lextcur, lfix_ntor, lfix_rhob, liota_prof_opt, lj1zero,         &
-     &   lj_invariant, lj_star, lkeep_mins, lkink_opt, lneo_mask,        &
-     &   lneo_opt, lnescoil_opt, lorbit_opt, lp_prof_incl_edge, lp1zero, &
-     &   lphiedge, lpress_opt, lpres_opt_edge0, lpres_opt_edgegr0,       &
-     &   lpres_prof_opt, lpres_prof_fit, lprof_opt, lpseudo_sin,         &
-     &   lreconj, lreconp, lreset_opt, lseedcur, lsurf_mask, lv3post,    &
-     &   lvac_opt, lvv_tgt_min, m_bmn_tgt, m_jac, m_vac_island,          &
-     &   mboz_opt, mpol_bd, mpol_vv, n_bmn_tgt, n_emis, n_jac,           &
-     &   n_vac_island, name_diagno, nballoon_mask, nbmn, nboz_opt,       &
-     &   ndkes_mask, niter_opt, nneo_mask, nopt_alg, nopt_boundary,      &
-     &   np_prof, NPitch_Jconf, nproc, NS_JConf_Src, NS_JConf_Tgt,       &
-     &   nsurf_mask, ntor_bd, ntor_vv, nu_vv, num_levmar_params,         &
-     &   num_processors, NumJInvariant, NumJstar, nv_bd, nv_vv,          &
-     &   oh_coefs, p_prof, phi_lim, phi_p_prof, phi0_bw, phiedge_max,    &
-     &   phiedge_min, planes_bw, pres_opt_nmax, r00_opt, r00_scale,      &
-     &   r_lim, r_p_prof, rbc_bd, rbc_vv, rgrid_max, rgrid_min,          &
-     &   shapeweight, sigma_aspect, sigma_bal, sigma_balloon, sigma_bd,  &
-     &   sigma_bd_max, sigma_bd_rms, sigma_berr_avg, sigma_berr_ave,     &
-     &   sigma_berr_max, sigma_beta, sigma_bmax, sigma_bmin, sigma_bmn,  &
-     &   sigma_bmn_tgt, sigma_boot, sigma_bootsj, sigma_centering,       &
-     &   sigma_coil_complex, sigma_coil_jmax, sigma_curtor, sigma_curv,  &
-     &   sigma_diagno, sigma_diagno_flx, sigma_diagno_seg,               &
-     &   sigma_diagno_bp, sigma_dkes,                                    &
-     &   sigma_dsubr, sigma_emis, sigma_emis_damp, sigma_ellipticity,    &
-     &   sigma_eplasma, sigma_extcur, sigma_fluxp, sigma_iota,           &
-     &   sigma_iota_max, sigma_iota_max_min, sigma_iota_min,             &
-     &   sigma_iota_pmax, sigma_iota_pmin, sigma_jac, sigma_jconf,       &
-     &   sigma_jedge, sigma_jinvariant, sigma_jstar, sigma_kappa,        &
-     &   sigma_kink, sigma_maxcurrent, sigma_mercier, sigma_neo,         &
-     &   sigma_oh, sigma_orbit, sigma_p_damp, sigma_p_prof, sigma_pedge, &
-     &   sigma_pgrad, sigma_pseudo, sigma_pseudo2, sigma_rbtor,          &
-     &   sigma_ripple, sigma_rmax, sigma_rmin, sigma_vac_island,         &
-     &   sigma_vp, sigma_vv, sigma_vv_max, sigma_vv_rms, sigma_zmax,     &
-     &   sym_type, target_aspectratio, target_balloon, target_bd,        &
-     &   target_bd_rms, target_beta, target_bmn_tgt,                     &
-     &   target_coil_complex, target_coil_jmax, target_curtor,           &
-     &   target_diagno_flx, target_diagno_seg,                           &
-     &   target_diagno_bp, target_ellipticity,                           &
-     &   target_eplasma,target_fluxp, target_iota, target_iota_max,      &
-     &   target_iota_max_min, target_iota_min, target_iota_p,            &
-     &   target_jedge, target_kappa, target_kink, target_maxcurrent,     &
-     &   target_rbtor, target_rmax, target_rmin, target_vv,              &
-     &   target_vv_rms, target_well, target_zmax, theta0_bw, v3post_in,  &
-     &   v3rfun_dir, wphi_bw, wtheta_bw, z_lim, z_p_prof, zbs_bd,        &
-     &   zbs_vv, zeff_boot, zgrid_max, zgrid_min,                        &
-     &   nmse_cams,nmse_chords,mse_r,mse_phi,mse_z,mse_alpha,mse_beta,   &
-     &   mse_theta,mse_pol,mse_vac,sigma_mse_pol,mse_a1_coef,            &
-     &   mse_a2_coef, mse_a3_coef,mse_a4_coef,mse_a5_coef,mse_a6_coef,   &
-     &   mse_a7_coef, mse_er, mse_ez,                                    &
-     &   phiedge_diode, isote,diagno_coil,target_extcur,                 &
-     &   lmse_er, er_aux_s, er_aux_f, ez_aux_s, ez_aux_f,                &
-     &   nne_prof, nte_prof, nti_prof,                                   &
-     &   r_te_prof, phi_te_prof, z_te_prof, te_prof, sigma_te_prof,      &
-     &   r_ne_prof, phi_ne_prof, z_ne_prof, ne_prof, sigma_ne_prof,      &
-     &   r_ti_prof, phi_ti_prof, z_ti_prof, ti_prof, sigma_ti_prof,      &
+      NAMELIST /optimum/ ac_mask, aemis, amplw_bw, aseedcur,             
+     &   at_mask, ah_mask,                                               
+     &   b00_scale, bal_theta0, bal_zeta0, coil_separation,              
+     &   diagno_control, data_diagno, dkes_efield, dkes_nu, emis_chord,  
+     &   emis_file, epsfcn, factor_p_prof, fboot, helicity, jboot, kjj,  
+     &   kpp, l_legendre, laspect_max, lanimec, lani_bcrit, lani_tperp,  
+     &   lani_phot, lbal_opt, lballoon_flip,                             
+     &   lballoon_mask, lballoon_opt, lbeta_min, lbmn, lbootsj_opt,      
+     &   lbootstrap, lboundary, lcoil_complex, lcoil_geom, lcoil_opt,    
+     &   lcur_opt_edge0, lcur_prof_opt, lcurprof_opt, ldiag_opt,         
+     &   ldiagno_opt, ldkes_mask, ldkes_opt, ldsubr_opt, ledge_current,  
+     &   lextcur, lfix_ntor, lfix_rhob, liota_prof_opt, lj1zero,         
+     &   lj_invariant, lj_star, lkeep_mins, lkink_opt, lneo_mask,        
+     &   lneo_opt, lnescoil_opt, lorbit_opt, lp_prof_incl_edge, lp1zero, 
+     &   lphiedge, lpress_opt, lpres_opt_edge0, lpres_opt_edgegr0,       
+     &   lpres_prof_opt, lpres_prof_fit, lprof_opt, lpseudo_sin,         
+     &   lreconj, lreconp, lreset_opt, lseedcur, lsurf_mask, lv3post,    
+     &   lvac_opt, lvv_tgt_min, m_bmn_tgt, m_jac, m_vac_island,          
+     &   mboz_opt, mpol_bd, mpol_vv, n_bmn_tgt, n_emis, n_jac,           
+     &   n_vac_island, name_diagno, nballoon_mask, nbmn, nboz_opt,       
+     &   ndkes_mask, niter_opt, nneo_mask, nopt_alg, nopt_boundary,      
+     &   np_prof, NPitch_Jconf, nproc, NS_JConf_Src, NS_JConf_Tgt,       
+     &   nsurf_mask, ntor_bd, ntor_vv, nu_vv, num_levmar_params,         
+     &   num_processors, NumJInvariant, NumJstar, nv_bd, nv_vv,          
+     &   oh_coefs, p_prof, phi_lim, phi_p_prof, phi0_bw, phiedge_max,    
+     &   phiedge_min, planes_bw, pres_opt_nmax, r00_opt, r00_scale,      
+     &   r_lim, r_p_prof, rbc_bd, rbc_vv, rgrid_max, rgrid_min,          
+     &   shapeweight, sigma_aspect, sigma_bal, sigma_balloon, sigma_bd,  
+     &   sigma_bd_max, sigma_bd_rms, sigma_berr_avg, sigma_berr_ave,     
+     &   sigma_berr_max, sigma_beta, sigma_bmax, sigma_bmin, sigma_bmn,  
+     &   sigma_bmn_tgt, sigma_boot, sigma_bootsj, sigma_centering,       
+     &   sigma_coil_complex, sigma_coil_jmax, sigma_curtor, sigma_curv,  
+     &   sigma_diagno, sigma_diagno_flx, sigma_diagno_seg,               
+     &   sigma_diagno_bp, sigma_dkes,                                    
+     &   sigma_dsubr, sigma_emis, sigma_emis_damp, sigma_ellipticity,    
+     &   sigma_eplasma, sigma_extcur, sigma_fluxp, sigma_iota,           
+     &   sigma_iota_max, sigma_iota_max_min, sigma_iota_min,             
+     &   sigma_iota_pmax, sigma_iota_pmin, sigma_jac, sigma_jconf,       
+     &   sigma_jedge, sigma_jinvariant, sigma_jstar, sigma_kappa,        
+     &   sigma_kink, sigma_maxcurrent, sigma_mercier, sigma_neo,         
+     &   sigma_oh, sigma_orbit, sigma_p_damp, sigma_p_prof, sigma_pedge, 
+     &   sigma_pgrad, sigma_pseudo, sigma_pseudo2, sigma_rbtor,          
+     &   sigma_ripple, sigma_rmax, sigma_rmin, sigma_vac_island,         
+     &   sigma_vp, sigma_vv, sigma_vv_max, sigma_vv_rms, sigma_zmax,     
+     &   sym_type, target_aspectratio, target_balloon, target_bd,        
+     &   target_bd_rms, target_beta, target_bmn_tgt,                     
+     &   target_coil_complex, target_coil_jmax, target_curtor,           
+     &   target_diagno_flx, target_diagno_seg,                           
+     &   target_diagno_bp, target_ellipticity,                           
+     &   target_eplasma,target_fluxp, target_iota, target_iota_max,      
+     &   target_iota_max_min, target_iota_min, target_iota_p,            
+     &   target_jedge, target_kappa, target_kink, target_maxcurrent,     
+     &   target_rbtor, target_rmax, target_rmin, target_vv,              
+     &   target_vv_rms, target_well, target_zmax, theta0_bw, v3post_in,  
+     &   v3rfun_dir, wphi_bw, wtheta_bw, z_lim, z_p_prof, zbs_bd,        
+     &   zbs_vv, zeff_boot, zgrid_max, zgrid_min,                        
+     &   nmse_cams,nmse_chords,mse_r,mse_phi,mse_z,mse_alpha,mse_beta,   
+     &   mse_theta,mse_pol,mse_vac,sigma_mse_pol,mse_a1_coef,            
+     &   mse_a2_coef, mse_a3_coef,mse_a4_coef,mse_a5_coef,mse_a6_coef,   
+     &   mse_a7_coef, mse_er, mse_ez,                                    
+     &   phiedge_diode, isote,diagno_coil,target_extcur,                 
+     &   lmse_er, er_aux_s, er_aux_f, ez_aux_s, ez_aux_f,                
+     &   nne_prof, nte_prof, nti_prof,                                   
+     &   r_te_prof, phi_te_prof, z_te_prof, te_prof, sigma_te_prof,      
+     &   r_ne_prof, phi_ne_prof, z_ne_prof, ne_prof, sigma_ne_prof,      
+     &   r_ti_prof, phi_ti_prof, z_ti_prof, ti_prof, sigma_ti_prof,      
      &   ti_aux_s, ti_aux_f, te_aux_s, te_aux_f, ne_aux_s, ne_aux_f
       
 

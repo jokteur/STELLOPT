@@ -17,8 +17,8 @@
   FLAGS_R = -O2 -fexternal-blas -fbacktrace -fcheck=all,no-array-temps
   FLAGS_D = -g -O0 -fexternal-blas -fbacktrace -fcheck=all 
   LIBS    = -L/usr/lib -lblas -llapack -lscalapack-openmpi
-  FLAGS_R += -Wno-argument-mismatch
-  FLAGS_D += -Wno-argument-mismatch
+  FLAGS_R += -Wno-argument-mismatch -fallow-argument-mismatch
+  FLAGS_D += -Wno-argument-mismatch -fallow-argument-mismatch
 
 #######################################################################
 #            MPI Options
@@ -61,8 +61,8 @@
 #            HDF5 Options
 #######################################################################
   LHDF5 = T
-  HDF5_INC = -I/usr/include/hdf5/openmpi
-  HDF5_LIB = -L/usr/lib/x86_64-linux-gnu/hdf5/openmpi \
+  HDF5_INC = -I/misc/opt/software/linux-pop22-zen3/gcc-12.2.0/hdf5-1.10.8-6awqttqmsahxbgoqqlv2tnsi7wyf2puo/include
+  HDF5_LIB = -L/misc/opt/software/linux-pop22-zen3/gcc-12.2.0/hdf5-1.10.8-6awqttqmsahxbgoqqlv2tnsi7wyf2puo/lib \
              -lhdf5 -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran
 
 #######################################################################

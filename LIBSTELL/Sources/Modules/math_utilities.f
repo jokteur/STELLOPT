@@ -22,7 +22,7 @@
       IMPLICIT NONE
 
 
-      REAL(rprec), DIMENSION(3), INTENT(IN) ::                                 &
+      REAL(rprec), DIMENSION(3), INTENT(IN) ::                                 
      &            vec           ! 3D vector
 
       MAGNITUDE = SQRT( vec(1)*vec(1) + vec(2)*vec(2) + vec(3)*vec(3) )
@@ -39,10 +39,10 @@
       USE stel_kinds
       IMPLICIT NONE
 
-      REAL(rprec), DIMENSION(3), INTENT(IN) ::                                 &
+      REAL(rprec), DIMENSION(3), INTENT(IN) ::                                 
      &            v1           ! 3D vector
 
-      REAL(rprec), DIMENSION(3), INTENT(OUT) ::                                &
+      REAL(rprec), DIMENSION(3), INTENT(OUT) ::                                
      &            v1_unit        ! 3D vector
 
       v1_unit = v1 / MAGNITUDE(v1)
@@ -60,10 +60,10 @@
       USE stel_kinds
       IMPLICIT NONE
 
-      REAL(rprec), DIMENSION(3), INTENT(IN) ::                                 &
+      REAL(rprec), DIMENSION(3), INTENT(IN) ::                                 
      &            v1, v2           ! 3D vectors
 
-      REAL(rprec), DIMENSION(3) ::                                             &
+      REAL(rprec), DIMENSION(3) ::                                             
      &            v3           ! difference vector btwn v1 & v2
 
       v3 = ABS( v2 - v1 )

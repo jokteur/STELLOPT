@@ -61,7 +61,7 @@
 !
 !  For d_type = 'boundary' (boundary signal)
 !-------------------------------------------------------------------------------
-      SUBROUTINE boundary_desc_construct(this, coefficientName,                &
+      SUBROUTINE boundary_desc_construct(this, coefficientName,                
      &                                   n_index, m_index)
 
       IMPLICIT NONE

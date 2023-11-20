@@ -33,6 +33,10 @@ c                    differently.
       INTEGER :: MPI_COMM_THRIFT = 334                   !communicator for THRIFT code
       INTEGER :: MPI_COMM_PARVMEC = 101                  !communicator for PARVMEC code
 
+#if defined(MPI_OPT)
+#else
+            INTEGER :: MPI_MAX_ERROR_STRING = 100
+#endif
       CONTAINS
       
       SUBROUTINE mpi_stel_abort(error)

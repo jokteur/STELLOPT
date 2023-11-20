@@ -89,24 +89,24 @@
 !  Variable Names for netCDF. Make them Private.
 !-------------------------------------------------------------------------------
 
-      CHARACTER (LEN=*), PRIVATE, PARAMETER ::                                 &
-     &  vn_d_type = 'diagnostic_desc_d_type',                                  &
-     &  vn_s_name = 'diagnostic_desc_s_name',                                  &
-     &  vn_l_name = 'diagnostic_desc_l_name',                                  &
-     &  vn_units = 'diagnostic_desc_units',                                    &         
+      CHARACTER (LEN=*), PRIVATE, PARAMETER ::                                 
+     &  vn_d_type = 'diagnostic_desc_d_type',                                  
+     &  vn_s_name = 'diagnostic_desc_s_name',                                  
+     &  vn_l_name = 'diagnostic_desc_l_name',                                  
+     &  vn_units = 'diagnostic_desc_units',                                    
      &  vn_sigma_default = 'diagnostic_desc_sigma_default'            
 
-      CHARACTER (LEN=64), PRIVATE ::                                           &
-     &  vn_d_type_use,                                                         &
-     &  vn_s_name_use,                                                         &
-     &  vn_l_name_use,                                                         &
-     &  vn_units_use,                                                          &         
+      CHARACTER (LEN=64), PRIVATE ::                                           
+     &  vn_d_type_use,                                                         
+     &  vn_s_name_use,                                                         
+     &  vn_l_name_use,                                                         
+     &  vn_units_use,                                                          
      &  vn_sigma_default_use                
 
-      CHARACTER (LEN=*), PRIVATE, PARAMETER ::                                 &
+      CHARACTER (LEN=*), PRIVATE, PARAMETER ::                                 
      &  vn_desc_s_name = 'diagnostic_data_desc_s_name'
 
-      CHARACTER (LEN=64), PRIVATE ::                                           &
+      CHARACTER (LEN=64), PRIVATE ::                                           
      &  vn_desc_s_name_use
 
 !-------------------------------------------------------------------------------
@@ -170,7 +170,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'diagnostic_cdf_define_desc: '
       CHARACTER(len=32) :: prefix_use
 
@@ -193,7 +193,7 @@
       CALL cdf_define(iou, TRIM(vn_s_name_use), this % s_name)
       CALL cdf_define(iou, TRIM(vn_l_name_use), this % l_name)
       CALL cdf_define(iou, TRIM(vn_units_use), this % units)
-      CALL cdf_define(iou, TRIM(vn_sigma_default_use),                         &
+      CALL cdf_define(iou, TRIM(vn_sigma_default_use),                         
      &   this % sigma_default)
 
 ! Particular coding, depending on d_type
@@ -204,7 +204,7 @@
          CALL mddc_cdf_define(this % mddc,iou,prefix)
 
       CASE DEFAULT
-         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   &
+         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   
      &      char = this % d_type)
 
       END SELECT
@@ -236,7 +236,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'diagnostic_cdf_write_desc: '
       CHARACTER(len=32) :: prefix_use
 
@@ -258,7 +258,7 @@
       CALL cdf_write(iou, TRIM(vn_s_name_use), this % s_name)
       CALL cdf_write(iou, TRIM(vn_l_name_use), this % l_name)
       CALL cdf_write(iou, TRIM(vn_units_use), this % units)
-      CALL cdf_write(iou, TRIM(vn_sigma_default_use),                          &
+      CALL cdf_write(iou, TRIM(vn_sigma_default_use),                          
      &   this % sigma_default)
 
 ! Particular coding, depending on d_type
@@ -269,7 +269,7 @@
          CALL mddc_cdf_write(this % mddc,iou,prefix)
 
       CASE DEFAULT
-         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   &
+         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   
      &      char = this % d_type)
 
       END SELECT
@@ -301,7 +301,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'diagnostic_cdf_read_desc: '
       CHARACTER(len=32) :: prefix_use
       INTEGER, DIMENSION(3) :: dimlens
@@ -333,7 +333,7 @@
       CALL cdf_read(iou, TRIM(vn_s_name_use), s_name)
       CALL cdf_read(iou, TRIM(vn_l_name_use), l_name)
       CALL cdf_read(iou, TRIM(vn_units_use), units)
-      CALL cdf_read(iou, TRIM(vn_sigma_default_use),                           &
+      CALL cdf_read(iou, TRIM(vn_sigma_default_use),                           
      &   sigma_default)
 
 ! Particular coding, depending on d_type
@@ -343,11 +343,11 @@
          CALL mddc_cdf_read(mddc,iou,prefix)
 
 !...............Create the diagnostic_desc, this...............!
-         CALL diagnostic_construct(this,d_type,s_name,l_name,                     &
+         CALL diagnostic_construct(this,d_type,s_name,l_name,                     
      &                             units,sigma_default,mddc)
 
       CASE DEFAULT
-         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   &
+         CALL err_fatal(sub_name // 'unrecognized d_type: ',                   
      &      char = d_type)
 
       END SELECT
@@ -383,7 +383,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'diagnostic_cdf_defvn_desc: '
 
 !-----------------------------------------------
@@ -395,7 +395,7 @@
       vn_s_name_use = diagnostic_cdf_mknam(prefix_use,vn_s_name)
       vn_l_name_use = diagnostic_cdf_mknam(prefix_use,vn_l_name)
       vn_units_use = diagnostic_cdf_mknam(prefix_use,vn_units)
-      vn_sigma_default_use = diagnostic_cdf_mknam(prefix_use,                  &
+      vn_sigma_default_use = diagnostic_cdf_mknam(prefix_use,                  
      &   vn_sigma_default)
       
       RETURN

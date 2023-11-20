@@ -103,28 +103,28 @@
 
 ! vn_ are the variable names loaded into NETCDF
       CHARACTER (LEN=*), PARAMETER :: 
-     &  vn_rdiag_coilg = 'rdiag_coilg',                                        &
-     &  vn_n_field_cg = 'n_field_cg',                                          &
-     &  vn_n_diagn_c = 'n_diagn_c',                                            &
+     &  vn_rdiag_coilg = 'rdiag_coilg',                                        
+     &  vn_n_field_cg = 'n_field_cg',                                          
+     &  vn_n_diagn_c = 'n_diagn_c',                                            
      &  vn_inductance_coilg ='external_inductance'
-      CHARACTER (LEN=*), PARAMETER ::                                          &
-     &  vn_idrfun = 'idrfun',                                                  &
-     &  vn_name_diagnostic_dot = 'name_diagnostic_dot',                        &
-     &  vn_lstell_sym = 'lstell_sym',                                          &
-     &  vn_ir = 'ir',                                                          &
-     &  vn_jz = 'jz',                                                          &
-     &  vn_kp = 'kp',                                                          & 
-     &  vn_kp_store = 'kp_store',                                              & 
-     &  vn_idc = 'idc',                                                        &
-     &  vn_cdffil = 'cdffil',                                                  &
-     &  vn_a_r = 'a_r',                                                        &
-     &  vn_a_f = 'a_f',                                                        &
-     &  vn_a_z = 'a_z',                                                        & 
-     &  vn_plasma_response = 'plasma_response',                                & 
-     &  vn_n_field_periods = 'n_field_periods',                                &
-     &  vn_rmin = 'rmin',                                                      &
-     &  vn_rmax = 'rmax',                                                      &
-     &  vn_zmin = 'zmin',                                                      &
+      CHARACTER (LEN=*), PARAMETER ::                                          
+     &  vn_idrfun = 'idrfun',                                                  
+     &  vn_name_diagnostic_dot = 'name_diagnostic_dot',                        
+     &  vn_lstell_sym = 'lstell_sym',                                          
+     &  vn_ir = 'ir',                                                          
+     &  vn_jz = 'jz',                                                          
+     &  vn_kp = 'kp',                                                          
+     &  vn_kp_store = 'kp_store',                                              
+     &  vn_idc = 'idc',                                                        
+     &  vn_cdffil = 'cdffil',                                                  
+     &  vn_a_r = 'a_r',                                                        
+     &  vn_a_f = 'a_f',                                                        
+     &  vn_a_z = 'a_z',                                                        
+     &  vn_plasma_response = 'plasma_response',                                
+     &  vn_n_field_periods = 'n_field_periods',                                
+     &  vn_rmin = 'rmin',                                                      
+     &  vn_rmax = 'rmax',                                                      
+     &  vn_zmin = 'zmin',                                                      
      &  vn_zmax = 'zmax'
        
 
@@ -201,7 +201,7 @@
       END IF
       
       IF (ASSOCIATED(crf%rdiag_coilg)) DEALLOCATE(crf%rdiag_coilg)
-      ALLOCATE(crf%rdiag_coilg(crf%n_diagn_c,crf%n_field_cg),                  &
+      ALLOCATE(crf%rdiag_coilg(crf%n_diagn_c,crf%n_field_cg),                  
      &   stat = istat)
       IF (istat .ne. 0) THEN
           WRITE(6,*) 'In cdf_crfun_read, istat = ', istat
@@ -301,7 +301,7 @@
          CALL cdf_read(nprfun,vn_zmax,pl_str%zmax)
          CALL cdf_read(nprfun,vn_cdffil,pl_str%cdffil)
          CALL cdf_read(nprfun,vn_idc,pl_str%idc)
-         CALL cdf_read(nprfun,vn_name_diagnostic_dot,                          &
+         CALL cdf_read(nprfun,vn_name_diagnostic_dot,                          
      &                 pl_str%name_diagnostic_dot)   
          CALL cdf_read(nprfun,vn_n_field_periods,pl_str%n_field_periods)
          CALL cdf_read(nprfun,vn_idrfun,pl_str%idrfun)

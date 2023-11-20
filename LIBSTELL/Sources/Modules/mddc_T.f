@@ -180,7 +180,7 @@
 !  Assignment for structures
 !-------------------------------------------------------------------------------
       INTERFACE ASSIGNMENT (=)
-         MODULE PROCEDURE mddc_desc_assign,                                    &
+         MODULE PROCEDURE mddc_desc_assign,                                    
      &                    mddc_mrf_assign  
       END INTERFACE
 
@@ -188,7 +188,7 @@
 !  Generic construct
 !-------------------------------------------------------------------------------
       INTERFACE mddc_construct
-         MODULE PROCEDURE mddc_desc_construct,                                 &
+         MODULE PROCEDURE mddc_desc_construct,                                 
      &                    mddc_mrf_construct
          END INTERFACE
 
@@ -196,7 +196,7 @@
 !  Generic destroy
 !-------------------------------------------------------------------------------
       INTERFACE mddc_destroy
-         MODULE PROCEDURE mddc_desc_destroy,                                   &
+         MODULE PROCEDURE mddc_desc_destroy,                                   
      &                    mddc_mrf_destroy
       END INTERFACE
 
@@ -204,7 +204,7 @@
 !  Generic write
 !-------------------------------------------------------------------------------
       INTERFACE mddc_write
-         MODULE PROCEDURE mddc_desc_write,                                     &
+         MODULE PROCEDURE mddc_desc_write,                                     
      &                    mddc_mrf_write
       END INTERFACE
 
@@ -221,7 +221,7 @@
 !
 !  For d_type = 'mddc' (magnetic mddc-dot coil)
 !-------------------------------------------------------------------------------
-      SUBROUTINE mddc_desc_construct(this,s_name,l_name,units,                 &
+      SUBROUTINE mddc_desc_construct(this,s_name,l_name,units,                 
      &   sigma_default,mddc_type,mdcoil,mrf,flux_factor)
 
 !  NB. 
@@ -242,7 +242,7 @@
       REAL(rprec), INTENT(in), OPTIONAL          :: flux_factor
 
 !  Declare local variables
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'mddc_desc_construct: '
 
 !  Start of executable code
@@ -276,9 +276,9 @@
 !-------------------------------------------------------------------------------
 !  Construct a mddc_mrf
 !-------------------------------------------------------------------------------
-      SUBROUTINE mddc_mrf_construct(this,code_name,code_version,               &
-     &  date_run,field_coils_id,rdiag_coilg_1,extcur_mg,kp,                    &
-     &  rmin,rmax,zmin,zmax,n_field_periods,lstell_sym,a_r,a_f,a_z,            &
+      SUBROUTINE mddc_mrf_construct(this,code_name,code_version,               
+     &  date_run,field_coils_id,rdiag_coilg_1,extcur_mg,kp,                    
+     &  rmin,rmax,zmin,zmax,n_field_periods,lstell_sym,a_r,a_f,a_z,            
      &  use_con_shell, a_s_r, a_s_f, a_s_z, kp_shell)
 
       IMPLICIT NONE
@@ -309,10 +309,10 @@
       INTEGER, INTENT(in)                        :: kp_shell
 
 !  Declare local variables
-      INTEGER           :: ir1, ir2, ir3, if1, if2, if3, iz1,           &
+      INTEGER           :: ir1, ir2, ir3, if1, if2, if3, iz1,           
      &    iz2, iz3
       INTEGER           :: ier1, ier2, ier3
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'mddc_mrf_construct: '
 
 !  Start of executable code
@@ -350,7 +350,7 @@
       this % ir = ir1
       this % jz = ir2
       this % kp_store = ir3
-      CALL assert_eq(this % n_field_cg,SIZE(extcur_mg),                        &
+      CALL assert_eq(this % n_field_cg,SIZE(extcur_mg),                        
      &   sub_name // 'rd - extcur dims different')
 
 !  Allocate space for arrays
@@ -374,9 +374,9 @@
          if2 = SIZE(a_s_f,2)
          iz1 = SIZE(a_s_z,1)
          iz2 = SIZE(a_s_z,2)
-         CALL assert_eq(ir1,if1,iz1,sub_name //                                &
+         CALL assert_eq(ir1,if1,iz1,sub_name //                                
      &                  'a_s_ first dims different')
-         CALL assert_eq(ir2,if2,iz2,sub_name //                                &
+         CALL assert_eq(ir2,if2,iz2,sub_name //                                
      &                  'a_s_ 2nd dims different')
 
          this % n_u = ir1
@@ -417,7 +417,7 @@
       TYPE (mddc_desc), INTENT(inout) :: this
 
 !  Declare local variables
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'mddc_desc_destroy: '
 
 !  Start of executable code
@@ -447,7 +447,7 @@
       TYPE (mddc_mrf), INTENT(inout) :: this
 
 !  Declare local variables
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'mddc_mrf_destroy: '
       INTEGER :: ier1
 
@@ -533,7 +533,7 @@
       TYPE (mddc_desc), INTENT (in) :: right
       
 !  Declare local variables
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'mddc_desc_assign: '
          
 !  Start of executable code
@@ -560,9 +560,9 @@
       TYPE (mddc_mrf), INTENT (in) :: right
       
 !  Declare local variables
-      CHARACTER(len=*), PARAMETER :: sub_name =                                &
+      CHARACTER(len=*), PARAMETER :: sub_name =                                
      &  'mddc_mrf_assign: '
-      CHARACTER (len=*), PARAMETER :: err_mess1 =                              &
+      CHARACTER (len=*), PARAMETER :: err_mess1 =                              
      & 'left-right pointers are the same?. FIX IT'
       INTEGER :: ier1, ier2, ier3
       LOGICAL, DIMENSION(5) :: lassert
@@ -574,7 +574,7 @@
       lassert(1) = .not.ASSOCIATED(left % a_r,right % a_r)
       lassert(2) = .not.ASSOCIATED(left % a_f,right % a_f)
       lassert(3) = .not.ASSOCIATED(left % a_z,right % a_z)
-      lassert(4) = .not.ASSOCIATED(left % rdiag_coilg_1,                       &
+      lassert(4) = .not.ASSOCIATED(left % rdiag_coilg_1,                       
      &                            right % rdiag_coilg_1)
       lassert(5) = .not.ASSOCIATED(left % extcur_mg,right % extcur_mg)
       CALL assert(lassert,sub_name // err_mess1)
@@ -610,20 +610,20 @@
       ALLOCATE(left % extcur_mg(left % n_field_cg),STAT=ier1)
       CALL assert_eq(0,ier1,sub_name // 'alloc extcur_mg')
 
-      ALLOCATE(left % a_r(left % ir,left % jz,left % kp_store),                &
+      ALLOCATE(left % a_r(left % ir,left % jz,left % kp_store),                
      &   STAT=ier1)
-      ALLOCATE(left % a_f(left % ir,left % jz,left % kp_store),                &
+      ALLOCATE(left % a_f(left % ir,left % jz,left % kp_store),                
      &   STAT=ier2)
-      ALLOCATE(left % a_z(left % ir,left % jz,left % kp_store),                &
+      ALLOCATE(left % a_z(left % ir,left % jz,left % kp_store),                
      &   STAT=ier3)
       CALL assert_eq(0,ier1,ier2,ier3,sub_name // 'alloc a_')
 
       IF (left % use_con_shell) THEN
-         ALLOCATE(left % a_s_r(left % n_u,left % kp_shell_store),              &
+         ALLOCATE(left % a_s_r(left % n_u,left % kp_shell_store),              
      &            STAT=ier1)
-         ALLOCATE(left % a_s_f(left % n_u,left % kp_shell_store),              &
+         ALLOCATE(left % a_s_f(left % n_u,left % kp_shell_store),              
      &            STAT=ier2)
-         ALLOCATE(left % a_s_z(left % n_u,left % kp_shell_store),              &
+         ALLOCATE(left % a_s_z(left % n_u,left % kp_shell_store),              
      &            STAT=ier3)
          CALL assert_eq(0,ier1,ier2,ier3,sub_name // 'alloc a_s_')
       END IF
@@ -688,17 +688,17 @@
       CHARACTER (len=60) :: id
 
 !  Declare Format array
-      CHARACTER(len=*), PARAMETER, DIMENSION(10) :: fmt1 = (/                  &
-     & '(" start mddc_desc write, called with id = ",a)      ',                &
-     & '(" s_name = ",a)                                     ',                &
-     & '(" l_name = ",a)                                     ',                &
-     & '(" units = ",a)                                      ',                &
-     & '(" l_mdcoil_def = ",L1)                              ',                &
-     & '(" mddc_type = ",a)                                  ',                &
-     & '(" bsc_coil s_name = ",a)                            ',                &
-     & '(" flux_factor = ",es12.5)                           ',                &
-     & '(" sigma_default = ",es12.5)                         ',                &
-     & '(" end mddc_desc write, called with id = ",a)        '                 &
+      CHARACTER(len=*), PARAMETER, DIMENSION(10) :: fmt1 = (/                  
+     & '(" start mddc_desc write, called with id = ",a)      ',                
+     & '(" s_name = ",a)                                     ',                
+     & '(" l_name = ",a)                                     ',                
+     & '(" units = ",a)                                      ',                
+     & '(" l_mdcoil_def = ",L1)                              ',                
+     & '(" mddc_type = ",a)                                  ',                
+     & '(" bsc_coil s_name = ",a)                            ',                
+     & '(" flux_factor = ",es12.5)                           ',                
+     & '(" sigma_default = ",es12.5)                         ',                
+     & '(" end mddc_desc write, called with id = ",a)        '                 
      &  /) 
 
 !  start of executable code
@@ -775,32 +775,32 @@
       INTEGER      :: i1, i2, i3, i4, i5
 
 !  Declare Format array
-      CHARACTER(len=*), PARAMETER, DIMENSION(25) :: fmt1 = (/                  &
-     & '(" start mddc_mrf write, called with id = ",a)       ',                &
-     & '(" code_name  = ",a)                                 ',                &
-     & '(" code_version = ",a)                               ',                &
-     & '(" date_run = ",a)                                   ',                &
-     & '(" field_coils_id = ",a)                             ',                &
-     & '(" number of field-coil groups (n_field_cg) = ",i4)  ',                &
-     & '(" index   rdiag_coilg_1: ",/,(1x,i4,3x,es12.5))     ',                &
-     & '(" index   extcur_mg: ",/,(1x,i4,3x,es12.5))         ',                &
-     & '(" number of grid points in R (ir) = ",i4)           ',                &
-     & '(" number of grid points in z (jz) = ",i4)           ',                &
-     & '(" number of grid points in phi (kp) = ",i4)         ',                &
-     & '(" number of g. p. in phi stored (kp_store) = ",i4)  ',                &
-     & '(" minimum R in grid (rmin) = ",es12.5)              ',                &
-     & '(" maximum R in grid (rmax) = ",es12.5)              ',                &
-     & '(" minimum Z in grid (zmin) = ",es12.5)              ',                &
-     & '(" maximum Z in grid (zmax) = ",es12.5)              ',                &
-     & '(" number of field periods (n_field_periods) = ",i4) ',                &
-     & '(" Stellarator symmetry logical (lstell_sym) = ",l1) ',                &
-     & '(" Three indices for a_ are ",i4,2x,i4,2x,i4)        ',                &
-     & '(" a_r, a_f, a_z = ",3(3x,es12.5))                   ',                &
-     & '(" Two indices for a_s_ are ",i4,2x,i4)              ',                &
-     & '(" a_s_r, a_s_f, a_s_z = ",3(3x,es12.5))             ',                &
-     & '(" end mddc_mrf write, called with id = ",a)         ',                &
-     & '(" number of s grid points in phi ",i4)              ',                &
-     & '(" number of s g. p. in phi stored ",i4)             '                 &
+      CHARACTER(len=*), PARAMETER, DIMENSION(25) :: fmt1 = (/                  
+     & '(" start mddc_mrf write, called with id = ",a)       ',                
+     & '(" code_name  = ",a)                                 ',                
+     & '(" code_version = ",a)                               ',                
+     & '(" date_run = ",a)                                   ',                
+     & '(" field_coils_id = ",a)                             ',                
+     & '(" number of field-coil groups (n_field_cg) = ",i4)  ',                
+     & '(" index   rdiag_coilg_1: ",/,(1x,i4,3x,es12.5))     ',                
+     & '(" index   extcur_mg: ",/,(1x,i4,3x,es12.5))         ',                
+     & '(" number of grid points in R (ir) = ",i4)           ',                
+     & '(" number of grid points in z (jz) = ",i4)           ',                
+     & '(" number of grid points in phi (kp) = ",i4)         ',                
+     & '(" number of g. p. in phi stored (kp_store) = ",i4)  ',                
+     & '(" minimum R in grid (rmin) = ",es12.5)              ',                
+     & '(" maximum R in grid (rmax) = ",es12.5)              ',                
+     & '(" minimum Z in grid (zmin) = ",es12.5)              ',                
+     & '(" maximum Z in grid (zmax) = ",es12.5)              ',                
+     & '(" number of field periods (n_field_periods) = ",i4) ',                
+     & '(" Stellarator symmetry logical (lstell_sym) = ",l1) ',                
+     & '(" Three indices for a_ are ",i4,2x,i4,2x,i4)        ',                
+     & '(" a_r, a_f, a_z = ",3(3x,es12.5))                   ',                
+     & '(" Two indices for a_s_ are ",i4,2x,i4)              ',                
+     & '(" a_s_r, a_s_f, a_s_z = ",3(3x,es12.5))             ',                
+     & '(" end mddc_mrf write, called with id = ",a)         ',                
+     & '(" number of s grid points in phi ",i4)              ',                
+     & '(" number of s g. p. in phi stored ",i4)             '                 
      &  /)
 
 !  start of executable code
@@ -851,14 +851,14 @@
          WRITE(iou,*) this % n_field_periods
          WRITE(iou,*) this % lstell_sym
          WRITE(iou,*) i1, i2, i3
-         WRITE(iou,*) this % a_r(i1,i2,i3), this % a_f(i1,i2,i3),              &
+         WRITE(iou,*) this % a_r(i1,i2,i3), this % a_f(i1,i2,i3),              
      &      this % a_z(i1,i2,i3)
          WRITE(iou,*) this % use_con_shell
          WRITE(iou,*) i4, i3
          IF (this % use_con_shell) THEN
             WRITE(iou,*) this % kp_shell
             WRITE(iou,*) this % kp_shell_store
-            WRITE(iou,*) this % a_s_r(i4,i5), this % a_s_f(i4,i5),             &
+            WRITE(iou,*) this % a_s_r(i4,i5), this % a_s_f(i4,i5),             
      &                   this % a_s_z(i4,i5)
          END IF
       
@@ -869,9 +869,9 @@
          WRITE(iou,fmt1(4)) this % date_run
          WRITE(iou,fmt1(5)) this % field_coils_id
          WRITE(iou,fmt1(6)) this % n_field_cg
-         WRITE(iou,fmt1(7)) (i,this % rdiag_coilg_1(i),                        &
+         WRITE(iou,fmt1(7)) (i,this % rdiag_coilg_1(i),                        
      &      i=1,this % n_field_cg)
-         WRITE(iou,fmt1(8)) (i,this % extcur_mg(i),                            &
+         WRITE(iou,fmt1(8)) (i,this % extcur_mg(i),                            
      &      i=1,this % n_field_cg)
          WRITE(iou,fmt1(9)) this % ir
          WRITE(iou,fmt1(10)) this % jz
@@ -884,14 +884,14 @@
          WRITE(iou,fmt1(17)) this % n_field_periods
          WRITE(iou,fmt1(18)) this % lstell_sym
          WRITE(iou,fmt1(19)) i1, i2, i3
-         WRITE(iou,fmt1(20)) this % a_r(i1,i2,i3), this % a_f(i1,i2,i3),       &
+         WRITE(iou,fmt1(20)) this % a_r(i1,i2,i3), this % a_f(i1,i2,i3),       
      &      this % a_z(i1,i2,i3)
          WRITE(iou,fmt1(21)) i4, i3
          IF (this % use_con_shell) THEN
             WRITE(iou,fmt1(24)) this % kp_shell
             WRITE(iou,fmt1(25)) this % kp_shell_store
-            WRITE(iou,fmt1(22)) this % a_s_r(i4,i5),                           &
-     &                          this % a_s_f(i4,i5),                           &
+            WRITE(iou,fmt1(22)) this % a_s_r(i4,i5),                           
+     &                          this % a_s_f(i4,i5),                           
      &                          this % a_s_z(i4,i5)
          END IF
          WRITE(iou,fmt1(23)) id

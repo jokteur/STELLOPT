@@ -92,7 +92,7 @@
 !
 !  For d_type = 'thscte' (Thomson Scattering Te)
 !-------------------------------------------------------------------------------
-      SUBROUTINE thscte_desc_construct(this, chord_name, xcart,                &
+      SUBROUTINE thscte_desc_construct(this, chord_name, xcart,                
      &                                 chord_type)
 
          IMPLICIT NONE
