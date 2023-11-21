@@ -34,7 +34,7 @@ spack load lapackpp
 or create your own environnement.
 
 ### Compiling
-Create a build folder:
+Create a build folder in the root of the git project:
 ```bash
 mkdir build
 cd build
