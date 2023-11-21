@@ -5,6 +5,15 @@ project(STELLOPT)
 enable_language(Fortran)
 
 
+set(FLOW OFF CACHE BOOL "Activate VMEC flow version")
+set(ANIMEC OFF CACHE BOOL "Activate ANIMEC version")
+
+if (${FLOW})
+    if (${ANIMEC})
+        message(FATAL_ERROR "Cannot activate both FLOW and ANIMEC versions")
+    endif()
+endif()
+
 # Third party libraries
 find_package(HDF5 COMPONENTS Fortran)
 find_package(MPI COMPONENTS Fortran)
@@ -14,6 +23,12 @@ include(cmake-modules/FindNetCDF.cmake)
 find_package(LAPACK REQUIRED)
 
 add_compile_definitions(NETCDF LHDF5 LINUX)
+
+if (${FLOW})
+    add_compile_definitions(FLOW)
+elseif(${ANIMEC})
+    add_compile_definitions(ANIMEC)
+endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp -fallow-argument-mismatch -Wno-argument-mismatch -fPIC -O2 -fexternal-blas -fbacktrace -fcheck=all,no-array-temps")
