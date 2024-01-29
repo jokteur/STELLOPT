@@ -50,10 +50,13 @@
         vn_vol = 'volume_p', vn_am = 'am', vn_ai = 'ai', vn_ac = 'ac',  &
         vn_ah = 'hot particle fraction', vn_atuname = 'T-perp/T-par',   &
         vn_pmass_type = 'pmass_type', vn_piota_type = 'piota_type',     &
-        vn_pcurr_type = 'pcurr_type',                                   &
+        vn_pcurr_type = 'pcurr_type', vn_pt_type = 'pt_type',           &
+        vn_ph_type = 'ph_type',                                         &
         vn_am_aux_s = 'am_aux_s', vn_am_aux_f = 'am_aux_f',             &
         vn_ai_aux_s = 'ai_aux_s', vn_ai_aux_f = 'ai_aux_f',             &
         vn_ac_aux_s = 'ac_aux_s', vn_ac_aux_f = 'ac_aux_f',             &
+        vn_ah_aux_s = 'ah_aux_s', vn_ah_aux_f = 'ah_aux_f',             &
+        vn_at_aux_s = 'at_aux_s', vn_at_aux_f = 'at_aux_f',             &
         vn_mse = 'imse', vn_thom = 'itse',                              &
         vn_pmod = 'xm', vn_tmod = 'xn', vn_pmod_nyq = 'xm_nyq',         &
         vn_tmod_nyq = 'xn_nyq',                                         &
@@ -64,7 +67,9 @@
         vn_presf = 'presf', vn_phi = 'phi', vn_phipf = 'phipf',         &
         vn_jcuru = 'jcuru', vn_jcurv = 'jcurv', vn_iotah = 'iotas',     &
         vn_mass = 'mass', vn_presh = 'pres', vn_betah = 'beta_vol',     &
+        vn_rotfot = 'rotfot',                                           &
         vn_buco = 'buco', vn_bvco = 'bvco', vn_vp = 'vp',               &
+        vn_bucof = 'bucof', vn_bvcof = 'bvcof',                         &
         vn_specw = 'specw', vn_phip = 'phips', vn_jdotb = 'jdotb',      &
         vn_bdotb = 'bdotb', vn_overr = 'over_r',                        &
         vn_bgrv = 'bdotgradv', vn_merc = 'DMerc', vn_mshear = 'DShear', &
@@ -168,8 +173,10 @@
         ln_jcuru = 'j dot gradu full',                                  &
         ln_jcurv = 'j dot gradv full', ln_iotah = 'iota half',          &
         ln_mass = 'mass half', ln_presh = 'pressure half',              &
+        ln_rotfot = '[TODO] unclear',                                   &
         ln_betah = 'beta half', ln_buco = 'bsubu half',                 &
         ln_bvco = 'bsubv half', ln_vp = 'volume deriv half',            &
+        ln_bucof = '[TODO] unclear', ln_bvcof = '[TODO] unclear',       &
         ln_specw = 'Spectral width half',                               &
         ln_phip = 'tor flux deriv over 2pi half',                       &
         ln_jdotb = 'J dot B', ln_bgrv = 'B dot grad v',                 &
@@ -287,6 +294,7 @@
          xm_nyq, xn_nyq, phip, buco, bvco, vp, overr, jcuru, jcurv,     & 
          specw, jdotb, bdotb, bdotgradv, fsqt, wdot, am, ac, ai,        & 
          am_aux_s, am_aux_f, ac_aux_s, ac_aux_f, ai_aux_s, ai_aux_f,    &
+         ah_aux_s, ah_aux_f, at_aux_s, at_aux_f,                        &
          Dmerc, Dshear, Dwell, Dcurr, Dgeod, equif, extcur,             &
          sknots, ystark, y2stark, pknots, ythom, y2thom,                &
          anglemse, rmid, qmid, shear, presmid, alfa, curmid, rstark,    &
@@ -294,7 +302,7 @@
       REAL(rprec), DIMENSION(:), ALLOCATABLE :: pmap, omega, tpotb        ! SAL -FLOW
       LOGICAL :: lasym, lthreed, lwout_opened=.false.
       CHARACTER :: mgrid_file*200, input_extension*100
-      CHARACTER :: pmass_type*20, pcurr_type*20, piota_type*20
+      CHARACTER :: pmass_type*20, pcurr_type*20, piota_type*20, ph_type*20, pt_type*20
 
       INTEGER, PARAMETER :: norm_term_flag=0,                           &
          bad_jacobian_flag=1, more_iter_flag=2, jac75_flag=4
@@ -1031,6 +1039,8 @@
       CALL cdf_read(nwout, vn_pcurr_type, pcurr_type)
       CALL cdf_read(nwout, vn_piota_type, piota_type)
       CALL cdf_read(nwout, vn_pmass_type, pmass_type)
+      CALL cdf_read(nwout, vn_ph_type, ph_type)
+      CALL cdf_read(nwout, vn_pt_type, pt_type)
       imse = -1
       IF (lrecon) THEN
          CALL cdf_read(nwout, vn_mse, imse)
@@ -1108,6 +1118,14 @@
       ALLOCATE (am_aux_s(dimlens(1)), stat = ierror)
       CALL cdf_inquire(nwout, vn_am_aux_f, dimlens)
       ALLOCATE (am_aux_f(dimlens(1)), stat = ierror)
+      CALL cdf_inquire(nwout, vn_ah_aux_s, dimlens)
+      ALLOCATE (ah_aux_s(dimlens(1)), stat = ierror)
+      CALL cdf_inquire(nwout, vn_ah_aux_f, dimlens)
+      ALLOCATE (ah_aux_f(dimlens(1)), stat = ierror)
+      CALL cdf_inquire(nwout, vn_at_aux_s, dimlens)
+      ALLOCATE (at_aux_s(dimlens(1)), stat = ierror)
+      CALL cdf_inquire(nwout, vn_at_aux_f, dimlens)
+      ALLOCATE (at_aux_f(dimlens(1)), stat = ierror)
       
       CALL cdf_inquire(nwout, vn_iotaf, dimlens)
       ALLOCATE (iotaf(dimlens(1)), stat = ierror)
@@ -1467,6 +1485,10 @@
       CALL cdf_read(nwout, vn_ac_aux_f, ac_aux_f)
       CALL cdf_read(nwout, vn_ai_aux_s, ai_aux_s)
       CALL cdf_read(nwout, vn_ai_aux_f, ai_aux_f)
+      CALL cdf_read(nwout, vn_ah_aux_s, ah_aux_s)
+      CALL cdf_read(nwout, vn_ah_aux_f, ah_aux_f)
+      CALL cdf_read(nwout, vn_at_aux_s, at_aux_s)
+      CALL cdf_read(nwout, vn_at_aux_f, at_aux_f)
 
       CALL cdf_read(nwout, vn_iotaf, iotaf) 
       CALL cdf_read(nwout, vn_qfact, qfact) 
@@ -1873,6 +1895,9 @@
                    r2dim = (/'mn_mode','radius '/), &
                    r3dim = (/'mn_mode_nyq','radius     '/)
 #endif
+
+
+      print *,'write_wout_nc'
 !------------------------------------------------
 !
 !     THIS SUBROUTINE WRITES A netCDF FILE WOUT CREATED BY STORED THE INFORMATION 
@@ -1900,6 +1925,8 @@
       CALL cdf_define(nwout, vn_pcurr_type, pcurr_type)
       CALL cdf_define(nwout, vn_pmass_type, pmass_type)
       CALL cdf_define(nwout, vn_piota_type, piota_type)
+      CALL cdf_define(nwout, vn_ph_type, ph_type)
+      CALL cdf_define(nwout, vn_pt_type, pt_type)
       CALL cdf_define(nwout, vn_magen, wb)
       CALL cdf_define(nwout, vn_therm, wp)
       CALL cdf_define(nwout, vn_gam, gamma)
@@ -1993,6 +2020,14 @@
       CALL cdf_define(nwout, vn_ac_aux_s, ac_aux_s(1:j),dimname=(/'ndfmax'/))
       j = SIZE(ac_aux_f)
       CALL cdf_define(nwout, vn_ac_aux_f, ac_aux_f(1:j),dimname=(/'ndfmax'/))
+      j = SIZE(ah_aux_s)
+      CALL cdf_define(nwout, vn_ah_aux_s, ah_aux_s(1:j),dimname=(/'ndfmax'/))
+      j = SIZE(ah_aux_f)
+      CALL cdf_define(nwout, vn_ah_aux_f, ah_aux_f(1:j),dimname=(/'ndfmax'/))
+      j = SIZE(at_aux_s)
+      CALL cdf_define(nwout, vn_at_aux_s, at_aux_s(1:j),dimname=(/'ndfmax'/))
+      j = SIZE(at_aux_f)
+      CALL cdf_define(nwout, vn_at_aux_f, at_aux_f(1:j),dimname=(/'ndfmax'/))
 
 
       CALL cdf_define(nwout, vn_iotaf, iotaf(1:ns),dimname=r1dim)
@@ -2140,6 +2175,8 @@
       CALL cdf_write(nwout, vn_pcurr_type, pcurr_type)
       CALL cdf_write(nwout, vn_piota_type, piota_type)
       CALL cdf_write(nwout, vn_pmass_type, pmass_type)
+      CALL cdf_write(nwout, vn_ph_type, ph_type)
+      CALL cdf_write(nwout, vn_pt_type, pt_type)
       CALL cdf_write(nwout, vn_magen, wb)
       CALL cdf_write(nwout, vn_therm, wp)
       CALL cdf_write(nwout, vn_gam, gamma)
@@ -2260,6 +2297,14 @@
       CALL cdf_write(nwout, vn_ai_aux_s, ai_aux_s(1:j))
       j = SIZE(ai_aux_f)
       CALL cdf_write(nwout, vn_ai_aux_f, ai_aux_f(1:j))
+      j = SIZE(ah_aux_s)
+      CALL cdf_write(nwout, vn_ah_aux_s, ah_aux_s(1:j))
+      j = SIZE(ah_aux_f)
+      CALL cdf_write(nwout, vn_ah_aux_f, ah_aux_f(1:j))
+      j = SIZE(at_aux_s)
+      CALL cdf_write(nwout, vn_at_aux_s, at_aux_s(1:j))
+      j = SIZE(at_aux_f)
+      CALL cdf_write(nwout, vn_at_aux_f, at_aux_f(1:j))
 
       CALL cdf_write(nwout, vn_iotaf, iotaf(1:ns))
       CALL cdf_write(nwout, vn_qfact, qfact(1:ns))
@@ -2479,7 +2524,8 @@
       IF (ALLOCATED(chipf)) DEALLOCATE (chipf, chi)
 
       IF (ALLOCATED(am_aux_s)) DEALLOCATE (am_aux_s, am_aux_f,          &
-          ac_aux_s, ac_aux_f, ai_aux_s, ai_aux_f, stat=istat(6)) 
+          ac_aux_s, ac_aux_f, ai_aux_s, ai_aux_f, ah_aux_s, ah_aux_f,   &
+          at_aux_s, at_aux_f, stat=istat(6)) 
 
       IF (ireconstruct.gt.0 .and. ALLOCATED(sknots)) DEALLOCATE (       &
           ystark, y2stark, pknots, anglemse, rmid, qmid, shear,         &

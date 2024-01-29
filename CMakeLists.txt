@@ -25,9 +25,9 @@ find_package(LAPACK REQUIRED)
 add_compile_definitions(NETCDF LHDF5 LINUX)
 
 if (${FLOW})
-    add_compile_definitions(FLOW)
+    add_compile_definitions(_FLOW)
 elseif(${ANIMEC})
-    add_compile_definitions(ANIMEC)
+    add_compile_definitions(_ANIMEC)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

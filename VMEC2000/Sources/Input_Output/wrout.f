@@ -39,7 +39,7 @@
      1  vn_magen, 
 #ifdef _ANIMEC
      &   vn_wpar, vn_bcrit,
-#ELSE
+#else
      &   vn_therm,
 #endif
      &   vn_gam, vn_maxr, vn_minr, vn_maxz, vn_fp,
@@ -52,6 +52,8 @@
      5  vn_rbt1, vn_sgs, vn_lar, vn_modB, vn_ctor, vn_amin, vn_Rmaj, 
      5  vn_potsin, vn_potcos, vn_maxpot, vn_xmpot, vn_xnpot,             !diagno/extender output (SPH071414)
      6  vn_vol, vn_mse, vn_thom, vn_ac, vn_ai, vn_am, vn_ah, vn_atuname,  
+     6  vn_ah_aux_s, vn_ah_aux_f, vn_ph_type,
+     6  vn_at_aux_s, vn_at_aux_f, vn_pt_type,
      6  vn_rfp, vn_pmass_type, vn_pcurr_type, vn_piota_type,
      6  vn_am_aux_s, vn_am_aux_f, vn_ac_aux_s, vn_ac_aux_f, 
      6  vn_ai_aux_s, vn_ai_aux_f, 
@@ -66,7 +68,7 @@
      9  vn_mass, 
 #ifdef _FLOW
      &  vn_pmap,  vn_omega, vn_tpotb, vn_presh,  vn_rotfot, 
-#ELSE
+#else
      &  vn_presh,
 #endif
      &  vn_betah, vn_buco, vn_bvco, vn_vp, vn_specw, 
@@ -98,7 +100,7 @@
      1   ln_magen, 
 #ifdef _ANIMEC
      &   ln_wpar, ln_bcrit,
-#ELSE
+#else
      &   ln_therm,
 #endif
      &   ln_gam, ln_maxr, ln_minr, ln_maxz, ln_fp,
@@ -123,7 +125,7 @@
      9  ln_mass, 
 #ifdef _FLOW
      &  ln_pmap,  ln_omega, ln_tpotb, ln_presh,  ln_rotfot, 
-#ELSE
+#else
      &  ln_presh,
 #endif
      &  ln_betah, ln_buco, ln_bvco, ln_vp, ln_specw, 
@@ -150,7 +152,7 @@
      &  ln_bsupumns_sur, ln_bsupvmns_sur,
      &  ln_currumnc, ln_currumns, ln_currvmnc, ln_currvmns
 
-!------------------DEC$ ELSE !to use safe_open_mod in any case (J.Geiger)
+!------------------DEC$ else !to use safe_open_mod in any case (J.Geiger)
 #endif
       USE safe_open_mod
       USE mgrid_mod
@@ -283,7 +285,7 @@
          mnyq0 = mnyq
          nnyq0 = nnyq
          xm_nyq0 => xm_nyq; xn_nyq0 => xn_nyq
-      ELSE
+      else
          mnmax_nyq0 = mnmax
          mnyq0 = mpol1
          nnyq0 = ntor
@@ -417,7 +419,7 @@
       CALL cdf_define(nwout, vn_wpar, wpar)
       CALL cdf_define(nwout, vn_bcrit, bcrit)
       CALL cdf_setatt(nwout, vn_bcrit, ln_bcrit)
-#ELSE
+#else
       CALL cdf_define(nwout, vn_therm, wp)
 #endif
       CALL cdf_define(nwout, vn_gam, gamma)
@@ -601,7 +603,7 @@
       CALL cdf_define(nwout, vn_rotfot, rotfot(1:ns), 
      1                dimname=r1dim)
       CALL cdf_setatt(nwout, vn_rotfot, ln_rotfot, units='not sure yet')
-#ELSE
+#else
       CALL cdf_define(nwout, vn_presh, pres(1:ns), 
      1                dimname=r1dim)
       CALL cdf_setatt(nwout, vn_presh, ln_presh, units='Pa')
@@ -833,11 +835,13 @@
       CALL cdf_write(nwout, vn_pcurr_type, pcurr_type)
       CALL cdf_write(nwout, vn_piota_type, piota_type)
       CALL cdf_write(nwout, vn_pmass_type, pmass_type)
+      CALL cdf_write(nwout, vn_ph_type, ph_type)
+      CALL cdf_write(nwout, vn_pt_type, pt_type)
       CALL cdf_write(nwout, vn_magen, wb)
 #ifdef _ANIMEC
       CALL cdf_write(nwout, vn_wpar, wpar)
       CALL cdf_write(nwout, vn_bcrit, bcrit)
-#ELSE
+#else
       CALL cdf_write(nwout, vn_therm, wp)
 #endif
       CALL cdf_write(nwout, vn_gam, gamma)
@@ -929,12 +933,12 @@
 
          IF (lasym) THEN
             iasym = 1                                  ! asymmetric mode
-         ELSE
+         else
             iasym = 0
          END IF
          IF (lrecon) THEN
             ireconstruct = 1
-         ELSE
+         else
             itse = 0
             imse2 = 0
             ireconstruct = 0
@@ -1026,7 +1030,7 @@
       DO js = ns,2,-1
          WHERE (MOD(NINT(xm),2) .eq. 0) 
             lmns(:,js) = p5*(lmns(:,js) + lmns(:,js-1))
-         ELSEWHERE
+         elseWHERE
             lmns(:,js) = p5*(sm(js)*lmns(:,js) + sp(js-1)*lmns(:,js-1))
          END WHERE
       END DO
@@ -1041,7 +1045,7 @@
       DO js = ns,2,-1
          WHERE (MOD(NINT(xm),2) .eq. 0) 
             lmnc(:,js) = p5*(lmnc(:,js) + lmnc(:,js-1))
-         ELSEWHERE
+         elseWHERE
             lmnc(:,js) = p5*(sm(js)*lmnc(:,js) + sp(js-1)*lmnc(:,js-1))
          END WHERE
       END DO
@@ -1091,7 +1095,7 @@
      &             (pd(js) + onembc(js,lk) * pmap(js) / (omtbc+eps))
            ppprim(js,lk) =  (pperp(js,lk)-pres(js)) *
      &            (pd(js) + optbc * pmap(js) / (omtbc * tpotb(js)+eps))
-        ELSE
+        else
           densit(js,lk) = hotdam * (one - onembc(js,lk)) *
      &  (optbc - 2*(tpotb(js)*onembc(js,lk))**c1p5) / (omtbc*optbc+eps)
           pbprim(js,lk) =  (ppar(js,lk) -pres(js)) * pd(js) +
@@ -1486,7 +1490,7 @@
      &                         'bsubsmnc', 'bsubsmns',                         
      &                         'bsupumnc', 'bsupumns',                         
      &                         'bsupvmnc', 'bsupvmns'
-      ELSE
+      else
          WRITE(333,2000) 'mn', 'rmnc', 'lmns', 'gmnc', 'bmnc',                 
      &                         'bsubumnc', 'bsubvmnc',                         
      &                         'bsubsmns',                                     
@@ -1504,7 +1508,7 @@
      &                          bsubsmnc(mn,ns/2), bsubsmns(mn,ns/2),          
      &                          bsupumnc(mn,ns/2), bsupumns(mn,ns/2),          
      &                          bsupvmnc(mn,ns/2), bsupvmns(mn,ns/2)
-         ELSE
+         else
             WRITE(333,2001) mn, rmnc(mn,ns/2), lmns(mn,ns/2),                  
      &                          gmnc(mn,ns/2), bmnc(mn,ns/2),                  
      &                          bsubumnc(mn,ns/2), bsubvmnc(mn,ns/2),          
@@ -1586,6 +1590,14 @@
       CALL cdf_write(nwout, vn_ai_aux_s, ai_aux_s(1:j))
       j = SIZE(ai_aux_f)
       CALL cdf_write(nwout, vn_ai_aux_f, ai_aux_f(1:j))
+      j = SIZE(ah_aux_s)
+      CALL cdf_write(nwout, vn_ah_aux_s, ah_aux_s(1:j))
+      j = SIZE(ah_aux_f)
+      CALL cdf_write(nwout, vn_ah_aux_f, ah_aux_f(1:j))
+      j = SIZE(at_aux_s)
+      CALL cdf_write(nwout, vn_at_aux_s, at_aux_s(1:j))
+      j = SIZE(at_aux_f)
+      CALL cdf_write(nwout, vn_at_aux_f, at_aux_f(1:j))
 
       CALL cdf_write(nwout, vn_iotaf, iotaf(1:ns))
       CALL cdf_write(nwout, vn_qfact, qfact(1:ns))
@@ -1616,7 +1628,7 @@
       CALL cdf_write(nwout, vn_tpotb, tpotb(1:ns))
       CALL cdf_write(nwout,  vn_presh, pres(1:ns))
       CALL cdf_write(nwout, vn_rotfot, rotfot(1:ns))
-#ELSE
+#else
       CALL cdf_write(nwout,  vn_presh, pres(1:ns)/mu0)
 #endif 
       CALL cdf_write(nwout, vn_betah, beta_vol)
@@ -1900,7 +1912,7 @@
             write(21,*) zmns(1:ntor+1,1)
 
             close(unit=21)
-         ELSE
+         else
             write(6,*)"Diagno-file request not completed!"
             write(6,*)"VMEC2000 not running in free-boundary mode!"
             write(6,*)"-or- LASYM = .true. !"

@@ -350,6 +350,10 @@ C-----------------------------------------------
       ENDIF
 
       ns_maxval = nsmin
+
+#ifdef _FLOW
+      print *, 'hello world'
+#endif
 !
 !     WRITE OUT DATA TO THREED1 FILE
 !
@@ -516,24 +520,60 @@ C-----------------------------------------------
  150  FORMAT(/' NORMALIZED TOROIDAL FLUX COEFFICIENTS aphi',
      1   ' (EXPANSION IN S):',/,1x,35('-'))
 #ifdef _ANIMEC
-      IF (ANY(ah .ne. zero)) THEN
-         WRITE(nthreed,160)
-         WRITE(nthreed,135)(ah(i-1),i=1, SIZE(ah))
-         WRITE(nthreed,165)
-         WRITE(nthreed,135)(at(i-1),i=1, SIZE(at))
-      END IF
+      SELECT CASE(TRIM(ph_type))
+      CASE ('Akima_spline','cubic_spline')
+         WRITE(nthreed,"(' ah_aux_s is' )")
+         n = NonZeroLen(ah_aux_s,SIZE(ah_aux_s))
+         WRITE(nthreed,135)(ah_aux_s(i),i=1, n)
+         n = NonZeroLen(ah_aux_f,SIZE(ah_aux_f))
+         WRITE(nthreed,"(' ah_aux_f is' )")
+         WRITE(nthreed,135)(ah_aux_f(i),i=1, n)
+      CASE DEFAULT
+         n = NonZeroLen(ah,SIZE(ah))
+         WRITE(nthreed,135)(ah(i-1),i=1,n)
+      END SELECT
+      SELECT CASE(TRIM(pt_type))
+      CASE ('Akima_spline','cubic_spline')
+         WRITE(nthreed,"(' at_aux_s is' )")
+         n = NonZeroLen(at_aux_s,SIZE(at_aux_s))
+         WRITE(nthreed,135)(at_aux_s(i),i=1, n)
+         n = NonZeroLen(at_aux_f,SIZE(at_aux_f))
+         WRITE(nthreed,"(' at_aux_f is' )")
+         WRITE(nthreed,135)(at_aux_f(i),i=1, n)
+      CASE DEFAULT
+         n = NonZeroLen(at,SIZE(at))
+         WRITE(nthreed,135)(at(i-1),i=1,n)
+      END SELECT
 
  160  FORMAT(' HOT PARTICLE PRESSURE COEFFICIENTS ah',
      1  ' (EXPANSION IN TOROIDAL FLUX):',/,1x,35('-'))
  165  FORMAT(' HOT PARTICLE TPERP/T|| COEFFICIENTS at',
      1  ' (EXPANSION IN TOROIDAL FLUX):',/,1x,35('-'))
 #elif defined _FLOW
-      IF (ANY(ah .ne. zero)) THEN
-         WRITE(nthreed,170)
-         WRITE(nthreed,135)(ah(i-1),i=1, SIZE(ah))
-         WRITE(nthreed,175)
-         WRITE(nthreed,135)(at(i-1),i=1, SIZE(at))
-      END IF
+      SELECT CASE(TRIM(ph_type))
+      CASE ('Akima_spline','cubic_spline')
+         WRITE(nthreed,"(' ah_aux_s is' )")
+         n = NonZeroLen(ah_aux_s,SIZE(ah_aux_s))
+         WRITE(nthreed,135)(ah_aux_s(i),i=1, n)
+         n = NonZeroLen(ah_aux_f,SIZE(ah_aux_f))
+         WRITE(nthreed,"(' ah_aux_f is' )")
+         WRITE(nthreed,135)(ah_aux_f(i),i=1, n)
+      CASE DEFAULT
+         n = NonZeroLen(ah,SIZE(ah))
+         WRITE(nthreed,135)(ah(i-1),i=1,n)
+      END SELECT
+      SELECT CASE(TRIM(pt_type))
+      CASE ('Akima_spline','cubic_spline')
+         WRITE(nthreed,"(' at_aux_s is' )")
+         n = NonZeroLen(at_aux_s,SIZE(at_aux_s))
+         WRITE(nthreed,135)(at_aux_s(i),i=1, n)
+         n = NonZeroLen(at_aux_f,SIZE(at_aux_f))
+         WRITE(nthreed,"(' at_aux_f is' )")
+         WRITE(nthreed,135)(at_aux_f(i),i=1, n)
+      CASE DEFAULT
+         n = NonZeroLen(at,SIZE(at))
+         WRITE(nthreed,135)(at(i-1),i=1,n)
+      END SELECT
 
  170  FORMAT(' TOROIDAL FLOW FREQUENCY COEFFICIENTS ah',
      1  ' (EXPANSION IN TOROIDAL FLUX):',/,1x,35('-'))
