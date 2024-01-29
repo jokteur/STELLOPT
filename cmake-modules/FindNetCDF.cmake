@@ -33,27 +33,25 @@ endif (NETCDF_INCLUDES AND NETCDF_LIBRARIES)
 # Netcdf offers nc-config and nf-config, which is usefull to find the libraries
 find_program(NC_CONFIG nc-config)
 find_program(NF_CONFIG nf-config)
-
 if (NC_CONFIG)
-  exec_program(${NC_CONFIG} ARGS --includedir OUTPUT_VARIABLE NETCDF_INC)
-  exec_program(${NC_CONFIG} ARGS --libdir OUTPUT_VARIABLE NETCDF_LIB)
+  exec_program(${NC_CONFIG} ARGS --includedir OUTPUT_VARIABLE NETCDF_INC_)
+  exec_program(${NC_CONFIG} ARGS --libdir OUTPUT_VARIABLE NETCDF_LIB_)
 endif()
 if (NF_CONFIG)
-  exec_program(${NF_CONFIG} ARGS --includedir OUTPUT_VARIABLE NETCDFF_INC)
-  exec_program(${NF_CONFIG} ARGS --flibs OUTPUT_VARIABLE NF_LIBS)
-
+  exec_program(${NF_CONFIG} ARGS --includedir OUTPUT_VARIABLE NETCDFF_INC_)
+  exec_program(${NF_CONFIG} ARGS --flibs OUTPUT_VARIABLE NF_LIBS_)
   # Extract the netcdf library path from the output of nf-config
-  string(REGEX MATCH "-L(.*) -lnetcdff" TMP_OUT ${NF_LIBS})
+  string(REGEX MATCH "-L(.*) -lnetcdff" TMP_OUT ${NF_LIBS_})
   string(FIND ${TMP_OUT} " -lnetcdff" TMP_STRING_POS)
   math(EXPR TMP_STRING_POS "${TMP_STRING_POS}-2")
-  string(SUBSTRING ${TMP_OUT} 2 ${TMP_STRING_POS} NETCDFF_LIB)
+  string(SUBSTRING ${TMP_OUT} 2 ${TMP_STRING_POS} NETCDFF_LIB_)
 endif()
 
 find_path (NETCDF_INCLUDES netcdf.h
-  HINTS NETCDF_DIR ENV NETCDF_DIR ENV NETCDF_INC ENV NETCDF_INCLUDES ENV NETCDF_HOME)
-
+  HINTS ${NETCDF_INC_} ENV NETCDF_DIR ENV NETCDF_INC ENV NETCDF_INCLUDES ENV NETCDF_HOME)
 find_library (NETCDF_LIBRARIES_C NAMES netcdf 
-  HINTS NETCDF_LIB ENV NETCDF_LIB ENV NETCDF_HOME)
+  HINTS ${NETCDF_LIB_} ENV NETCDF_LIB ENV NETCDF_HOME)
+
 mark_as_advanced(NETCDF_LIBRARIES_C)
 
 set (NetCDF_has_interfaces "YES") # will be set to NO if we're missing any interfaces
@@ -62,15 +60,12 @@ set (NetCDF_libs "${NETCDF_LIBRARIES_C}")
 get_filename_component (NetCDF_lib_dirs "${NETCDF_LIBRARIES_C}" PATH)
 
 
-macro (NetCDF_check_interface lang header libs)
-  if (${lang} STREQUAL "F90")
-  endif(${lang} STREQUAL "F90")
-  
+macro (NetCDF_check_interface lang header libs)  
   if (NETCDF_${lang})
     find_path (NETCDF_INCLUDES_${lang} NAMES ${header}
-      HINTS "${NETCDF_INCLUDES}" ENV NETCDFF_HOME ENV NETCDFF_INC ENV NETCDFF_INCLUDE NO_DEFAULT_PATH)
+      HINTS ${NETCDFF_INC_} ENV NETCDFF_HOME ENV NETCDFF_INC ENV NETCDFF_INCLUDE NO_DEFAULT_PATH)
     find_library (NETCDF_LIBRARIES_${lang} NAMES ${libs}
-      HINTS "${NetCDF_lib_dirs}" ENV NETCDFF_HOME ENV NETCDFF_LIB NO_DEFAULT_PATH)
+      HINTS ${NETCDFF_LIB_} ENV NETCDFF_HOME ENV NETCDFF_LIB NO_DEFAULT_PATH)
 
     mark_as_advanced (NETCDF_INCLUDES_${lang} NETCDF_LIBRARIES_${lang})
 
