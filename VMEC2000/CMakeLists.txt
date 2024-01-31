@@ -22,8 +22,15 @@ file(GLOB source_list_freeform RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
 set_source_files_properties(${source_list} PROPERTIES COMPILE_FLAGS ${Fortran_FixedFORM_FLAGS})
 set_source_files_properties(${source_list_freeform} PROPERTIES COMPILE_FLAGS ${Fortran_FreeFORM_FLAGS})
 
+set(VMEC_NAME "vmec_standard")
+if (${ANIMEC})
+    set(VMEC_NAME "vmec_animec")
+elseif (${FLOW})
+    set(VMEC_NAME "vmec_flow")
+endif()
+    
 
 message(STATUS "source_list: ${LIBSTELL_MOD_DIR}")
-add_executable(vmec_flow ${source_list} ${source_list_freeform})
-target_link_libraries(vmec_flow PRIVATE ${NETCDF_LIBRARIES} MPI::MPI_Fortran ${HDF5_LIBRARIES} libstell ${LAPACK_LIBRARIES})
-target_include_directories(vmec_flow PUBLIC ${NETCDF_INCLUDES} MPI::MPI_Fortran ${HDF5_INCLUDE_DIRS} ${LIBSTELL_MOD_DIR})
+add_executable(${VMEC_NAME} ${source_list} ${source_list_freeform})
+target_link_libraries(${VMEC_NAME} PRIVATE ${NETCDF_LIBRARIES} MPI::MPI_Fortran ${HDF5_LIBRARIES} libstell ${LAPACK_LIBRARIES})
+target_include_directories(${VMEC_NAME} PUBLIC ${NETCDF_INCLUDES} ${MPI_Fortran_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS} ${LIBSTELL_MOD_DIR})

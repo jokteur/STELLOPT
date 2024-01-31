@@ -14,6 +14,13 @@ if (${FLOW})
     endif()
 endif()
 
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    # require at least gcc 9.3
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.3)
+        message(FATAL_ERROR "GCC version must be at least 9.3!")
+    endif()
+endif()
+
 # Third party libraries
 find_package(HDF5 COMPONENTS Fortran)
 find_package(MPI COMPONENTS Fortran)

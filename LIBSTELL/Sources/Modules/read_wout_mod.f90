@@ -100,6 +100,7 @@
         vn_rbc = 'rbc', vn_zbs = 'zbs', vn_rbs = 'rbs', vn_zbc = 'zbc', &
 
         vn_wpar = 'wpar', vn_pparmnc = 'pparmnc', vn_ppermnc ='ppermnc',&
+        vn_bcrit = 'bcrit',                                             &
         vn_hotdmnc = 'hotdmnc', vn_pbprmnc = 'pbprmnc',                 &
         vn_ppprmnc = 'ppprmnc', vn_sigmnc  = 'sigmnc',                  &
         vn_taumnc  = 'taumnc',                                          &
@@ -234,6 +235,7 @@
         ln_zbc = 'Initial boundary Z cos(mu-nv) coefficients',          &
 
         ln_wpar = 'Energy',                                             &
+        ln_bcrit = 'Critical beta',                                     &
         ln_pparmnc = 'cosmn compoents of hot part. para. pressure',     &
         ln_ppermnc = 'cosmn compoents of hot part. perp. pressure',     &
         ln_hotdmnc = 'cosmn compoents of hot part. density',            &

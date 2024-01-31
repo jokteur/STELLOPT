@@ -24,7 +24,7 @@ set_source_files_properties(${libstell_freeform} PROPERTIES COMPILE_FLAGS ${Fort
 
 add_library(libstell STATIC ${libstell_src} ${libstell_freeform})
 target_link_libraries(libstell PRIVATE ${NETCDF_LIBRARIES} MPI::MPI_Fortran ${HDF5_LIBRARIES})
-target_include_directories(libstell PUBLIC ${NETCDF_INCLUDES} MPI::MPI_Fortran ${HDF5_INCLUDE_DIRS})
+target_include_directories(libstell PUBLIC ${NETCDF_INCLUDES} ${MPI_Fortran_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
 
 get_target_property(LIB_DIR libstell BINARY_DIR)
 set(LIBSTELL_MOD_DIR ${LIB_DIR} PARENT_SCOPE)
