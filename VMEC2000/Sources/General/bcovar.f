@@ -258,7 +258,7 @@
       lvv(jsa:jsb+1) = phipog(jsa:jsb+1)*gvv(jsa:jsb+1)
       bsubv_e(jsa:jsb) =p5*(lvv(jsa:jsb)+lvv(jsa+1:jsb+1))*lu(jsa:jsb,0)
 
-      lvv(jsa:jsb+1) = lvv(jsa:jsb:1)*shalf(jsa:jsb+1)
+      lvv(jsa:jsb+1) = lvv(jsa:jsb+1)*shalf(jsa:jsb+1)
       bsubu_e(jsa:jsb) = guv(jsa:jsb)*bsupu(jsa:jsb)*sigma_an(jsa:jsb)       !Temp variable
       bsubv_e(jsa:jsb) = bsubv_e(jsa:jsb) 
      1            + p5 *((lvv(jsa:jsb) + lvv(jsa+1:jsb+1))*lu(jsa:jsb,1)
