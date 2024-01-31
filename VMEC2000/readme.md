@@ -22,6 +22,7 @@ You can find different guides on how to install the libraries on your system:
 
 An alternative way is to use the [spack](https://spack.io/) package manager. It allows to easily compile and install specifics libraries for your system. Once installed on your system, you can:
 ```bash
+spack install hdf5+hl+fortran+mpi
 spack install netcdf-fortran
 spack install lapackpp
 ```
@@ -47,7 +48,7 @@ cmake ..
 You can optionally activate the ANIMEC (anisotropy) or FLOW version of VMEC by adding `-DANIMEC` or `-DFLOW` respectively. It is only possible to chose one or the other, not both.
 Example:
 ```bash
-cmake .. -DFLOW
+cmake .. -DFLOW=ON
 ```
 
 Once CMake is set-up, you can compile the project:
