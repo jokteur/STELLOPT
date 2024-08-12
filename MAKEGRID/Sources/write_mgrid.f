@@ -210,7 +210,7 @@ C-----------------------------------------------
 
       numfils = 0
       DO icoil = 1, numcoils
-         numfils = numfils +                                                   &
+         numfils = numfils +                                                   
      &      MAX(SIZE(coil_group(ig) % coils(icoil) % xnod,2),2) - 1
 !
 !        Compute field for unit current

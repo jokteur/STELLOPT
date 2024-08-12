@@ -165,7 +165,7 @@
       END DO
       CALL init_symmetry
       DO icoll = 1, SIZE(coil_group)
-         CALL coil_group_report(coil_group(icoll),icoll,r_ave,z_ave            &
+         CALL coil_group_report(coil_group(icoll),icoll,r_ave,z_ave             
      &      ,kmax,phi_array(1:kmax))
       END DO
       DEALLOCATE (phi_array)

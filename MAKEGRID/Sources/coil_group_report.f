@@ -34,14 +34,14 @@
       REAL(rprec), PARAMETER :: big = 1.E40_rprec
       INTEGER, PARAMETER :: int_big = 987654321
 
-      INTEGER :: n_coil_fl, n_coil_fc, n_coil_other, nfil_max_fl,              &
+      INTEGER :: n_coil_fl, n_coil_fc, n_coil_other, nfil_max_fl,              
      &   nfil_min_fl, nfil_sum_fl, nfil_sumsq_fl
 
       INTEGER :: ic, ncoil, nfil, iphi, i
 
-      REAL(rprec) :: cur_max_fl, cur_min_fl, cur_sum_fl,                       &
-     &   cur_sumsq_fl, cur_max_fc, cur_min_fc, cur_sum_fc,                     &
-     &   cur_sumsq_fc, ave_nfil_fl, sd_nfil_fl, cur_ave_fl,                    &
+      REAL(rprec) :: cur_max_fl, cur_min_fl, cur_sum_fl,                       
+     &   cur_sumsq_fl, cur_max_fc, cur_min_fc, cur_sum_fc,                     
+     &   cur_sumsq_fc, ave_nfil_fl, sd_nfil_fl, cur_ave_fl,                    
      &   cur_sd_fl, cur_ave_fc, cur_sd_fc
      
       TYPE(bsc_coil), POINTER :: coil
@@ -117,13 +117,13 @@
       END DO
       
       ave_nfil_fl = nfil_sum_fl * one / MAX(n_coil_fl,1)
-      sd_nfil_fl = SQRT(nfil_sumsq_fl * one / MAX(n_coil_fl,1) -               &
+      sd_nfil_fl = SQRT(nfil_sumsq_fl * one / MAX(n_coil_fl,1) -               
      &   ave_nfil_fl ** 2)
       cur_ave_fl = cur_sum_fl / MAX(n_coil_fl,1)
-      cur_sd_fl =  SQRT(cur_sumsq_fl / MAX(n_coil_fl,1) -                      &
+      cur_sd_fl =  SQRT(cur_sumsq_fl / MAX(n_coil_fl,1) -                      
      &   cur_ave_fl ** 2)
       cur_ave_fc = cur_sum_fc / MAX(n_coil_fc,1)
-      cur_sd_fc =  SQRT(cur_sumsq_fc / MAX(n_coil_fc,1) -                      &
+      cur_sd_fc =  SQRT(cur_sumsq_fc / MAX(n_coil_fc,1) -                      
      &   cur_ave_fc ** 2)
 
 !  Write out results for all coils
@@ -131,7 +131,7 @@
       WRITE(*,5100) n_coil_fl, n_coil_fc, n_coil_other, ncoil
       
       IF (n_coil_fl .gt. 0) THEN
-         WRITE(*,5200) nfil_min_fl, nfil_max_fl, ave_nfil_fl,                  &
+         WRITE(*,5200) nfil_min_fl, nfil_max_fl, ave_nfil_fl,                  
      &      sd_nfil_fl
          WRITE(*,5300) cur_min_fl, cur_max_fl, cur_ave_fl, cur_sd_fl
       ENDIF
@@ -142,14 +142,14 @@
 
 5000  FORMAT(/"               Loops     Circles   Other   Total")
 5100  FORMAT(" # coils ",4(3x,i7))
-5200  FORMAT(/" Filamentary loops, number of filaments:"/                      &
-     &     "      Min     Max      Average          SD "/                      &
+5200  FORMAT(/" Filamentary loops, number of filaments:"/                      
+     &     "      Min     Max      Average          SD "/                      
      &   i8,3x,i8,2(2x,f11.1))
-5300  FORMAT(/" Filamentary loops, current:"/                                  &
-     &     "      Min          Max         Average          SD "/              &
+5300  FORMAT(/" Filamentary loops, current:"/                                  
+     &     "      Min          Max         Average          SD "/              
      &   3(2x,es12.5),2x,es9.2)
-5400  FORMAT(/" Filamentary circles, current:"/                                &
-     &     "      Min          Max         Average          SD "/              &
+5400  FORMAT(/" Filamentary circles, current:"/                                
+     &     "      Min          Max         Average          SD "/              
      &   3(2x,es12.5),2x,es9.2)
      
 !  Loop over phi values
@@ -170,8 +170,8 @@
       
       CALL check_symmetry(igroup)
 
-6000  FORMAT(/"Magnetic field with unit current multiplier, at R,Z=",          &
-     &   2(2x,es12.5)/t7,"phi",t24,"B . rhat",t38,"B . phihat",                &
+6000  FORMAT(/"Magnetic field with unit current multiplier, at R,Z=",          
+     &   2(2x,es12.5)/t7,"phi",t24,"B . rhat",t38,"B . phihat",                
      &   t52,"B . zhat")
 6100  FORMAT(4(3x,es12.5))
       

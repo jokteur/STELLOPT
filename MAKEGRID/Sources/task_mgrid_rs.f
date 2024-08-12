@@ -18,8 +18,8 @@
       USE biotsavart !  variables nfp_bs, coil_group
                      !  subroutines parse_coils_file
 
-      USE makegrid_global, only: task, nextcur_dim,                            &
-     &   cg_shift_1, cg_shift_2, cg_rot_xcent, cg_rot_theta,                   &
+      USE makegrid_global, only: task, nextcur_dim,                             
+     &   cg_shift_1, cg_shift_2, cg_rot_xcent, cg_rot_theta,                    
      &   cg_rot_phi, cg_rot_angle, l_rot_coil_center
 
       USE safe_open_mod !safe_open()
@@ -131,7 +131,7 @@
       
 ! Test to make sure that nextcur <= nextcur_dim
       IF(nextcur .gt. nextcur_dim) THEN
-         WRITE(*,*) 'Number of coils greater than default number of ',         &
+         WRITE(*,*) 'Number of coils greater than default number of ',          
      &              'currents.'
          STOP
       END IF
@@ -162,7 +162,7 @@
          DO icoil = 1, coil_group(iextcur) % ncoil
             cur_coil = coil_group(iextcur) % coils(icoil) % current
             cur_total = cur_total + cur_coil
-            CALL bsc_mean_r(coil_group(iextcur) % coils(icoil),                &
+            CALL bsc_mean_r(coil_group(iextcur) % coils(icoil),                 
      &         mean_r)
             cgxcent(1:3) = cgxcent(1:3) + mean_r(1:3) * cur_coil
          END DO
@@ -174,24 +174,24 @@
          ENDIF
  
 !    Generate bsc_rs for first shift, and apply it
-         CALL bsc_construct_rs(this_bsc_rs,zero,zero,zero,zero_a3,             &
+         CALL bsc_construct_rs(this_bsc_rs,zero,zero,zero,zero_a3,              
      &      cg_shift_1(iextcur,1:3))
          CALL bsc_rot_shift(coil_group(iextcur),this_bsc_rs)
 
 !    Generate bsc_rs for rotation and second shift, and apply it
-         CALL bsc_construct_rs(this_bsc_rs,cg_rot_theta(iextcur),              &
-     &      cg_rot_phi(iextcur),cg_rot_angle(iextcur),                         &
+         CALL bsc_construct_rs(this_bsc_rs,cg_rot_theta(iextcur),               
+     &      cg_rot_phi(iextcur),cg_rot_angle(iextcur),                          
      &      cg_rot_xcent_use(1:3),cg_shift_2(iextcur,1:3))
          CALL bsc_rot_shift(coil_group(iextcur),this_bsc_rs)
 
 
-         WRITE(*,1000) '   Current-Averaged center of cg = ',                  &
+         WRITE(*,1000) '   Current-Averaged center of cg = ',                   
      &      cgxcent(1:3)
          WRITE(*,1000) '   First Shift = ', cg_shift_1(iextcur,1:3)
-         WRITE(*,1000) '   Center of Rotation Used =  ',                       &
+         WRITE(*,1000) '   Center of Rotation Used =  ',                        
      &      cg_rot_xcent_use
-         WRITE(*,1000) '   Rotation theta, phi, angle = ',                     &
-     &      cg_rot_theta(iextcur), cg_rot_phi(iextcur),                        &
+         WRITE(*,1000) '   Rotation theta, phi, angle = ',                      
+     &      cg_rot_theta(iextcur), cg_rot_phi(iextcur),                         
      &      cg_rot_angle(iextcur)
          WRITE(*,1000) '   Second Shift = ', cg_shift_2(iextcur,1:3)
 1000  FORMAT(a34,3(2x,es12.5))
@@ -239,7 +239,7 @@
       END DO
       CALL init_symmetry
       DO icoll = 1, SIZE(coil_group)
-         CALL coil_group_report(coil_group(icoll),icoll,r_ave,z_ave            &
+         CALL coil_group_report(coil_group(icoll),icoll,r_ave,z_ave             
      &      ,kmax,phi_array(1:kmax))
       END DO
       DEALLOCATE (phi_array)

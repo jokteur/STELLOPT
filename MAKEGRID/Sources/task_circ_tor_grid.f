@@ -11,11 +11,11 @@
       
       USE stel_constants
       
-      USE write_mgrid, only: mgrid_ext, mgrid_mode, lstell_sym,                &
-     &   rmin, rmax, zmin, zmax, kp, ir, jz,                                   & 
+      USE write_mgrid, only: mgrid_ext, mgrid_mode, lstell_sym,                 
+     &   rmin, rmax, zmin, zmax, kp, ir, jz,                                    
      &   coil_file, nextcur
 
-      USE makegrid_global, only: task, rmajor, aminor, nphi, ntheta,           &
+      USE makegrid_global, only: task, rmajor, aminor, nphi, ntheta,            
      &   extcur_mgrid, nextcur_dim
 
       USE biotsavart
@@ -78,11 +78,11 @@
       x=(/0.0,0.0,0.0/)
       
       WRITE(ctg_iou,*) 'Fourier coefficients of magnetic field.'
-      WRITE(ctg_iou,*) 'This magnetic geometry is 5 fold periodic in ',        &
-     &                 'phi.  Only modes which preserve this ',                &
+      WRITE(ctg_iou,*) 'This magnetic geometry is 5 fold periodic in ',         
+     &                 'phi.  Only modes which preserve this ',                 
      &                 'periodicity are kept.'
-      WRITE(ctg_iou,*) 'If the field is stellarator symmetric, the ',          &
-     &                 'Fourier transform can be expressed in terms ',         &
+      WRITE(ctg_iou,*) 'If the field is stellarator symmetric, the ',           
+     &                 'Fourier transform can be expressed in terms ',          
      &                 'of only sines or only cosines.'
       WRITE(ctg_iou,*)
       WRITE(ctg_iou,*) 'Major radius: R0 = ', rmajor
@@ -99,14 +99,14 @@
       WRITE(ctg_iou,*) 'Bphi = B.phi_hat'
       WRITE(ctg_iou,*)
       WRITE(ctg_iou,*) 'The magnetic field is given by'
-      WRITE(ctg_iou,*) 'Br(theta,phi) = 1/SQRT(ntheta*nphi) Sum_over_',        &
+      WRITE(ctg_iou,*) 'Br(theta,phi) = 1/SQRT(ntheta*nphi) Sum_over_',         
      &                 'm_and_n (BR_smn * (SIN(m*theta+n*phi))'
-      WRITE(ctg_iou,*) 'Bphi(theta,phi) = 1/SQRT(ntheta*nphi) Sum_over_'       &
+      WRITE(ctg_iou,*) 'Bphi(theta,phi) = 1/SQRT(ntheta*nphi) Sum_over_'        
      &                 ,'m_and_n (BPHI_cmn * (COS(m*theta+n*phi))'
-      WRITE(ctg_iou,*) 'Btheta(theta,phi) = 1/SQRT(ntheta*nphi) Sum_',         &
+      WRITE(ctg_iou,*) 'Btheta(theta,phi) = 1/SQRT(ntheta*nphi) Sum_',          
      &                 'over_m_and_n(BTHETA_cmn * (COS(m*theta+n*phi))'
-      WRITE(ctg_iou,*) 'Where the subscripts "cmn" and"smn" is ',              &
-     &                 'shorthand for the trig function involved ("c" ',       &
+      WRITE(ctg_iou,*) 'Where the subscripts "cmn" and"smn" is ',               
+     &                 'shorthand for the trig function involved ("c" ',        
      &                 'or "s") and the mode number ("m", "n)'
 
       WRITE(ctg_iou,*)
@@ -115,7 +115,7 @@
 ! Test to make sure that nextcur <= nextcur_dim
       
       IF(nextcur .gt. nextcur_dim) THEN
-         WRITE(*,*) 'Number of coils greater than default number of ',         &
+         WRITE(*,*) 'Number of coils greater than default number of ',          
      &              'currents.'
          STOP
       END IF

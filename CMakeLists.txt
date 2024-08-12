@@ -46,3 +46,4 @@ endif()
 
 add_subdirectory(LIBSTELL)
 add_subdirectory(VMEC2000)
+add_subdirectory(MAKEGRID)

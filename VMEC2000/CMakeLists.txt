@@ -34,3 +34,5 @@ message(STATUS "source_list: ${LIBSTELL_MOD_DIR}")
 add_executable(${VMEC_NAME} ${source_list} ${source_list_freeform})
 target_link_libraries(${VMEC_NAME} PRIVATE ${NETCDF_LIBRARIES} MPI::MPI_Fortran ${HDF5_LIBRARIES} libstell ${LAPACK_LIBRARIES})
 target_include_directories(${VMEC_NAME} PUBLIC ${NETCDF_INCLUDES} ${MPI_Fortran_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS} ${LIBSTELL_MOD_DIR})
+
+install(TARGETS ${VMEC_NAME})

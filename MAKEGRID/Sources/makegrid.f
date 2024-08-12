@@ -137,7 +137,7 @@
 !  (subroutines are followed by parentheses)
 !---------------------------------------------------------------------------
 
-      USE write_mgrid, only: mgrid_ext, mgrid_mode, lstell_sym,                & 
+      USE write_mgrid, only: mgrid_ext, mgrid_mode, lstell_sym,                 
      &   rmin, rmax, zmin, zmax, kp, ir, jz
 
       USE makegrid_global, only: task

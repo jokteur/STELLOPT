@@ -34,9 +34,9 @@
 !  Variables for shifts and rotations of coil_groups
 !    TASK: mgrid_rs
 !---------------------------------------------------------------------------
-      REAL(rprec), DIMENSION(nextcur_dim,3) ::  cg_shift_1,                    &
+      REAL(rprec), DIMENSION(nextcur_dim,3) ::  cg_shift_1,                    
      &   cg_shift_2, cg_rot_xcent
-      REAL(rprec), DIMENSION(nextcur_dim) :: cg_rot_theta,                     &
+      REAL(rprec), DIMENSION(nextcur_dim) :: cg_rot_theta,                     
      &   cg_rot_phi, cg_rot_angle
       LOGICAL, DIMENSION(nextcur_dim) :: l_rot_coil_center
       

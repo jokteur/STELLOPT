@@ -4,12 +4,12 @@
 
       USE stel_constants
       
-      USE write_mgrid, only: mgrid_ext, mgrid_mode, lstell_sym,                & 
+      USE write_mgrid, only: mgrid_ext, mgrid_mode, lstell_sym,                 
      &   rmin, rmax, zmin, zmax, kp, ir, jz
 
-      USE makegrid_global, only: task, rmajor, aminor, nphi, ntheta,           &
-     &   extcur_mgrid,                                                         &
-     &   cg_shift_1, cg_shift_2, cg_rot_xcent, cg_rot_theta,                   &
+      USE makegrid_global, only: task, rmajor, aminor, nphi, ntheta,            
+     &   extcur_mgrid,                                                          
+     &   cg_shift_1, cg_shift_2, cg_rot_xcent, cg_rot_theta,                    
      &   cg_rot_phi, cg_rot_angle, l_rot_coil_center, lscreen
      
       USE sym_check, ONLY: sym_ir, sym_jz, sym_kp, sym_perform_tests
@@ -68,12 +68,12 @@
 !    extcur_mgrid    Current in each coil of 'coils-dot' file  (makegrid_global)
 !-----------------------------------------------
 
-      NAMELIST /mgrid_nli/ task,                                               &
-     &    mgrid_ext, mgrid_mode, lstell_sym,                                   &
-     &    rmin, rmax, zmin, zmax, kp, ir, jz,                                  &
-     &    rmajor, aminor, nphi, ntheta, extcur_mgrid,                          &
-     &    cg_shift_1, cg_shift_2, cg_rot_xcent, cg_rot_theta,                  &
-     &    cg_rot_phi, cg_rot_angle, l_rot_coil_center,                         &
+      NAMELIST /mgrid_nli/ task,                                                
+     &    mgrid_ext, mgrid_mode, lstell_sym,                                    
+     &    rmin, rmax, zmin, zmax, kp, ir, jz,                                   
+     &    rmajor, aminor, nphi, ntheta, extcur_mgrid,                           
+     &    cg_shift_1, cg_shift_2, cg_rot_xcent, cg_rot_theta,                   
+     &    cg_rot_phi, cg_rot_angle, l_rot_coil_center,                          
      &    sym_ir, sym_jz, sym_kp, sym_perform_tests
       
 !-----------------------------------------------
@@ -128,7 +128,7 @@
 
 ! Namelist output
       SUBROUTINE write_mgrid_namelist(iunit,istat)
-      USE write_mgrid, only: mgrid_mode, lstell_sym,                    & 
+      USE write_mgrid, only: mgrid_mode, lstell_sym,                     
      &     rmin, rmax, zmin, zmax, kp, ir, jz
       IMPLICIT NONE
       INTEGER, INTENT(IN)  :: iunit
@@ -136,9 +136,9 @@
 
       CHARACTER(LEN=*), PARAMETER :: outboo  = "(2X,A,1X,'=',1X,L1)"
       CHARACTER(LEN=*), PARAMETER :: outint  = "(2X,A,1X,'=',1X,I0)"
-      CHARACTER(LEN=*), PARAMETER :: outflt  =                          &
+      CHARACTER(LEN=*), PARAMETER :: outflt  =                           
      &     "(2X,A,1X,'=',1X,ES22.12E3)"
-      CHARACTER(LEN=*), PARAMETER :: outstr  =                          &
+      CHARACTER(LEN=*), PARAMETER :: outstr  =                           
      &     "(2X,A,1X,'=',1X,'''',A,'''')"
 
       WRITE(iunit,'(A)') '&MGRID_NLI'
