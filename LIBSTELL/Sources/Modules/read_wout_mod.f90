@@ -409,6 +409,7 @@
       IF (isnc) THEN
 #if defined(NETCDF)
          CALL write_wout_nc(filename, ierr)
+         PRINT *, "HELLO WORLDDLDLDLDLDL"
 #else
          PRINT *, "NETCDF wout file can not be opened on this platform"
          ierr = -100

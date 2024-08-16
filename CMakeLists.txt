@@ -42,6 +42,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(Fortran_FreeFORM_FLAGS "-ffree-form -ffree-line-length-none")
     set(Fortran_FixedFORM_FLAGS "-ffixed-form -ffixed-line-length-none")
 endif()
+
 #TODO: Intel, MSVC, Clang
 
 add_subdirectory(LIBSTELL)
