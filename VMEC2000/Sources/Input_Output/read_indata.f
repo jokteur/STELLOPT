@@ -7,7 +7,6 @@
       USE vmec_params
       USE vacmod
       USE safe_open_mod
-      USE parallel_include_module
       IMPLICIT NONE
 C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
@@ -19,7 +18,7 @@ C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
       INTEGER :: ireadseq, iosnml
 C-----------------------------------------------
-      iunit = indata0+rank
+      iunit = indata0
       CALL safe_open (iunit, ireadseq, in_file, 'old', 'formatted')
       IF (ireadseq .ne. 0) THEN
          WRITE (6, '(3a,i4)') ' In VMEC, error opening input file: ',
@@ -107,9 +106,9 @@ C-----------------------------------------------
       nu2 = nu/2 + 1
       nu3 = ntheta3
       nznt = nzeta*ntheta3
-      nuv3 = nznt
-!     IF (nuv3 < mnpd) THEN
-!        PRINT *, ' nuv3 < mnpd: not enough integration points'
+      nuv2 = nznt
+!     IF (nuv2 < mnpd) THEN
+!        PRINT *, ' nuv2 < mnpd: not enough integration points'
 !        STOP 11
 !     ENDIF
 

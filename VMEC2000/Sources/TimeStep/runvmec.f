@@ -1,29 +1,13 @@
       SUBROUTINE runvmec(ictrl_array, input_file0, 
-     1                   lscreen, COMM_WORLD, reset_file_name)
+     1   lscreen, reset_file_name)
       USE vmec_main
       USE vmec_params, ONLY: bad_jacobian_flag, more_iter_flag,
      1                       norm_term_flag, successful_term_flag,
      2                       restart_flag, readin_flag,
      3                       timestep_flag, ns_error_flag, 
-     4                       reset_jacdt_flag, lamscale
-#if defined (SKS)      
-      USE realspace
-      USE vmec_params, ONLY: ntmax
-#endif      
-      USE vacmod, ONLY: nuv, nuv3
+     4                       reset_jacdt_flag
       USE vsvd
       USE timer_sub
-      USE parallel_include_module
-      USE parallel_vmec_module, ONLY: MyEnvVariables
-      USE parallel_vmec_module, ONLY: InitRunVmec
-      USE parallel_vmec_module, ONLY: FinalizeRunVmec
-      USE parallel_vmec_module, ONLY: InitSurfaceComm
-      USE parallel_vmec_module, ONLY: FinalizeSurfaceComm
-      USE parallel_vmec_module, ONLY: SetVacuumCommunicator
-      USE blocktridiagonalsolver_bst, ONLY: Initialize_bst
-      USE blocktridiagonalsolver_bst, ONLY: Finalize_bst
-      USE xstuff
-      USE mpi
       IMPLICIT NONE
 C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
@@ -32,27 +16,18 @@ C-----------------------------------------------
       LOGICAL, INTENT(in) :: lscreen
       CHARACTER(LEN=*), INTENT(in) :: input_file0
       CHARACTER(LEN=*), OPTIONAL :: reset_file_name
-      INTEGER, INTENT(IN), OPTIONAL :: COMM_WORLD
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
+      REAL(rprec), SAVE :: delt0, res0
       INTEGER, POINTER :: ier_flag
       INTEGER :: ictrl_flag, iseq_count
       INTEGER :: ns_index, ns_min, nsval, ns_old=0, numsteps
       INTEGER :: igrid, index_end, index_dat,
      1           jacob_off, niter_store
       INTEGER, SAVE :: igrid0
-      INTEGER :: max_grid_size, flag
       CHARACTER(LEN=120) :: input_file
       LOGICAL :: lreset 
-#if defined(SKS)
-      REAL(dp) :: rvton, rvtoff, tiniton, tinitoff
-      REAL(dp) :: gridton, gridtoff 
-      REAL(dp) :: bcastton, bcasttoff
-      REAL(dp), ALLOCATABLE, DIMENSION(:) :: bcastarr
-      INTEGER :: blklength, grid_id, i, js, nsmin, nsmax
-      CHARACTER(LEN=20) :: fname
-#endif
 C-----------------------------------------------
 !
 !     ictrl_flag = ictrl_array(1)
@@ -114,47 +89,6 @@ C-----------------------------------------------
          END SUBROUTINE initialize_radial
       END INTERFACE
 
-#if defined(SKS)
-      RUNVMEC_PASS = RUNVMEC_PASS + 1
-      CALL second0(rvton)
-      CALL MyEnvVariables
-      CALL InitRunVmec(COMM_WORLD,lfreeb)
-      LV3FITCALL = l_v3fit
-      IF(LV3FITCALL) THEN
-        IF (RUNVMEC_PASS.GT.1) THEN
-          CALL Serial2Parallel4X(xc,pxc)
-          CALL Serial2Parallel4X(xcdot,pxcdot)
-          CALL Serial2Parallel4X(xstore,pxstore)
-          CALL second0(bcastton)
-          CALL MPI_Bcast(pxc,SIZE(pxc),MPI_REAL8,
-     1                      0,RUNVMEC_COMM_WORLD,MPI_ERR)
-          CALL MPI_Bcast(pxcdot,SIZE(pxcdot),MPI_REAL8,
-     1                      0,RUNVMEC_COMM_WORLD,MPI_ERR)
-          CALL MPI_Bcast(pxstore,SIZE(pxstore),MPI_REAL8,
-     1                      0,RUNVMEC_COMM_WORLD,MPI_ERR)
-          CALL MPI_Bcast(iotas,SIZE(iotas),MPI_REAL8,
-     1                      0,RUNVMEC_COMM_WORLD,MPI_ERR)
-          CALL MPI_Bcast(iotaf,SIZE(iotaf),MPI_REAL8,
-     1                      0,RUNVMEC_COMM_WORLD,MPI_ERR)
-          CALL MPI_Bcast(phips,SIZE(phips),MPI_REAL8,
-     1                      0,RUNVMEC_COMM_WORLD,MPI_ERR)
-          CALL MPI_Bcast(phipf,SIZE(phipf),MPI_REAL8,
-     1                      0,RUNVMEC_COMM_WORLD,MPI_ERR)
-          CALL MPI_Bcast(chips,SIZE(chips),MPI_REAL8,
-     1                      0,RUNVMEC_COMM_WORLD,MPI_ERR)
-          CALL MPI_Bcast(chipf,SIZE(chipf),MPI_REAL8,
-     1                      0,RUNVMEC_COMM_WORLD,MPI_ERR)
-          CALL MPI_Bcast(mass,SIZE(mass),MPI_REAL8,
-     1                      0,RUNVMEC_COMM_WORLD,MPI_ERR)
-          CALL MPI_Bcast(icurv,SIZE(icurv),MPI_REAL8,
-     1                      0,RUNVMEC_COMM_WORLD,MPI_ERR)
-          CALL MPI_Bcast(lamscale,1,MPI_REAL8,
-     1                      0,RUNVMEC_COMM_WORLD,MPI_ERR)
-          CALL second0(bcasttoff)
-          broadcast_time = broadcast_time + (bcasttoff - bcastton)
-        END IF
-      END IF
-#endif
       ictrl_flag = ictrl_array(1)
       numsteps = ictrl_array(3)
       ier_flag  => ictrl_array(2)
@@ -181,32 +115,28 @@ C-----------------------------------------------
       lreset = (IAND(ictrl_flag, restart_flag) .ne. 0)
 
       IF (lreset) THEN
-        CALL reset_params
-!       res0 = -1   Done in reset_params
+         CALL reset_params
+         res0 = -1
       END IF
 
-      IF (IAND(ictrl_flag, reset_jacdt_flag) .NE. 0) THEN
+      IF (IAND(ictrl_flag, reset_jacdt_flag) .ne. 0) THEN
          ijacob = 0
-         delt0r = delt
+         delt0 = delt
       END IF
 
-      IF (IAND(ictrl_flag, readin_flag) .NE. 0) THEN
+      IF (IAND(ictrl_flag, readin_flag) .ne. 0) THEN
 !
 !        READ INPUT FILE (INDATA NAMELIST), MGRID_FILE (VACUUM FIELD DATA)
 !
-        CALL vsetup (iseq_count)
-
-        CALL readin (input_file, iseq_count, ier_flag, lscreen)
-        max_grid_size = ns_array(multi_ns_grid)
-
-        IF (ier_flag .NE. 0) GOTO 1000
+         CALL vsetup (iseq_count)
+         CALL readin (input_file, iseq_count, ier_flag, lscreen)
+         IF (ier_flag .ne. 0) GOTO 1000
 !
 !        COMPUTE NS-INVARIANT ARRAYS
 !
-        CALL fixaray
-      END IF
+         CALL fixaray
 
-      IF(lfreeb) CALL SetVacuumCommunicator(nuv, nuv3, max_grid_size)
+      END IF
 
       IF (lreset) THEN
 !
@@ -220,8 +150,8 @@ C-----------------------------------------------
          IF (PRESENT(reset_file_name)) THEN
             IF (LEN_TRIM(reset_file_name) .ne. 0)igrid0 = multi_ns_grid
          END IF
-         IF (grank.EQ.0) WRITE (nthreed, 30)
-         delt0r = delt
+         WRITE (nthreed, 30)
+         delt0 = delt
       ENDIF
 
   30  FORMAT(' FSQR, FSQZ = Normalized Physical Force Residuals',/,
@@ -243,28 +173,8 @@ C-----------------------------------------------
       IF (lfreeb .and. jacob_off.eq.1) ivac = 1    !!restart vacuum calculations
 
       ns_min = 3
-#if defined(SKS)
 
-      num_grids = multi_ns_grid
-      IF(.NOT.ALLOCATED(grid_procs)) THEN
-        ALLOCATE(grid_procs(num_grids))
-        ALLOCATE(grid_size(num_grids))
-        ALLOCATE(grid_time(num_grids))
-        ALLOCATE(f3d_time(num_grids))
-        ALLOCATE(f3d_num(num_grids))
-        IF (lfreeb) ALLOCATE(vgrid_time(num_grids))
-      END IF
-
-      f3d_time=0; f3d_num=0
-      blklength=(ntor+1)*(mpol1+1)
-      !BEGIN - Main loop that will be parallelized - SKS
-      grid_id=1
-      old_vacuum_time=0
-#endif
       DO igrid = igrid0-jacob_off, multi_ns_grid
-#if defined(SKS)
-         CALL second0(gridton)
-#endif
          IF (igrid .lt. igrid0) THEN
 !           TRY TO GET NON-SINGULAR JACOBIAN ON A 3 PT RADIAL MESH
             nsval = 3; ivac = -1
@@ -286,62 +196,28 @@ C-----------------------------------------------
             ftolv = ftol_array(igrid)
             niter = niter_array(igrid)
          END IF
-
-
-#if defined (SKS)
-         CALL second0(tiniton)
-         IF(PARVMEC .AND. NS_RESLTN.GE.1) THEN
-           IF (lactive) THEN
-             CALL Gather4XArray(pscalxc)
-             CALL Gather4XArray(pxc)
-           END IF
-           CALL FinalizeSurfaceComm(NS_COMM)
-
-           CALL second0(bcastton)
-           CALL MPI_Bcast(pscalxc,SIZE(pscalxc),MPI_REAL8,
-     1                      0,RUNVMEC_COMM_WORLD,MPI_ERR)
-           CALL MPI_Bcast(pxc,SIZE(pxc),MPI_REAL8,
-     1                      0,RUNVMEC_COMM_WORLD,MPI_ERR)
-           CALL second0(bcasttoff)
-           broadcast_time = broadcast_time + (bcasttoff - bcastton)
-         END IF
-
-         CALL InitSurfaceComm(nsval, nzeta, ntheta3,
-     1        ntmax, ntor, mpol1)
-         CALL second0(tinitoff)
-         init_parallel_time = init_parallel_time + (tinitoff-tiniton)
-
-         grid_size(grid_id)=nsval
-         grid_procs(grid_id)=nranks
-#endif
          
 !  JDH 2012-06-20. V3FIT fix, inserted with change from VMEC 8.48 -> 8.49
-!  (Not sure just what in initialize_radial messes up convergence - happens slowly)
+!    (Not sure just what in initialize_radial messes up convergence - happens slowly)
 !  Logical l_v3fit is declared in vmec_input, available via vmec_main
          IF (l_v3fit) THEN                            ! V3FIT is running here 
             IF (ns_old .ne. nsval) THEN
-               CALL initialize_radial(nsval, ns_old, delt0r,
-     1            lscreen, reset_file_name)
+               CALL initialize_radial(nsval, ns_old, delt0,                    
+     &            lscreen, reset_file_name)
             ENDIF
          ELSE                                         ! V3FIT not running here
             IF (ns_old .le. nsval)
-     1         CALL initialize_radial(nsval, ns_old, delt0r, 
-     2            lscreen, reset_file_name)
+     1         CALL initialize_radial(nsval, ns_old, delt0, 
+     2                          lscreen, reset_file_name)
          ENDIF
-#if defined (SKS)
-         CALL Initialize_bst(.FALSE.,nsval,blklength)
-#endif
+
 !     CONTROL NUMBER OF STEPS
          IF (numsteps > 0) THEN
             niter_store = niter
             niter = numsteps+iter2-1
          END IF
 
-         CALL eqsolve (ier_flag, lscreen)
-
-#if defined(SKS)
-         CALL Finalize_bst(.FALSE.)
-#endif
+         CALL eqsolve (ier_flag, delt0, res0, lscreen)
 
          IF (numsteps > 0) THEN
             niter = niter_store
@@ -368,23 +244,7 @@ C-----------------------------------------------
             EXIT
          ENDIF
 
-#if defined(SKS)
-!         CALL Finalize_bst(.FALSE.)
-         CALL second0(gridtoff)
-         grid_time(grid_id) = gridtoff - gridton
-         IF (lfreeb) THEN
-           IF (PARVMEC) THEN
-             vgrid_time(grid_id) = vacuum_time - old_vacuum_time
-             old_vacuum_time = vacuum_time
-           ELSE
-             vgrid_time(grid_id) = s_vacuum_time - old_vacuum_time
-             old_vacuum_time = s_vacuum_time
-           END IF
-         END IF
-         grid_id = grid_id + 1
-#endif
       END DO
-      !END - Main loop that will be parallelized - SKS
 
   100 CONTINUE
 
@@ -395,27 +255,15 @@ C-----------------------------------------------
 
       CALL second0 (timeoff)
       timer(tsum) = timer(tsum) + timeoff - timeon
+
 !
 !     WRITE OUTPUT TO THREED1, WOUT FILES; FREE MEMORY ALLOCATED GLOBALLY
 !
- 1000 IF(lmoreiter .AND. ier_flag.EQ.more_iter_flag) THEN  ! J Geiger
-        IF (grank .EQ. 0)                                                 
-     &     PRINT *, "runvmec: Running some more iterations",
-     &              " -> Skipping call to fileout!"
-      ELSE IF (ier_flag.NE.more_iter_flag) THEN
+ 1000 if(lmoreiter .and. ier_flag.eq.more_iter_flag) then  ! J Geiger
+        print *, "runvmec: Running some more iterations",
+     &           " -> Skipping call to fileout!"
+      else
+        CALL fileout (iseq_count, ictrl_flag, ier_flag, lscreen)
+      endif
 
-        IF (PARVMEC) THEN 
-          CALL fileout_par (iseq_count, ictrl_flag, ier_flag, lscreen)
-        ELSE
-          CALL fileout (iseq_count, ictrl_flag, ier_flag, lscreen)
-        END IF
-
-      ENDIF
-
-#if defined(SKS)
-      IF(LV3FITCALL) CALL FinalizeRunVmec(RUNVMEC_COMM_WORLD)
-      CALL second0(rvtoff)
-      runvmec_time = runvmec_time + (rvtoff - rvton)
-#endif
       END SUBROUTINE runvmec
-!------------------------------------------------

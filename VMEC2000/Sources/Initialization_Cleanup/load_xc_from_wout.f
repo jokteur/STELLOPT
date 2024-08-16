@@ -9,7 +9,6 @@
       USE vparams, ONLY: one, zero, rprec
       USE vmec_input, ONLY: lasym
       USE vmec_main, ONLY: lthreed, p5 => cp5, sp, sm, phipf
-      USE parallel_include_module, ONLY: rank
       IMPLICIT NONE
 C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
@@ -37,12 +36,12 @@ C-----------------------------------------------
 !      CALL read_wout_file (reset_file(5:), ierr)
       reset_file = " "               !nullify so this routine will not be recalled with present reset_file
 
-      IF (ierr .ne. 0.AND.rank.EQ.0) THEN
+      IF (ierr .ne. 0) THEN
          PRINT *,' Error opening/reading wout file in VMEC load_xc!'
          RETURN
       END IF
 
-      IF (ns_in .ne. ns.AND.rank.EQ.0) THEN
+      IF (ns_in .ne. ns) THEN
          PRINT *, 'ns_in (passed to load_xc) != ns (from reading wout)'
          RETURN
       END IF

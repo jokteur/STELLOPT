@@ -9,9 +9,6 @@
      2    restart_flag, readin_flag, timestep_flag,
      3    output_flag, cleanup_flag,
      4    norm_term_flag, successful_term_flag ! J Geiger: for more iterations and full 3D1-output
-      USE parallel_include_module
-      USE parallel_vmec_module, ONLY: MyEnvVariables, 
-     1    InitializeParallel, FinalizeParallel
       IMPLICIT NONE
 C-----------------------------------------------
 C   L o c a l   P a r a m e t e r s
@@ -32,12 +29,6 @@ C-----------------------------------------------
       CHARACTER(LEN=120) :: log_file
       CHARACTER(LEN=120), DIMENSION(10) :: command_arg
       LOGICAL :: lscreen
-      INTEGER :: RVC_COMM
-
-#if defined(SKS)
-      REAL(dp) :: ton, toff
-      REAL(dp) :: totalton, totaltoff 
-#endif
 C-----------------------------------------------
 !***
 !                              D   I   S   C   L   A   I   M   E   R
@@ -139,33 +130,21 @@ C-----------------------------------------------
 !
       INTERFACE
          SUBROUTINE runvmec(ictrl_array, input_file0, 
-     1                      lscreen, RVC_COMM, reset_file_name)
+     1                      lscreen, reset_file_name)
          IMPLICIT NONE
          INTEGER, INTENT(inout), TARGET :: ictrl_array(5)
          LOGICAL, INTENT(in) :: lscreen
          CHARACTER(LEN=*), INTENT(in) :: input_file0
-         INTEGER, INTENT(in), OPTIONAL :: RVC_COMM
          CHARACTER(LEN=*), OPTIONAL :: reset_file_name
          END SUBROUTINE runvmec
       END INTERFACE
 
-#if defined(SKS)
-      CALL MyEnvVariables
-      CALL InitializeParallel
-      CALL MPI_COMM_DUP(MPI_COMM_WORLD,RVC_COMM,MPI_ERR)
-      CALL second0(totalton)
-      ton = totalton
-#endif
       CALL getcarg(1, command_arg(1), numargs)
       DO iseq = 2, numargs
          CALL getcarg(iseq, command_arg(iseq), numargs)
       END DO
-#if defined(SKS)
-      CALL second0(toff)
-      get_args_time = get_args_time + (toff -ton)
-#endif
-      lscreen = .false.
-      IF(grank.EQ.0) lscreen = .true.
+
+      lscreen = .true.
       reset_file_name = " "
 
       IF (numargs .lt. 1) THEN
@@ -196,7 +175,7 @@ C-----------------------------------------------
 
          STOP
       ELSE
-         DO iseq = 2, MIN(numargs,10)
+         DO iseq = 2, numargs
             arg = command_arg(iseq)
             IF (TRIM(arg).eq.'noscreen' .or. TRIM(arg).eq.'NOSCREEN')
      1         lscreen = .false.
@@ -240,47 +219,26 @@ C-----------------------------------------------
       nlog = nlog0
       iunit = nseq0
       DO iseq = 1, 2
-         IF (iseq .EQ. 1) THEN
+         IF (iseq .eq. 1) THEN
            arg = input_file
          ELSE
            arg = seq_ext
          END IF
-#if defined(SKS)
-         CALL second0(ton)
-#endif
          CALL safe_open(iunit, iopen, TRIM(arg), 'old', 'formatted')
-#if defined(SKS)
-         CALL second0(toff)
-         safe_open_time = safe_open_time + (toff - ton)
-#endif
          IF (iopen .eq. 0) THEN
            DO ncount = 1, nseqmax
               nseq_select(ncount) = ncount
            END DO
-#if defined(SKS)
-           CALL second0(ton)
-#endif
            CALL read_namelist (iunit, isnml, 'vseq')
-#if defined(SKS)
-           CALL second0(toff)
-           read_namelist_time = read_namelist_time + (toff - ton)
-#endif
 !
 !       OPEN FILE FOR STORING SEQUENTIAL RUN HISTORY
 !
            IF (isnml .eq. 0) THEN
               IF (nseq .gt. nseqmax) STOP 'NSEQ>NSEQMAX'
               log_file = 'log.'//seq_ext
-#if defined(SKS)
-              CALL second0(ton)
-#endif
               CALL safe_open(nlog, iread, log_file, 'replace',
      1           'formatted')
-#if defined(SKS)
-              CALL second0(toff)
-              safe_open_time = safe_open_time + (toff - ton)
-#endif
-              IF (iread .NE. 0) THEN
+              IF (iread .ne. 0) THEN
                  PRINT *, log_file,
      1           ' LOG FILE IS INACCESSIBLE: IOSTAT= ',iread
                  STOP 3
@@ -317,7 +275,7 @@ C-----------------------------------------------
 !         ictrl(4) = 2
          ictrl(5) = iseq-1
          ncount = 0
-         IF (iseq .GT. 1) THEN
+         IF (iseq .gt. 1) THEN
             reset_file_name =
 #ifdef NETCDF
      1       'wout_' // TRIM(extension(index_seq-1)) // ".nc"
@@ -331,23 +289,13 @@ C-----------------------------------------------
 
  100     CONTINUE
 
-         RVCCALLNUM=1
          CALL runvmec (ictrl, extension(index_seq), 
-     1                 lscreen, RVC_COMM, reset_file_name)
-
+     1                 lscreen, reset_file_name)
          ierr_vmec = ictrl(2)
-
          SELECT CASE (ierr_vmec)
          CASE (more_iter_flag)                                !Need a few more iterations to converge
-            IF (grank .EQ. 0) THEN
-               IF(lscreen ) WRITE (6, '(1x,a)') increase_niter
-               WRITE (nthreed, '(1x,a)') increase_niter
-               WRITE (nthreed, '(1x,a)') "PARVMEC aborting..."
-               CALL FLUSH(nthreed)
-#if defined(SKS)
-               CALL MPI_Abort(MPI_COMM_WORLD, MPI_ERR)
-#endif
-            END IF
+            IF (lscreen) WRITE (6, '(1x,a)') increase_niter
+            WRITE (nthreed, '(1x,a)') increase_niter
 ! J Geiger: if lmoreiter and lfull3d1out are false
 !           the o-lines (original) are the only
 !           ones to be executed.
@@ -355,54 +303,31 @@ C-----------------------------------------------
               DO i=2,max_main_iterations                        ! Changes to run
                 ictrl(1) = timestep_flag                        ! some more iterations if requested
                 ictrl(3) = niter                                ! - this is the number of iterations
-                RVCCALLNUM=2
-                CALL runvmec (ictrl, extension(1), lscreen,
-     1       RVC_COMM, reset_file_name)    ! - the second iteration run with ictrl(3) iterations
-                IF (ictrl(2).EQ.more_iter_flag) THEN
-                  IF (grank .EQ. 0) THEN
-                    WRITE (nthreed, '(1x,a)') increase_niter
-                    IF(lscreen) WRITE (6, '(1x,a)') 
-     1                            increase_niter
-                  ENDIF
+                CALL runvmec (ictrl, extension(1), lscreen)     ! - the second iteration run with ictrl(3) iterations
+                IF (ictrl(2).eq.more_iter_flag) then
+                  WRITE (nthreed, '(1x,a)') increase_niter
+                  IF (lscreen) WRITE (6, '(1x,a)') increase_niter
                 ENDIF
               ENDDO
               ictrl(1) = output_flag+cleanup_flag               ! - Output, cleanup
               IF(ictrl(2).ne.successful_term_flag)
      &                ictrl(2)=successful_term_flag             ! - force success flag to get full threed1-output!
               ictrl(3) = 0                                      ! - this is the number of iterations
-              RVCCALLNUM=3
-              CALL runvmec (ictrl, extension(1), lscreen,       ! - final call.
-     1        RVC_COMM, reset_file_name)
-            ELSE                                                ! else-branch contains original code. 
-#if defined(SKS)		                                               
-              CALL MPI_Barrier(RVC_COMM,MPI_ERR)
-#endif
-              IF(grank.EQ.0) 
-     1           PRINT *,"vmec.f:There is a bug in this branch."
-              STOP 
-
+              CALL runvmec (ictrl, extension(1), lscreen)       ! - final call.
+            ELSE                                                ! else-branch contains original code.
               ictrl(1) = output_flag+cleanup_flag               !Output, cleanup  ! o-lines
               ictrl(2) = 0                                      ! o-lines
-              IF(lfull3d1out) THEN
+              IF(lfull3d1out) then
                 ictrl(2)=successful_term_flag
-                IF (grank .EQ. 0) THEN
-                  WRITE(6,'(1x,a)') full_3d1output_request
-                  WRITE(nthreed,'(1x,a)') full_3d1output_request
-                END IF
+                WRITE(6,'(1x,a)') full_3d1output_request
+                WRITE(nthreed,'(1x,a)') full_3d1output_request
               ENDIF
-              !STOP 111
-              RVCTRIGGER=.TRUE.
-              RVCCALLNUM=4
-              CALL runvmec (ictrl, extension(1), lscreen,        ! o-lines
-     1       RVC_COMM, reset_file_name)
-              RVCTRIGGER=.FALSE.
+              CALL runvmec (ictrl, extension(1), lscreen)        ! o-lines
             ENDIF                                                ! J Geiger: -- end --
 
          CASE (bad_jacobian_flag)                             !Bad jacobian even after axis reset and ns->3
-           IF(grank.EQ.0) THEN
-             IF (lscreen) WRITE (6, '(/,1x,a)') bad_jacobian
-             WRITE (nthreed, '(/,1x,a)') bad_jacobian
-           END IF
+            IF (lscreen) WRITE (6, '(/,1x,a)') bad_jacobian
+            WRITE (nthreed, '(/,1x,a)') bad_jacobian
          CASE DEFAULT
          END SELECT
       END DO SEQ
@@ -417,9 +342,7 @@ C-----------------------------------------------
       ictrl(1) = restart_flag+readin_flag          !Initialization only
       ictrl(3) = nsteps
       ictrl(4) = 1                                 !Go to fine grid directly (assumes it is grid index=1)
-      RVCCALLNUM=5
-      CALL runvmec (ictrl, extension(1), lscreen,
-     1       RVC_COMM, reset_file_name)
+      CALL runvmec (ictrl, extension(1), lscreen)
 
       ictrl(1) = timestep_flag  + output_flag      !Set timestep flag (output_flag, too, if wout needed)
       ictrl(1) = timestep_flag                     !Set timestep flag (output_flag, too, if wout needed)
@@ -428,9 +351,7 @@ C-----------------------------------------------
 !      DO iopen = 1,1                              !Scan through grids
          ictrl(4) = iopen          
          DO ncount = 1, MAX(1,niter/nsteps)
-           RVCCALLNUM=6
-            CALL runvmec (ictrl, extension(1), lscreen,
-     1       RVC_COMM, reset_file_name)
+            CALL runvmec (ictrl, extension(1), lscreen)
             PRINT *,' BREAK HERE'
             ierr_vmec = ictrl(2)
             IF (ierr_vmec .ne. more_iter_flag) EXIT
@@ -438,9 +359,7 @@ C-----------------------------------------------
       END DO
 
       ictrl(1) = output_flag+cleanup_flag      !Output, cleanup
-      RVCCALLNUM=7
-      CALL runvmec (ictrl, extension(1), lscreen,
-     1       RVC_COMM, reset_file_name)
+      CALL runvmec (ictrl, extension(1), lscreen)
 
  300  CONTINUE
 
@@ -450,14 +369,5 @@ C-----------------------------------------------
 !         OPEN(unit=20, file=ScratchFile, iostat=iopen)
 !         IF (iopen .eq. 0) CLOSE (20, status='delete')
 !      END IF
-
-#if defined(SKS)
-      CALL second0(totaltoff)
-      total_time = total_time + (totaltoff-totalton)
-      toff = totaltoff
-      !IF (.NOT.LV3FITCALL.AND.lactive) CALL PrintTimes
-      IF (.NOT.LV3FITCALL.AND.lactive) CALL WriteTimes('timings.txt')
-      CALL FinalizeParallel
-#endif
 
       END PROGRAM vmec

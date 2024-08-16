@@ -8,6 +8,7 @@ C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
       INTEGER :: istat1
 C-----------------------------------------------
+
       CALL free_mem_nunv
 
       ALLOCATE (bsubu0(nznt), rbsq(nznt), dbsq(nznt), stat=istat1)

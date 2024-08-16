@@ -5,58 +5,6 @@
 
       CONTAINS
 
-#if defined(SKS)
-
-      SUBROUTINE calc_fbal_par(bsubu, bsubv)
-      USE vmec_main, ONLY: buco, bvco, equif, iequi,
-     1                     jcurv, jcuru, chipf, vp, pres, 
-     2                     phipf, vpphi, presgrad, ohs
-      USE vmec_params, ONLY: signgs
-      USE vmec_dim, ONLY: ns, nrzt, nznt, ns1
-      USE realspace, ONLY: pwint, phip
-      USE vmec_input, ONLY: nzeta
-      USE vmec_dim, ONLY: ntheta3
-      USE parallel_include_module 
-      IMPLICIT NONE
-!-----------------------------------------------
-      REAL(dp), INTENT(in) :: bsubu(nznt,ns),
-     1                        bsubv(nznt,ns)
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      INTEGER  :: js, lk
-      INTEGER :: nsmin, nsmax
-!-----------------------------------------------
-
-      nsmin=t1lglob; nsmax=t1rglob
-      DO js = nsmin, nsmax
-        buco(js) = SUM(bsubu(:,js)*pwint(:,js))
-        bvco(js) = SUM(bsubv(:,js)*pwint(:,js))
-      END DO
-
-      CALL Gather1XArray(bvco)
-      CALL Gather1XArray(buco)
-
-!     FROM AMPERE'S LAW, JcurX are angle averages of jac*JsupX, so
-!                        JcurX = (dV/ds)/twopi**2 <JsupX> where <...> is flux surface average
-      !nsmin=MAX(2,t1lglob); nsmax=MIN(t1rglob,ns-1)
-      nsmin=MAX(2,tlglob); nsmax=MIN(trglob,ns-1)
-      DO js = nsmin, nsmax
-         jcurv(js) = (signgs*ohs)*(buco(js+1) - buco(js))
-         jcuru(js) =-(signgs*ohs)*(bvco(js+1) - bvco(js))
-         vpphi(js) = (vp(js+1) + vp(js))/2
-         presgrad(js) = (pres(js+1) - pres(js))*ohs
-         equif(js) = (-phipf(js)*jcuru(js) + chipf(js)*jcurv(js))
-     1                /vpphi(js) + presgrad(js)
-      END DO
-      equif(1) = 0
-      equif(ns) = 0
-
-      !SKS-RANGE: All LHS's computed correctly in [t1lglob, trglob]
-
-      END SUBROUTINE calc_fbal_par
-#endif
-
       SUBROUTINE calc_fbal(bsubu, bsubv)
       USE vmec_main, ONLY: buco, bvco, equif, 
      1                     jcurv, jcuru, chipf, vp, pres, 
@@ -68,6 +16,7 @@
 #endif
       USE vmec_params, ONLY: signgs
       USE vmec_dim, ONLY: ns, nrzt, nznt, ns1
+      USE vmec_input, ONLY: lrfp
       USE realspace, ONLY: wint, phip
 #ifdef _ANIMEC
      1                    ,pperp, ppar, onembc, sigma_an,
@@ -78,17 +27,12 @@
      2                     pp1, pp2, pp3
       USE vforces, gsqrt => azmn_o
 #endif
-#if defined (SKS)      
-      USE parallel_include_module 
-#endif      
-      IMPLICIT NONE
 !-----------------------------------------------
       REAL(dp), INTENT(in) :: bsubu(1:nrzt), bsubv(1:nrzt)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER  :: js, lk
-      INTEGER :: nsmin, nsmax
+      INTEGER  :: js, lk, l
 #ifdef _ANIMEC
       REAL(dp) :: t4, t5
 #elif defined _FLOW
@@ -98,28 +42,44 @@
 #ifdef _FLOW
       eps = EPSILON(eps)
 #endif
+!$omp parallel
+!$omp do
+!$omp+ private(js)
       DO js = 2, ns
          buco(js) = SUM(bsubu(js:nrzt:ns)*wint(js:nrzt:ns))
          bvco(js) = SUM(bsubv(js:nrzt:ns)*wint(js:nrzt:ns))
       END DO
-
+!$omp end do
+!$omp end parallel
+!     FROM AMPERE'S LAW, JcurX are angle averages of jac*JsupX, so
+!                        JcurX = (dV/ds)/twopi**2 <JsupX> where <...> is flux surface average
 #ifdef _ANIMEC
       IF (ANY(phot .ne. zero)) THEN
          pp3(1:nrzt:ns) = 0
+!$omp parallel
+!$omp do
+!$omp+ private(js,l,lk)
          DO js = 2,ns
+!               pp3(js:nrzt:ns) = gsqrt(js:nrzt:ns)/vp(js)
             DO lk = 1,nznt
-               pp3(js:nrzt:ns) = gsqrt(js:nrzt:ns)/vp(js)
-!               l = js +(lk-1)*ns
-!               pp3(l) = gsqrt(l)/vp(js)
+               l = js +(lk-1)*ns
+               pp3(l) = gsqrt(l)/vp(js)
             END DO
          END DO	
+!$omp end do
+!$omp end parallel
 
          CALL bimax_ppargrad(pp1,pp2,pp3,ppar,onembc,pres,phot,tpotb)
 
+!$omp parallel
+!$omp do
+!$omp+ private(js)
          DO js = 2, ns1
             pmap(js) = SUM(pp2(js:nrzt:ns)*wint(js:nrzt:ns))
             pd  (js) = SUM(pp1(js:nrzt:ns)*wint(js:nrzt:ns))
          END DO
+!$omp end do
+!$omp end parallel
       ELSE
          pmap = 0
          pd   = 0
@@ -127,24 +87,35 @@
 #elif defined _FLOW
       IF (ANY(rotfot .ne. zero)) THEN
          pp3(1:nrzt:ns) = 0
+!$omp parallel
+!$omp do
+!$omp+ private(js,l,lk)
          DO js = 2,ns
+!               pp3(js:nrzt:ns) = gsqrt(js:nrzt:ns)/vp(js)
             DO lk = 1,nznt
-               pp3(js:nrzt:ns) = gsqrt(js:nrzt:ns)/vp(js)
+               l = js +(lk-1)*ns
+               pp3(l) = gsqrt(l)/vp(js)
             END DO
          END DO	
+!$omp end do
+!$omp end parallel
 
          CALL prot_grad(pp1, pp2, pp3, prot, protrsq)
+
+!$omp parallel
+!$omp do
+!$omp+ private(js)
          DO js = 2, ns1
             pmap(js) = SUM(pp2(js:nrzt:ns)*wint(js:nrzt:ns))
             pd  (js) = SUM(pp1(js:nrzt:ns)*wint(js:nrzt:ns))
          END DO
+!$omp end do
+!$omp end parallel
       ELSE
          pmap = pres
          pd   = 0
       END IF
 #endif
-!     FROM AMPERE'S LAW, JcurX are angle averages of jac*JsupX, so
-!                        JcurX = (dV/ds)/twopi**2 <JsupX> where <...> is flux surface average
       DO js = 2, ns1
          jcurv(js) = (signgs*ohs)*(buco(js+1) - buco(js))
          jcuru(js) =-(signgs*ohs)*(bvco(js+1) - bvco(js))
@@ -168,6 +139,7 @@
          equif(js) = (-phipf(js)*jcuru(js) + chipf(js)*jcurv(js))
      1                /vpphi(js) + presgrad(js)
       END DO
+
       equif(1) = 0
       equif(ns) = 0
 
@@ -177,7 +149,7 @@
       SUBROUTINE bimax_ppargrad(pp1, pp2, pp3, ppar, onembc, pres, phot,
      1                          tpotb)
       USE vmec_main, ONLY: zero
-      USE vmec_dim, ONLY: ns, nrzt, nznt, ns1
+      USE vmec_dim, ONLY: ns, nznt, nrzt
 C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
@@ -201,18 +173,33 @@ C-----------------------------------------------
       ALLOCATE (tmp0(nrzt), tmp2(nrzt))
 
       pp1(1:nrzt:ns) = 0;  pp2(1:nrzt:ns) = 0
+!$omp parallel
+!$omp do
+!$omp+ private(js)
       DO js = 2, ns
          tmp0(js:nrzt:ns) = pp3(js:nrzt:ns)*(ppar(js:nrzt:ns)-pres(js))
          tmp2(js:nrzt:ns) = tmp0(js:nrzt:ns)/(pres(js)*phot(js)+eps)
       END DO
-
-      DO l = 1,nrzt-1
-         pp2(l) = 0.5_dp*(tmp2(l)+tmp2(l+1))
+!$omp end do
+!$omp do
+!$omp+ private(js)
+!      DO l = 1,nrzt-1
+      DO js=1,ns-1
+!         pp2(l) = 0.5_dp*(tmp2(l)+tmp2(l+1))
+         pp2(js:nrzt:ns) = 0.5_dp*(tmp2(js:nrzt:ns)+tmp2(js+1:nrzt:ns))
       END DO
-      DO l = 1, nrzt
-         tmp2(l) = pp3(l)*(1-onembc(l))
+!$omp end do
+!$omp do
+!$omp+ private(js)
+      DO js=1,ns
+!      DO l = 1, nrzt
+!         tmp2(l) = pp3(l)*(1-onembc(l))
+         tmp2(js:nrzt:ns) = pp3(js:nrzt:ns)*(1-onembc(js:nrzt:ns))
       END DO
+!$omp end do
 
+!$omp do
+!$omp+ private(js,lk,l)
       DO js = 2,ns
          DO lk = 1,nznt
             l = js +(lk-1)*ns
@@ -225,13 +212,20 @@ C-----------------------------------------------
      &             ( 1 - 5*(tpotb(js  )*onembc(l))**1.5_dp))
      &          /  (1 - (tpotb(js  )*onembc(l))**2 + eps)
             END IF
+!!!!            pp1(l) = pp1(l) * onembc(l)
+            tmp2(l) = pp1(l) * onembc(l)
          END DO
       END DO
+!$omp end do
 
-      pp1 = pp1 * onembc
-      DO l=1, nrzt-1
-         pp1(l) = 0.5_dp*(pp1(l)+pp1(l+1))
+!      DO l=1, nrzt-1
+!$omp do
+!$omp+ private(js)
+      DO js = 1,ns-1
+         pp1(js:nrzt:ns) = 0.5_dp*(tmp2(js:nrzt:ns)+tmp2(js+1:nrzt:ns))
       END DO
+!$omp end do
+!$omp end parallel
 
       DEALLOCATE (tmp0, tmp2)
 
@@ -242,7 +236,7 @@ C-----------------------------------------------
       USE realspace, ONLY: sigma_an, pperp, ppar, onembc
 !      USE vforces,   ONLY: bsq => bzmn_o
       USE vmec_main, ONLY: tpotb, pppr, pmap, pres, papr, vp, wb,
-     &                     wp, wpar, wper, ns, nznt, nrzt,
+     &                     wp, wpar, wper, ns, nznt, nrzt, 
      &                     zero, one, nthreed
 !
 !     WAC (11/30/07): See description of anisotropic pressure below
@@ -279,7 +273,7 @@ C-----------------------------------------------
 !   1.  Change BSQ from total pressure to magnetic pressure            *
 !********0*********0*********0*********0*********0*********0*********0**
 c
-      bsq = bsq - pperp
+         bsq = bsq - pperp
 !
 !********0*********0*********0*********0*********0*********0*********0**
 !   2.  Compute Tau-minimum, Sigma-minimum, Peak Hot Particle Beta.    *
@@ -287,18 +281,18 @@ c
 c
       whpar = wpar - wp
       whper = wper - wp
-      bhotmx = -HUGE(bhotmx)
-      taumin =  HUGE(taumin)
-      sigmin =  HUGE(sigmin)
+         bhotmx = -HUGE(bhotmx)
+         taumin =  HUGE(taumin)
+         sigmin =  HUGE(sigmin)
 
-      DO 57 js = 2,ns
-         DO 55 lk = 1,nznt
-            l = (lk-1) * ns + js
-            taumir(l) = one + (pperp(l) - pres(js)) / bsq(l)*
-     &      (one - tpotb(js)) / (one - tpotb(js) * onembc(l))
+         DO 57 js = 2,ns
+            DO 55 lk = 1,nznt
+              l = (lk-1) * ns + js
+              taumir(l) = one + (pperp(l) - pres(js)) / bsq(l)* 
+     &         (one - tpotb(js)) / (one - tpotb(js) * onembc(l))
 !              taut = taumir(l) + pperp(l)/bsq(l) *0.25*tpotb(js)
-            if(onembc(l) .gt. zero)
-     &        taumir(l) = taumir(l)
+              if(onembc(l) .gt. zero)
+     &         taumir(l) = taumir(l) 
      &         + (pperp(l) - pres(js)) / bsq(l) * 0.25_dp*tpotb(js)
      &         * (one-onembc(l))*sqrt(tpotb(js)*onembc(l))
      &         / (one + tpotb(js) * onembc(l))
@@ -308,63 +302,64 @@ c
      &         / ((one + tpotb(js)*onembc(l))**2
      &         - (tpotb(js)*onembc(l))**1.5_dp * (5
      &         - (tpotb(js)*onembc(l))**2))
-55       end do
-57    end do
-      do 62 js = 2,ns
-         do 60 lk = 1,nznt
+ 55         end do
+ 57       end do
+        do 62 js = 2,ns
+          do 60 lk = 1,nznt
             l = (lk-1) * ns + js
             taumin = MIN(taumir(l),taumin)
             sigmin = MIN(sigma_an(l),sigmin)
             bhotc = (2*pperp(l)+ppar(l)-3*pres(js))/bsq(l)
             bhotmx = MAX(bhotc,bhotmx)
- 60     end do
- 62   end do
-      betprx = HUGE(betprx)
-      do 64 js=2,ns
-         betprc = 0.76786580_dp - 0.29708540_dp * tpotb(js)
-     &      + 0.054249860_dp * tpotb(js)**2
+ 60       end do
+ 62     end do
+        betprx = HUGE(betprx)
+        do 64 js=2,ns
+          betprc = 0.76786580_dp - 0.29708540_dp * tpotb(js)
+     &      + 0.054249860_dp * tpotb(js)**2 
      &      - 0.0054254849_dp * tpotb(js)**3
-     &      + 0.00030947525_dp * tpotb(js)**4
+     &      + 0.00030947525_dp * tpotb(js)**4 
      &      - 9.7144781e-6_dp * tpotb(js)**5
-     &      + 1.3844199e-7_dp * tpotb(js)**6
+     &      + 1.3844199e-7_dp * tpotb(js)**6 
      &      - 1.4328673e-11_dp * (one + tpotb(js))*tpotb(js)**7
-        betprx=min(betprx,betprc)
- 64   end do
-      bhotmx = bhotmx/3
-      write (nthreed,101) taumin, sigmin, bhotmx
- 101  format(" taumin=",1pe15.6," sigmin=",1pe15.6,
-     &       "  peak hot beta=",1pe15.6)
-      betath = wp/wb
-      betaht = (2*whper+whpar)/(3*wb)
-      betato = (2*wper+wpar)/(3*wb)
-      betapa = whpar/wb
-      betape = whper/wb
-      betadi = betath + betape
-      betaew = betath + 0.5*(betapa+betape)
-      write (nthreed,102) betath,betaht,betato
- 102  format(" thermal beta =",1pe13.4," beta-hot =",1pe13.4,
-     &       " total beta =",1pe13.4)
-      write (nthreed,103) betapa,betape,betaew-betath
- 103  format(' hot parallel beta =',1pe13.4,
+          betprx=min(betprx,betprc)
+ 64     end do
+        bhotmx = bhotmx/3
+        write (nthreed,101) taumin, sigmin, bhotmx
+ 101    format(" taumin=",1pe15.6," sigmin=",1pe15.6,
+     &         "  peak hot beta=",1pe15.6)
+        betath = wp/wb
+        betaht = (2*whper+whpar)/(3*wb)
+        betato = (2*wper+wpar)/(3*wb)
+        betapa = whpar/wb
+        betape = whper/wb
+        betadi = betath + betape
+        betaew = betath + 0.5*(betapa+betape)
+        write (nthreed,102) betath,betaht,betato
+ 102    format(" thermal beta =",1pe13.4," beta-hot =",1pe13.4,
+     &  " total beta =",1pe13.4)
+        write (nthreed,103) betapa,betape,betaew-betath
+ 103     format(' hot parallel beta =',1pe13.4,
      &  ' hot perpendicular beta =',1pe13.4,' beta-hot(EW) =',1pe13.4)
-      write (nthreed,104) betadi,betaew,betprx
- 104  format(' diamagnetic beta =',1pe13.4,' beta(equal weighting) ='
+        write (nthreed,104) betadi,betaew,betprx
+ 104    format(' diamagnetic beta =',1pe13.4,' beta(equal weighting) ='
      &     , 1pe13.4,' maximum hot perp. beta_c =',1pe10.3)
+c
+        write (nthreed,105)
+ 105    format(/,' js',8x,'s',9x,'th. press',2x,'paral pres',2x,
+     &           'perp. pres')
+         DO 79 js = 2,ns
+            es = REAL(js - 1.5,dp) / (ns-1)
+            ppprht = pppr(js) - pres(js)
+            parpht = papr(js) - pres(js)
+            WRITE (nthreed,106) js, es, pres(js), parpht, ppprht
+ 79      END DO
+ 106     format (i3,1p,1e15.6,1p,3e12.3)
 
-      IF (ABS(betaht) .GT. 1.E-12_dp) THEN
-         write (nthreed,105)
- 105  format(/,' js',8x,'s',9x,'th. press',3x,'par. pres',2x,
-     &         'perp. pres')
-      DO 79 js = 2,ns
-         es = REAL(js - 1.5,dp) / (ns-1)
-         ppprht = pppr(js) - pres(js)
-         parpht = papr(js) - pres(js)
-         WRITE (nthreed,106) js, es, pres(js), parpht, ppprht
- 79   END DO
-      END IF
- 106  format (i3,1p,1e15.6,1p,3e12.3)
-
+         RETURN
+      
       END SUBROUTINE mirror_crit
+
 #elif defined _FLOW
       SUBROUTINE prot_grad(pp1, pp2, pp3, prot, protrsq)
       USE vmec_main, ONLY: zero
@@ -393,19 +388,29 @@ C-----------------------------------------------
       ALLOCATE (tmp0(nrzt), tmp2(nrzt))
 
       pp1(1:nrzt:ns) = 0;  pp2(1:nrzt:ns) = 0
+!$omp parallel
+!$omp do
+!$omp+ private(js)
       DO js = 2, ns
          tmp0(js:nrzt:ns) = pp3(js:nrzt:ns)*protrsq(js:nrzt:ns)
          tmp2(js:nrzt:ns) = pp3(js:nrzt:ns)*prot(js:nrzt:ns)
       END DO
+!$omp end do
 
-      DO l = 1,nrzt-1    !PUT AMPLITUDE OF p, UR^2p ON FULL MESH GRID
-         pp2(l) = 0.5_dp*(tmp2(l)+tmp2(l+1))
-         pp1(l) = 0.5_dp*(tmp0(l)+tmp0(l+1))
+!      DO l = 1,nrzt-1    !PUT AMPLITUDE OF p, UR^2p ON FULL MESH GRID
+!$omp do
+!$omp+ private(js)
+      DO js = 1,ns-1    !PUT AMPLITUDE OF p, UR^2p ON FULL MESH GRID
+         pp2(js:nrzt:ns) = 0.5_dp*(tmp2(js:nrzt:ns)+tmp2(js+1:nrzt:ns))
+         pp1(js:nrzt:ns) = 0.5_dp*(tmp0(js:nrzt:ns)+tmp0(js+1:nrzt:ns))
+!         pp2(l) = 0.5_dp*(tmp2(l)+tmp2(l+1))
+!         pp1(l) = 0.5_dp*(tmp0(l)+tmp0(l+1))
       END DO
+!$omp end do
+!$omp end parallel
 
       DEALLOCATE (tmp0, tmp2)
 !
       END SUBROUTINE prot_grad
 #endif
-
       END MODULE fbal

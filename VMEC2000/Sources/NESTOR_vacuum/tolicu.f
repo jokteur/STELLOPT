@@ -1,25 +1,22 @@
-      SUBROUTINE tolicu (torcur)
+      SUBROUTINE tolicu(torcur)
       USE vparams, ONLY: mu0
       USE vacmod
       USE biotsavart
-      USE parallel_include_module
       IMPLICIT NONE
 C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
-      REAL(dp), INTENT(IN) :: torcur
+      REAL(rprec), INTENT(in) :: torcur
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
       INTEGER :: i, kper, kv
-      REAL(dp) :: current(1), ttolion, ttolioff
-      REAL(dp), DIMENSION(:,:), ALLOCATABLE :: xpts
+      REAL(rprec) :: current(1)
+      REAL(rprec), DIMENSION(:,:), ALLOCATABLE :: xpts
 C-----------------------------------------------
 !
 !     COMPUTE WIRE SEGMENTS (DO NOT CLOSE LOOP, CLOSURE DONE IN biotsavart ROUTINES)
 !
-      CALL second0(ttolion)
-
       ALLOCATE (xpts(3,nvp), stat=i)
       IF (i .ne. 0) STOP ' allocation error in tolicu'
 
@@ -36,13 +33,11 @@ C-----------------------------------------------
             xpts(3,i) = zaxis_nestor(kv)
          END DO
       END DO
+
  
 !
 !     INITIALIZE COIL-RELATED QUANTITIES
 !     
       CALL initialize_biotsavart (current, xpt=xpts)
-
-      CALL second0(ttolioff)
-      s_tolicu_time = s_tolicu_time + (ttolioff - ttolion)
 
       END SUBROUTINE tolicu

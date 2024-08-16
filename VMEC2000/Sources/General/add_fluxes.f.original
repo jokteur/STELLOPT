@@ -1,6 +1,6 @@
       SUBROUTINE add_fluxes(overg, bsupu, bsupv, lcurrent)
       USE vmec_main
-      USE realspace, ONLY: wint, guu, guv, chip, phip, sigma_an 
+      USE realspace, ONLY: wint, guu, guv, chip, phip, sigma_an
       USE precon2d, ONLY: ictrl_prec2d
       IMPLICIT NONE
 !-----------------------------------------------
@@ -27,6 +27,10 @@
 !
       IF (.not.lcurrent .or. ncurr.eq.0) GOTO 100
 
+!$omp parallel
+!$omp do
+!$omp+ private(js,l,top,bot)
+!
       DO js = 2, ns
          top = icurv(js)
          bot = 0
@@ -44,6 +48,8 @@
          IF (bot .ne. zero) chips(js) = top/bot
          IF (phips(js) .ne. zero) iotas(js) = chips(js)/phips(js)
       END DO
+!$omp end do
+!$omp end parallel
 
  100  CONTINUE
 

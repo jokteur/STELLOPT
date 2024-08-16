@@ -173,10 +173,23 @@
          lu(js:nrzt:ns,0)=lu(js:nrzt:ns,0)+phipf(js)
       END DO
 
-      bsupu(2:nrzt) = p5*phipog(2:nrzt)*(lv(2:nrzt,0) + lv(1:nrzt-1,0) 
-     1              + shalf(2:nrzt)*(lv(2:nrzt,1) + lv(1:nrzt-1,1)))
-      bsupv(2:nrzt) = p5*phipog(2:nrzt)*(lu(2:nrzt,0) + lu(1:nrzt-1,0) 
-     1              + shalf(2:nrzt)*(lu(2:nrzt,1) + lu(1:nrzt-1,1)))
+!$omp parallel
+!$omp do
+!$omp+ private(lk,jsa,jsb)
+      DO lk=1,nznt
+      jsa = 1 + (lk -1) * ns
+      jsb = jsa - 1 + ns
+      bsupu(jsa+1:jsb) = p5*phipog(jsa+1:jsb)
+     1                 *(lv(jsa+1:jsb,0) + lv(jsa:jsb-1,0) 
+     2              + shalf(jsa+1:jsb)
+     3                 *(lv(jsa+1:jsb,1) + lv(jsa:jsb-1,1)))
+      bsupv(jsa+1:jsb) = p5*phipog(jsa+1:jsb)
+     1                 *(lu(jsa+1:jsb,0) + lu(jsa:jsb-1,0) 
+     2              + shalf(jsa+1:jsb)
+     3                 *(lu(jsa+1:jsb,1) + lu(jsa:jsb-1,1)))
+      END DO
+!$omp end do
+!$omp end parallel
 !v8.49: add ndim points
       bsupu(1) =0;  bsupu(ndim) = 0
       bsupv(1) =0;  bsupv(ndim) = 0
@@ -209,10 +222,22 @@
 !
 !     COMPUTE LAMBDA FORCE KERNELS (COVARIANT B COMPONENT bsubu,v) ON RADIAL HALF-MESH
 !
-      bsubuh(1:nrzt)=guu(1:nrzt)*bsupu(1:nrzt)+guv(1:nrzt)*bsupv(1:nrzt)
-      bsubvh(1:nrzt)=guv(1:nrzt)*bsupu(1:nrzt)+gvv(1:nrzt)*bsupv(1:nrzt)
 !v8.49
       bsubuh(ndim) = 0; bsubvh(ndim) = 0
+!$omp parallel
+!$omp+ private(lk,jsa,jsb)
+!$omp do
+      do lk = 1, nznt
+      jsa = 1 + (lk-1) * ns
+      jsb = jsa - 1 + ns
+      bsubuh(jsa+1:jsb) = guu(jsa+1:jsb)*bsupu(jsa+1:jsb)
+     1                  + guv(jsa+1:jsb)*bsupv(jsa+1:jsb)
+      bsubvh(jsa+1:jsb) = guv(jsa+1:jsb)*bsupu(jsa+1:jsb)
+     1                  + gvv(jsa+1:jsb)*bsupv(jsa+1:jsb)
+
+      END DO                !End Loop LK
+!$omp end do
+!$omp end parallel
 !
 #ifdef _FLOW
 !     CALCULATE PRESSURE WHEN THERE IS TOROIDAL ROTATION BEFORE r12sq (==>bsq)
@@ -223,9 +248,18 @@
 !
 !     COMPUTE MAGNETIC AND KINETIC PRESSURE ON RADIAL HALF-MESH
 !
-      bsq(:nrzt) = p5*(bsupu(:nrzt)*bsubuh(:nrzt) 
-     1           +     bsupv(:nrzt)*bsubvh(:nrzt))
+!$omp parallel
+!$omp+ private(lk,jsa,jsb)
+!$omp do
+      do lk = 1, nznt
+      jsa = 1 + (lk-1) * ns
+      jsb = jsa - 1 + ns
+      bsq(jsa+1:jsb) = p5*(bsupu(jsa+1:jsb)*bsubuh(jsa+1:jsb) 
+     1               +     bsupv(jsa+1:jsb)*bsubvh(jsa+1:jsb))
 
+      END DO                !End Loop LK
+!$omp end do
+!$omp end parallel
       bsq(1) = zero
       wb = hs*ABS(SUM(wint(:nrzt)*gsqrt(:nrzt)*bsq(:nrzt)))
 
@@ -258,9 +292,6 @@
       lvv(jsa:jsb+1) = phipog(jsa:jsb+1)*gvv(jsa:jsb+1)
       bsubv_e(jsa:jsb) =p5*(lvv(jsa:jsb)+lvv(jsa+1:jsb+1))*lu(jsa:jsb,0)
 
-      print*, 'jsa, jsb', jsa, jsb
-      print*, 'shalf shape', shape(shalf)
-      print*, 'lvv shape', shape(lvv)
       lvv(jsa:jsb+1) = lvv(jsa:jsb:1)*shalf(jsa:jsb+1)
       bsubu_e(jsa:jsb) = guv(jsa:jsb)*bsupu(jsa:jsb)*sigma_an(jsa:jsb)       !Temp variable
       bsubv_e(jsa:jsb) = bsubv_e(jsa:jsb) 
