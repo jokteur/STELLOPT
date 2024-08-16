@@ -3,7 +3,7 @@
       IMPLICIT NONE
       INTEGER :: j
       EXTERNAL fcn
-#ifndef MPI_OPT
+#if !defined(MPI_OPT)
       INTEGER :: iflag
       REAL(rprec) :: funcval, ga_evaluate
 

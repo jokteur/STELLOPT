@@ -11,7 +11,7 @@
 !-----------------------------------------------
       INTEGER :: nfp_bs
       TYPE (bsc_coil),     POINTER            :: single_coil => null()
-      TYPE (bsc_coilcoll), DIMENSION(:), ALLOCATABLE, TARGET ::
+      TYPE (bsc_coilcoll), DIMENSION(:), ALLOCATABLE, TARGET ::                
      &   coil_group
 
 !
@@ -187,7 +187,6 @@
       CALL read_coils_pass2(iou_coil, nmaxnodes, coil_group, ngroup,           
      &                      local_lgrps, n_line_skip)
  
-      CALL safe_close(iou_coil) !Close the file when done
       END SUBROUTINE parse_coils_file
 
 !----------------------------------------------------------------------
@@ -596,44 +595,6 @@
 !*******************************************************************************
 !----------------------------------------------------------------------
 
-      SUBROUTINE afield (rp, phi, zp, ar, ap, az, ig)
-      IMPLICIT NONE
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER, OPTIONAL :: ig
-      REAL(rprec), INTENT(in)  :: rp, phi, zp
-      REAL(rprec), INTENT(out) :: ar, ap, az
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      INTEGER :: igroup
-      REAL :: cosp, sinp
-      REAL(rprec), DIMENSION(3) :: xpt, avec
-!-----------------------------------------------
-
-!     Convert to cartesian coordinates
-      cosp = COS(phi);    sinp = SIN(phi)
-      xpt(1) = rp*cosp
-      xpt(2) = rp*sinp
-      xpt(3) = zp
-
-      igroup = 1
-      IF (PRESENT(ig)) igroup = ig
-
-      CALL bsc_a (coil_group(igroup), xpt, avec)
-
-!     Convert back to cylindrical coordinates from cartesian vector components of A
-      ar = avec(1)*cosp + avec(2)*sinp
-      ap =-avec(1)*sinp + avec(2)*cosp
-      az = avec(3)
-
-      END SUBROUTINE afield
-
-!----------------------------------------------------------------------
-!*******************************************************************************
-!----------------------------------------------------------------------
-
       SUBROUTINE cleanup_biotsavart
       IMPLICIT NONE
 !-----------------------------------------------
@@ -663,4 +624,3 @@
 !10.09.08 (SPH) REPLACE INTEGER(iprec) with INTEGER
 !11.24.10 (SPH) added lparsed logical to avoid eof error message if coils file does not terminate with "end"
 ! 2011-04-01 (JDH) Added start_string to parse_coils_file. Also, miscellaneous cleanup.
-! 2014-08-01 (SAL) Added afield routine (copy of bfield)

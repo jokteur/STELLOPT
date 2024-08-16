@@ -12,8 +12,7 @@
 !-----------------------------------------------
       INTEGER :: i,j
       REAL(rprec) :: tempc(nmid), temps(nmid)
-      REAL(rprec) :: temp2c(MAX(nsmid,num_vf)), 
-     1               temp2s(MAX(nsmid,num_vf))
+      REAL(rprec) :: temp2c(nsmid), temp2s(nsmid)
 !-----------------------------------------------
       istat = 0
 
@@ -73,7 +72,7 @@
       WRITE(iunit,450) 'DPC_WGT = ', dpc_wgt
       WRITE(iunit,450) 'VACFLD_WGT = ', vacfld_wgt
       WRITE(iunit,450) 'MXB_WGT = ', mxb_wgt
-      IF (nmod_coils_per_period .GT. 0) THEN
+      IF (nmod_coils_per_period .gt. 0) THEN
          CALL write_array(iunit,'DCC_WGT', dcc_wgt, nmid)
          CALL write_array(iunit,'DCC_EXP', dcc_exp, nmid)
          CALL write_array(iunit,'DCC_TGT', dcc_tgt, nmid)
@@ -85,7 +84,7 @@
          CALL write_array(iunit,'CU_WGT', cu_wgt, nmid)
          CALL write_array(iunit,'CU_TGT', cu_tgt, nmid)
       END IF
-      IF (lmodular .AND. (.NOT.lsaddle)) THEN
+      IF (lmodular .and. (.not.lsaddle)) THEN
          CALL write_array(iunit,'YMIN_WGT', ymin_wgt, nmid)
          CALL write_array(iunit,'YMIN_TGT', ymin_tgt, nmid)
       END IF
@@ -113,7 +112,7 @@
          CALL write_array(iunit,'LP_BG',lp_bg, mbcoils)
          CALL write_array(iunit,'BCOIL_CUR', bcoil_cur, mbcoils)
       END IF
-      IF (num_vf .GT. 0) THEN
+      IF (num_vf .gt. 0) THEN
          CALL write_array(iunit,'LCC_VF', lcc_vf, num_vf)
          CALL write_array(iunit,'CC_VF', cc_vf, num_vf)
          CALL write_array(iunit,'RC_VF', rc_vf, num_vf)
@@ -123,7 +122,7 @@
          CALL write_array(iunit,'RVF_WGT', rvf_wgt, num_vf)
          CALL write_array(iunit,'RVF_TGT', rvf_tgt, num_vf)
          WRITE(iunit,200) 'NRVF_C = ', nrvf_c
-         IF (nrvf_c .GT. 0) THEN
+         IF (nrvf_c .gt. 0) THEN
             DO j = 1, nrvf_c
               DO i = 1, num_vf
                 temp2c(i) = rcfc_vf(i,j)
@@ -139,7 +138,7 @@
       IF (nmod_coils_per_period .gt. 0) THEN
          CALL write_array(iunit,'CURMOD', curmod, nmid)
       END IF
-      IF (nf_phi .GT. 0) THEN
+      IF (nf_phi .gt. 0) THEN
          DO j = 0,nf_phi
            DO i = 1,nmid
              tempc(i) = phic(i,j)                        !modular(i)%phic(j)
@@ -151,22 +150,19 @@
            CALL write_array(iunit,'PHIS', temps, nmid,j)
          END DO
       END IF
-      IF (nf_rho .GT. 0) THEN
+      IF (nf_rho .gt. 0) THEN
          DO j = 0,nf_rho
            DO i = 1,nmid
-             tempc(i) = rhoc(i,j)                        !modular(i)%rhoc(j)
              temps(i) = rhos(i,j)                        !modular(i)%rhos(j)
-             IF (ABS(tempc(i)) .lt. 1.e-10_dp) tempc(i) = 0
              IF (ABS(temps(i)) .lt. 1.e-10_dp) temps(i) = 0
            END DO
-           CALL write_array(iunit,'RHOC', tempc, nmid,j)
            CALL write_array(iunit,'RHOS', temps, nmid,j)
          END DO
       END IF
 
 ! 2/20/98 WHM Write out surface coefficients
 
-      IF (numsurf .GT. 0) THEN
+      IF (numsurf .gt. 0) THEN
          WRITE(iunit,200)'NUMSURF = ',numsurf
          CALL write_array(iunit,'M_NUM', m_num, numsurf)
          CALL write_array(iunit,'N_NUM', n_num, numsurf)
@@ -219,7 +215,7 @@
             WRITE(iunit,350) 'BKP_WGT = ',bkp_wgt,'BKP_TGT = ',bkp_tgt
          END IF
       END IF
-      IF (nsad_v .GT. 0) THEN
+      IF (nsad_v .gt. 0) THEN
          DO j = 0,nsad_v
            DO i = 1,nsmid
              temp2c(i) = sad_v_c(i,j)                    !saddle(i)%v_c(j)
@@ -235,7 +231,7 @@
            CALL write_array(iunit,'SAD_V_S', temp2s, nsmid, j)
          END DO
       END IF
-      IF (nsad_u .GT. 0) THEN
+      IF (nsad_u .gt. 0) THEN
          DO j = 0,nsad_u
            DO i = 1,nsmid
              temp2c(i) = sad_u_c(i,j)                   !saddle(i)%u_c(j)

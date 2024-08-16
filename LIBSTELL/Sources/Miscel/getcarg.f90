@@ -11,14 +11,11 @@
 !-----------------------------------------------
       INTEGER :: numchars
 !-----------------------------------------------
-#if defined(WIN64)
-      numargs = iargc()
-      CALL getarg(narg, arg)
-#elif defined(WIN32)
+#if defined(WIN32)
       INTEGER :: nargs
       numargs = nargs() - 1
       CALL getarg(narg, arg, numchars)
-#elif defined(LINUX) || defined(DARWIN)
+#elif defined(LINUX)
       INTEGER iargc
       numargs = iargc()
       CALL getarg(narg, arg)
@@ -30,12 +27,10 @@
       INTEGER ipxfargc
       numargs = ipxfargc()
       CALL pxfgetarg(narg, arg, numchars, ier)
-#elif defined(MACOSX)
-      numargs = command_argument_count()
-      CALL get_command_argument(narg,arg)
 #else
       INTEGER iargc, getarg
       numargs = iargc()
       numchars = getarg(narg, arg)
 #endif
+
       END SUBROUTINE getcarg

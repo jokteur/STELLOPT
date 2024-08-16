@@ -2,16 +2,10 @@
       USE stel_kinds
 
       INTEGER, PARAMETER :: flag_singletask = -1, flag_cleanup = -100
-      INTEGER, PARAMETER :: flag_cleanup_jac = -100
-      INTEGER, PARAMETER :: flag_cleanup_lev = -101
 
       INTEGER :: m, n, ncnt, max_processors, num_lm_params
-      INTEGER :: ix_min, jac_count, n_red                                !PPPL
       REAL(rprec), DIMENSION(:), POINTER :: xp, wap
       LOGICAL, DIMENSION(:), ALLOCATABLE :: flip
-      integer, dimension(:), allocatable :: jac_order                    !PPPL
-      INTEGER, DIMENSION(:), ALLOCATABLE :: jac_err, jac_index
-      REAL(rprec), DIMENSION(:), ALLOCATABLE :: h_order
       REAL(rprec) :: eps
 
       CONTAINS
@@ -20,8 +14,10 @@
      1           iflag, ncnt, epsfcn, fnorm_min, x_min, wa)
       USE stel_kinds
       USE mpi_params
-      USE mpi_inc
       IMPLICIT NONE
+#if defined(MPI_OPT)
+      include 'mpif.h'                                       !mpi stuff
+#endif
 C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
@@ -145,7 +141,7 @@ c
 !     NOTE: if numprocs > n, num_split = 0 and we go to the overflow 
 !           ("left-over") loop for num_split=mod(n,numprocs) == n
       num_split = n/numprocs
-      MPI_COMM_WORKERS = MPI_COMM_STEL
+      MPI_COMM_WORKERS = MPI_COMM_WORLD
       joff = 1
 
       DO i = 1, num_split
@@ -171,11 +167,11 @@ c
          CALL flush(6)
       
          CALL MPI_ALLGATHER(buffer, m, MPI_REAL8, 
-     1        fjac(1,joff), m, MPI_REAL8, MPI_COMM_STEL, ierr_mpi)
+     1        fjac(1,joff), m, MPI_REAL8, MPI_COMM_WORLD, ierr_mpi)
          CALL MPI_ALLGATHER(temp, 1, MPI_REAL8, 
-     1        fnorm_array(joff), 1, MPI_REAL8, MPI_COMM_STEL, ierr_mpi)
+     1        fnorm_array(joff), 1, MPI_REAL8, MPI_COMM_WORLD, ierr_mpi)
          CALL MPI_ALLGATHER(lflip, 1, MPI_LOGICAL, 
-     1        flip(joff), 1, MPI_LOGICAL, MPI_COMM_STEL, ierr_mpi)
+     1        flip(joff), 1, MPI_LOGICAL, MPI_COMM_WORLD, ierr_mpi)
 
          joff = joff + numprocs
  
@@ -206,7 +202,7 @@ c
          END IF
 
 !     Set new WORKERS communicator to include first MOD(n,numprocs) only
-         CALL MPI_COMM_SPLIT(MPI_COMM_STEL, ikey, worker_id, 
+         CALL MPI_COMM_SPLIT(MPI_COMM_WORLD, ikey, worker_id, 
      1                       MPI_COMM_WORKERS, ierr_mpi)
          IF (ierr_mpi .ne. 0) 
      1       STOP 'MPI_COMM_SPLIT error in fdjac_mp_queue'
@@ -229,11 +225,11 @@ c
          END IF
 
          CALL MPI_ALLGATHER(buffer, m, MPI_REAL8, 
-     1        fjac_overflow, m, MPI_REAL8, MPI_COMM_STEL, ierr_mpi)
+     1        fjac_overflow, m, MPI_REAL8, MPI_COMM_WORLD, ierr_mpi)
          CALL MPI_ALLGATHER(temp, 1, MPI_REAL8, 
-     1        fnorm_overflow, 1, MPI_REAL8, MPI_COMM_STEL, ierr_mpi)
+     1        fnorm_overflow, 1, MPI_REAL8, MPI_COMM_WORLD, ierr_mpi)
          CALL MPI_ALLGATHER(lflip, 1, MPI_LOGICAL, 
-     1        flip_overflow, 1, MPI_LOGICAL, MPI_COMM_STEL, ierr_mpi)
+     1        flip_overflow, 1, MPI_LOGICAL, MPI_COMM_WORLD, ierr_mpi)
 
          fjac(:,joff:n)      = fjac_overflow(:,1:num_split)
          fnorm_array(joff:n) = fnorm_overflow(1:num_split)
@@ -263,7 +259,7 @@ c
 !     Barrier appears in fcn call
 !
       ikey = flag_cleanup
-      MPI_COMM_WORKERS = MPI_COMM_STEL
+      MPI_COMM_WORKERS = MPI_COMM_WORLD
       CALL fcn(m, n, x, wa, ikey, ncnt)
 
       RETURN
@@ -271,47 +267,42 @@ c
  100  CONTINUE
       WRITE (6, *) ' MPI_BCAST error in FDJAC2_MP: IERR=', ierr_mpi,
      1             ' PROCESSOR: ',myid
-
 #endif
       END SUBROUTINE fdjac2_mp
 
 
-      SUBROUTINE fdjac2_mp_queue(fcn, fnorm, m, n, x, fvec, fjac,
-     1           ldfjac, iflag, ncnt, epsfcn, fnorm_min, x_min, wa,
-     2           fnorm_array,clean_flag)      !PPPL (adds fnorm)
+      SUBROUTINE fdjac2_mp_queue(fcn, m, n, x, fvec, fjac, ldfjac,
+     1           iflag, ncnt, epsfcn, fnorm_min, x_min, wa)
       USE stel_kinds
       USE mpi_params
-      USE safe_open_mod, ONLY: safe_open
-      USE mpi_inc
       IMPLICIT NONE
+#if defined(MPI_OPT)
+      include 'mpif.h'                                       !mpi stuff
+#endif
 C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
-      INTEGER, INTENT(in) :: m, n, ldfjac
-      INTEGER, INTENT(inout) :: ncnt
+      INTEGER, INTENT(in) :: m, n, ldfjac, ncnt
       INTEGER :: iflag
-      REAL(rprec), INTENT(in) :: epsfcn, fnorm
+      REAL(rprec), INTENT(in) :: epsfcn
       REAL(rprec) :: x(n)
       REAL(rprec), INTENT(in) :: fvec(m)
       REAL(rprec) :: fjac(ldfjac,n)
       REAL(rprec) :: fnorm_min, x_min(n), wa(m)
-      REAL(rprec) :: fnorm_array(n)
-      logical     :: clean_flag
       EXTERNAL fcn
 #if defined(MPI_OPT)
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
-      logical, dimension(n) :: lmask
-      INTEGER :: i, j, iunit,iproc_min, ix_temp
-      integer, dimension(1) :: isort
-      integer, dimension(numprocs) :: iflag_array
-      REAL(rprec) :: eps, epsmch, dpmpar, temp, enorm, temp_norm
+      INTEGER :: i, j, iproc_min
+      INTEGER :: iflag_array(1)
+      REAL(rprec) :: eps, epsmch, dpmpar, temp, enorm, cur_norm
       REAL(rprec), PARAMETER :: one = 1, zero = 0
-      REAL(rprec), DIMENSION(:), ALLOCATABLE :: h
-      REAL(rprec), DIMENSION(:,:), ALLOCATABLE :: x_global,fvec_array
-      CHARACTER(16) ::  temp_string
-      CHARACTER(256) ::  jac_file
+      REAL(rprec), DIMENSION(:), ALLOCATABLE :: buffer, h,
+     1     fnorm_array                                       !mpi stuff
+      INTEGER :: status(MPI_STATUS_size)                     !mpi stuff
+      INTEGER :: numsent, sender, istat, ikey                !mpi stuff
+      INTEGER :: anstype, column, ierr_flag                  !mpi stuff
 C-----------------------------------------------
 C   E x t e r n a l   F u n c t i o n s
 C-----------------------------------------------
@@ -391,153 +382,223 @@ c     argonne national laboratory. minpack project. march 1980.
 c     burton s. garbow, kenneth e. hillstrom, jorge j. more
 c
 c     **********
-c*************** Updated by SAL****************************************
-      ALLOCATE (x_global(n,n),h(n),fvec_array(m,n))
-
+      ALLOCATE (buffer(m), fnorm_array(n), h(n), stat=istat)
+      IF (istat .ne. 0) STOP 'Allocation error in fdjac2_mp'
+      ierr_flag = 0
+c
+c     epsmch is the machine precision.
+c
       epsmch = dpmpar(1)
+c
       eps = SQRT(MAX(epsfcn,epsmch))
-      if( epsfcn < 0 ) eps = - eps
 
-      h = eps*ABS(x)
-      WHERE (h .le. eps/100.) h = eps/100.
-      WHERE (h .eq. zero) h=eps
-      WHERE (flip) h = -h
-      h_order = h
+c     Set up WORKER COMMUNICATOR
+      IF (myid .eq. master) THEN
+         ikey = MPI_UNDEFINED
+      ELSE
+         ikey = WORKER_SPLIT_KEY+1
+      END IF
+      CALL MPI_COMM_SPLIT(MPI_COMM_WORLD, ikey, worker_id, 
+     1                    MPI_COMM_WORKERS, ierr_mpi)
+      IF (ierr_mpi .ne. 0) STOP 'MPI_COMM_SPLIT error in fdjac_mp_queue'
 
-      DO i = 1, n
-         x_global(:,i) = x(:)
-         x_global(i,i) = x(i) + h(i)
+c
+c     Begin parallel MPI master/worker version of the function call.  A
+c     bank queue or master/worker MPI algorithm is used here to achieve
+c     parallel load balancing in the somewhat uneven work load involved
+c     in calculating the Jacobian function needed in the Levenberg-Marquardt
+c     optimization.  This model is based on the example given in Chapt. 5 of
+c     "The LAM Companion to Using MPI" by Zdzislaw Meglicki (online see:
+c     http://carpanta.dc.fi.udc.es/docs/mpi/mpi-lam/mpi.html).  These
+c     modifications were made by D.A. Spong 8/23/2000.
+c
+c     ****Master portion of the code****
+c
+
+
+      IF (myid .eq. master) THEN
+         numsent = 0    !numsent is a counter used to track how many
+                        !jobs have been sent to workers
+         cur_norm = enorm(m,fvec)
+c
+c        calculate the displacements
+c
+         h(1:n) = eps*ABS(x(1:n))
+         WHERE (h .eq. zero) h=eps
+         WHERE (flip) h = -h
+
+c     Send forward difference displacements from master to each
+c           worker process. Tag these with the column number (j)
+c
+         DO j = 1,MIN(numprocs-1,n)
+            numsent = numsent+1
+            temp = x(numsent)
+            x(numsent) = temp + h(numsent)
+            CALL MPI_SEND(x, n, MPI_REAL8, j,
+     1                  numsent, MPI_COMM_WORLD, ierr_mpi)
+            IF (ierr_mpi .ne. 0) STOP 'MPI_SEND error(1) in fdjac2'
+            x(numsent) = temp
+         END DO          !j = 1,MIN(numprocs-1,n)
+c
+c      Looping through the columns, collect answers from the workers.
+c      As answers are received, new uncalculated columns are sent
+c      out to these same workers.
+c
+         DO j = 1,n
+            CALL MPI_RECV(wa, m, MPI_REAL8,
+     1           MPI_ANY_SOURCE, MPI_ANY_TAG,
+     2           MPI_COMM_WORLD, status, ierr_mpi)
+            IF (ierr_mpi .ne. 0) STOP 'MPI_RECV error(1) in fdjac2'
+            sender     = status(MPI_SOURCE)
+            anstype    = status(MPI_TAG)       ! column is tag value
+            IF (anstype .gt. n) STOP 'ANSTYPE > N IN FDJAC2'
+
+            fjac(:m,anstype) = (wa(:m) - fvec(:m))/h(anstype)
+!
+!           STORE FNORM OF PERTURBED STATE (X + H)
+!
+            temp = enorm(m,wa)
+            fnorm_array(anstype) = temp
+            IF (temp > cur_norm) flip(anstype) = .not. flip(anstype)
+
+!           WRITE ITERATION, PROCESSOR, CHISQ TO SCREEN
+            WRITE (6, '(2x,i6,8x,i3,7x,1es12.4)') ncnt+anstype,
+     1             sender, temp**2
+
+c
+c           If more columns are left, then send another column to the worker(sender)
+c           that just sent in an answer
+c
+            IF (numsent .lt. n) THEN
+               numsent = numsent+1
+               temp = x(numsent)
+               x(numsent) = temp + h(numsent)
+
+               CALL MPI_SEND(x, n, MPI_REAL8,
+     1                       sender, numsent, MPI_COMM_WORLD, ierr_mpi)
+               IF (ierr_mpi .ne. 0) STOP 'MPI_SEND error(2) in fdjac2'
+               x(numsent) = temp
+
+            ELSE                ! Tell workers that there is no more work to do
+
+               CALL MPI_SEND(MPI_BOTTOM, 0, MPI_REAL8,
+     1                       sender, 0, MPI_COMM_WORLD, ierr_mpi)
+               IF (ierr_mpi .ne. 0) STOP 'MPI_end error(3) in fdjac2'
+            ENDIF      ! IF( myid .eq. master ) THEN
+         END DO     ! DO j = 1,n
+c
+c     ****Worker portion of the code****
+c        Skip this when processor id exceeds work to be done
+c
+      ELSE IF (myid .le. n) THEN        ! IF( myid .ne. master )
+c
+c        Otherwise accept the next available column, check the tag,
+c        and if the tag is non-zero call subroutine fcn.
+c        If the tag is zero, there are no more columns
+c        and worker skips to the end.
+c
+ 90      CALL MPI_RECV(x, n, MPI_REAL8, master,
+     1                 MPI_ANY_TAG, MPI_COMM_WORLD, status, ierr_mpi)
+         IF (ierr_mpi .ne. 0) STOP 'MPI_RECV error(2) in fdjac2'
+
+         column = status(MPI_TAG)
+         IF (column .ne. 0) THEN
+            iflag = column
+c           Call the chisq fcn for the portion of displacement vector which
+c           was just received. Note that WA stores the local fvec_min array
+            CALL fcn(m, n, x, wa, iflag, ncnt)
+
+            IF (iflag.ne.0 .and. ierr_flag.eq.0) ierr_flag = iflag
+c
+c           Send this function evaluation back to the master process tagged
+c           with the column number so the master knows where to put it
+c
+            CALL MPI_SEND(wa, m, MPI_REAL8, master,
+     1                    column, MPI_COMM_WORLD, ierr_mpi)
+            IF (ierr_mpi .ne. 0) STOP 'MPI_SEND error(4) in fdjac2'
+            GO TO 90    !Return to 90 and check if master process has sent any more jobs
+         END IF
+      ENDIF       ! IF( myid .ne. master )
+
+!
+!     Broadcast the fjac matrix
+!
+      DO j=1,n
+         IF (myid .eq. master) buffer(:m) = fjac(:m,j)
+         CALL MPI_BCAST(buffer, m, MPI_REAL8, master,
+     1        MPI_COMM_WORLD, ierr_mpi)
+         IF (ierr_mpi .ne. 0) GO TO 100
+         IF (myid .ne. master) fjac(:m,j) = buffer(:m)
       END DO
 
 !
-!     Evaluate finite difference jacobian
-!
-      CALL eval_x_queued(fcn,m,n,n,x_global,fvec_array,ncnt,
-     1                   MPI_COMM_STEL)
-      CALL MPI_BCAST(fvec_array,m*n,MPI_DOUBLE_PRECISION,
-     1               master,MPI_COMM_STEL,ierr_mpi)
-
-!
-!     Calculate Jacobian
-!
-      fnorm_array = SQRT(SUM(fvec_array*fvec_array,DIM=1))
-      DO i = 1, n
-         fjac(:,i) = (fvec_array(:,i) - fvec(:))/h(i)
-         temp_norm = fnorm_array(i)*fnorm_array(i)
-         IF ((temp_norm >= 1.0E12).or.(temp_norm/=temp_norm)) THEN
-            jac_err(i) = 0
-            fjac(:m,i) = 0.0
-            flip(i) = .not. flip(i)
-         ELSE
-            jac_err(i) = 1
-            IF (temp_norm > fnorm) flip(i) = .not. flip(i)
-            END IF
-      END DO
-
-!
-!     Check to make sure there is a search direction (PPPL)
-!
-      IF (ALL(fnorm_array >= 1.0E12)) iflag = 327
-      IF (iflag == 327) RETURN
-
-!
-!     Output Function Evaluations, Jacobian, and reorder jacobian
+!     Find processor with minimum fnorm_min value and broadcast wa (=fvec_min), x_min, fnorm_min
 !
       IF (myid .eq. master) THEN
-         ! ADDED by S. Lazerson (dump feval then Jacobian to file)
-         IF (ncnt == 0) THEN
-            WRITE(temp_string,'(i6.6)') ncnt
-         ELSE
-            WRITE(temp_string,'(i6.6)') ncnt+1
+         fnorm_min   = MINVAL(fnorm_array)
+         iflag_array = MINLOC(fnorm_array)
+         iproc_min = iflag_array(1)
+         IF (iproc_min .le. 0 .or. iproc_min .gt. n) THEN
+            PRINT *,'IPROC_MIN=',iproc_min,' out of range in fdjac2_mp'
+            STOP
          END IF
-         jac_file = 'fevals.' // TRIM(temp_string)
-         iunit = 27; j=0;
-         CALL safe_open(iunit,j,TRIM(jac_file),'new','formatted')
-         WRITE(iunit,'(2X,i6,2X,i6)') m,n
-         WRITE(iunit,'(1p,4e22.14)') (fvec(i), i=1,m)
-         DO i = 1, m
-            WRITE(iunit,'(1p,4e22.14)') (fvec_array(i,j), j=1,n)
-         END DO
-         CLOSE(iunit)
-         jac_file = ''
-         jac_file = 'jacobian.' // TRIM(temp_string)
-         CALL safe_open(iunit,j,TRIM(jac_file),'new','formatted')
-         WRITE(iunit,'(2X,i6,2X,i6)') m,n
-         DO i = 1, m
-            WRITE(iunit,'(1p,4e22.14)') (fjac(i,j), j=1,n)
-         END DO
-         CLOSE(iunit)
+         wa(:) = fjac(:, iproc_min)*h(iproc_min) + fvec(:)
+         x_min(:) = x(:)
+         x_min(iproc_min) = x(iproc_min) + h(iproc_min)
       END IF
 
+      CALL MPI_BCAST(fnorm_min, 1, MPI_REAL8, master,
+     1               MPI_COMM_WORLD, ierr_mpi)
+      IF (ierr_mpi .ne. 0) GOTO 100
+      CALL MPI_BCAST(wa, m, MPI_REAL8, master, MPI_COMM_WORLD,ierr_mpi)
+      IF (ierr_mpi .ne. 0) GOTO 100
+      CALL MPI_BCAST(x_min, n, MPI_REAL8, master, MPI_COMM_WORLD, 
+     1               ierr_mpi)
+      IF (ierr_mpi .ne. 0) GOTO 100
+c
+c     Original serial version of the Jacobian calculation:
+c
+c      DO j = 1, n
+c         temp = x(j)
+c         h = eps*ABS(temp)
+c         IF (h .eq. zero) h = eps
+c         x(j) = temp + h
+c         CALL fcn (m, n, x, wa, iflag)
+c         IF (iflag .lt. 0) EXIT
+c         x(j) = temp
+c         fjac(:m,j) = (wa - fvec)/h
+c      END DO
+
+      DEALLOCATE (h, buffer, fnorm_array)
 !
-!     Reorder jacobian
+!     Do any special cleanup now for iflag = flag_cleanup
+!     Barrier appears in fcn call
 !
-      DO i = 1, n
-         jac_index(i) = i
-      END DO
-      i = 1
-      DO WHILE(i <= COUNT(jac_err > 0))
-         IF (jac_err(i) == 0) THEN
-            DO j = i, n-1
-               fjac(1:m,j) = fjac(1:m,j+1)
-               jac_index(j) = jac_index(j+1)
-               fnorm_array(j) = fnorm_array(j+1)
-               jac_err(j) = jac_err(j+1)
-               h_order(j) = h_order(j+1)
-            END DO
-            fjac(1:m,n) = 0.0
-            fnorm_array(n) = 1.0E30
-            jac_err(n) = 0
-            jac_index(n) = 0
-            h_order(n)   = 0.0
-         ELSE
-            i = i + 1
-         END IF
-      END DO
-      n_red = COUNT(jac_err > 0)
+      column = flag_cleanup
+      CALL fcn(m, n, x, wa, column, ncnt)
 
 !
-!     Find minimum
+!     Reassign initial x value to all processors and perform error handling
+!     This is necessary because other processors had x + h in them
 !
-      jac_order = 0
-      ix_temp = 1
-      temp = 0
-      lmask = .true.
-      DO WHILE (ix_temp <= n_red)
-         isort = MINLOC(fnorm_array, MASK=lmask)
-         temp = fnorm_array(isort(1))
-         jac_order(ix_temp) = isort(1)
-         IF(isort(1) <= 0 .or. isort(1) > n_red) THEN
-            EXIT
-         ELSE IF(fnorm_array(isort(1)) > fnorm) THEN
-            EXIT
-         ELSE
-            lmask(isort(1)) = .false.
-            ix_temp = ix_temp + 1
-         END IF
-      END DO
-      ix_min = jac_order(1)
-      IF(ix_temp <= n) jac_order(ix_temp:) = 0
-      jac_count = ix_temp - 1
-      IF (ix_min .le. 0 .or. ix_min .gt. n) THEN
-         PRINT *,' IX_MIN = ',ix_min,' out of range'
-         STOP
+      CALL MPI_BCAST(x, n, MPI_REAL8, master, MPI_COMM_WORLD, ierr_mpi)
+      IF (ierr_mpi .ne. 0) GOTO 100
+
+      IF (ierr_flag .ne. 0) THEN
+         iflag = ierr_flag
+         CALL MPI_BCAST(iflag, 1, MPI_INTEGER, myid,
+     1        MPI_COMM_WORLD, ierr_mpi)
+         IF (ierr_mpi .ne. 0) GOTO 100
       END IF
-      j = jac_index(ix_min)
-      fnorm_min = fnorm_array(ix_min)
-      wa(:) = fjac(:, ix_min)*h(j) + fvec(:)                     ! Note wa ~ fvec_min
-      x_min(:) = x(:)
-      x_min(j) = x(j) + h(j)
 
-!
-!     Cleanup
-!
-      i = flag_cleanup_jac
-      if (clean_flag) CALL fcn(m, n, x, wa, i, ncnt)
-      DEALLOCATE(x_global,h,fvec_array)
-      
+      IF (myid .ne. master)
+     1   CALL MPI_COMM_FREE(MPI_COMM_WORKERS, ierr_mpi)      
+
       RETURN
-c**********************************************************************
+
+ 100  CONTINUE
+      WRITE (6, *) ' MPI_BCAST error in FDJAC2_MP: IERR=', ierr_mpi,
+     1             ' PROCESSOR: ',myid
 #endif
       END SUBROUTINE fdjac2_mp_queue
 
@@ -545,6 +606,7 @@ c**********************************************************************
       SUBROUTINE fdjac2(fcn, m1, n1, x, fvec, fjac, ldfjac, iflag,
      1    ncnt1, epsfcn, wa, time, fnorm_min, x_min, fvec_min)
       USE stel_kinds
+#if !defined(MPI_OPT)
       IMPLICIT NONE
 C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
@@ -563,7 +625,7 @@ C-----------------------------------------------
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
-      INTEGER :: j, k, istat, iread, ic1, ic2, irate, count_max
+      INTEGER :: j, istat, iread, ic1, ic2, irate, count_max
       REAL(rprec) :: eps, epsmch, h, dpmpar, temp, cur_norm
 C-----------------------------------------------
 C   E x t e r n a l   F u n c t i o n s
@@ -571,11 +633,6 @@ C-----------------------------------------------
       EXTERNAL fcn, dpmpar, multiprocess, fdjac_parallel
       REAL(rprec), EXTERNAL :: enorm
 C-----------------------------------------------
-      fjac = 0
-      fnorm_min = 0
-      x_min = 0
-      fvec_min = 0
-#ifndef MPI_OPT
 c
 c     SUBROUTINE fdjac2
 c
@@ -635,10 +692,6 @@ c     **********
 c
 c     epsmch is the machine precision.
 c
-      fjac = 0
-      fnorm_min = 0
-      x_min = 0
-      fvec_min = 0
       epsmch = dpmpar(1)
 c
       eps = SQRT(MAX(epsfcn,epsmch))

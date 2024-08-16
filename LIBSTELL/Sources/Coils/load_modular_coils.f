@@ -22,11 +22,10 @@
 !     Case with coils on both symmetry planes phi = 0 and phi = pi/nfp
 !     (lsymm = F). No. of coils per field period must be even (nodd = 0).
 
-      IF ((nodd.EQ.0) .AND. (.NOT.lsymm)) THEN
+      IF ((nodd.eq.0) .and. (.not.lsymm)) THEN
 
 !        Symmetry coil at phi = 0.
          i = 1
-         phis(i,0) = 0
          DO modes = 1, nf_phi
             n = n + 1
             phis(i,modes) = xvariables(n)
@@ -40,9 +39,9 @@
 
 !        Coils 2 through nmid - 1
          DO i = 2, nmid-1
+            modes = 0
             n = n + 1
             phic(i,modes) = xvariables(n)
-            phis(i,0) = 0
             DO modes = 1,nf_phi
                n = n + 1
                phic(i,modes) = xvariables(n)
@@ -50,8 +49,6 @@
                phis(i,modes) = xvariables(n)
             END DO
 
-            n = n + 1
-            rhoc(i,0) = xvariables(n)
             rhos(i,0) = 0
             DO modes = 1,nf_rho
                n = n + 1
@@ -61,7 +58,6 @@
 
 !        Symmetry coil at phi = pi/nfp
          i = nmid
-         phis(i,0) = 0
          DO modes = 1, nf_phi
             n = n + 1
             phis(i,modes) = xvariables(n)
@@ -81,9 +77,9 @@
       ELSE
 
          DO i = 1, nmid-nodd
+            modes = 0
             n = n + 1
-            phic(i,0) = xvariables(n)
-            phis(i,0) = 0
+            phic(i,modes) = xvariables(n)
             DO modes = 1,nf_phi
                n = n + 1
                phic(i,modes) = xvariables(n)
@@ -91,19 +87,14 @@
                phis(i,modes) = xvariables(n)
             END DO
 
-            n = n + 1
-            rhoc(i,0) = xvariables(n)
             rhos(i,0) = 0
             DO modes = 1,nf_rho
-               n = n + 1
-               rhoc(i,modes) = xvariables(n)
                n = n + 1
                rhos(i,modes) = xvariables(n)
             END DO
          END DO
-         IF (nodd .EQ. 1) THEN
+         IF (nodd .eq. 1) THEN
             i = nmid
-            phis(i,0) = 0
             DO modes = 1, nf_phi
                n = n + 1
                phis(i,modes) = xvariables(n)
@@ -116,7 +107,7 @@
             END DO
          END IF
 
-      END IF
+      END IF   ! END IF ((nodd .eq. 0) .and. (lsymm .eqv. .false.))
 
       nvariables = n
 

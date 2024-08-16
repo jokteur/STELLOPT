@@ -2,7 +2,7 @@
 
         USE stel_kinds
         USE vmec_input, ONLY:lfreeb
-        USE mpi_inc
+        USE mpi
 
         USE parallel_vmec_module, ONLY: PARVMEC
         USE parallel_vmec_module, ONLY: LV3FITCALL

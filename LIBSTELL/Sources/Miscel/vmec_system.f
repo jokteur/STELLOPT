@@ -5,24 +5,22 @@
 
 #if defined(CRAY)
       INTEGER, EXTERNAL :: ishell
-      !ireturn = ishell(TRIM(cmd))
+      ireturn = ishell(TRIM(cmd))
 #elif defined(RISC)
-      !CALL system(TRIM(cmd), ireturn)
+      CALL system(TRIM(cmd), ireturn)
 #elif defined(IRIX64)
-      !CALL system(TRIM(cmd))
+      CALL system(TRIM(cmd))
       ireturn = 0
-#elif defined(LINUX) || defined(OSF1) || defined(DARWIN)
+#elif defined(LINUX) || defined(OSF1)
 !      INTEGER, EXTERNAL :: system
-!      INTEGER :: system
-!      ireturn = system(TRIM(cmd))
+      INTEGER :: system
+      ireturn = system(TRIM(cmd))
 #elif defined(WIN32) || defined(SUNOS)
       INTEGER, EXTERNAL :: system
       ireturn = system(TRIM(cmd))
 #else
-!      INTEGER, EXTERNAL :: system
-      CHARACTER(LEN=LEN_TRIM(cmd)+1) :: cmd1
-      cmd1 = TRIM(cmd) // CHAR(0)
-!      ireturn = system(TRIM(cmd1))
+      INTEGER, EXTERNAL :: system
+      ireturn = system(TRIM(cmd) // CHAR(0))
 #endif
       IF (PRESENT(ierror)) ierror = ireturn
 

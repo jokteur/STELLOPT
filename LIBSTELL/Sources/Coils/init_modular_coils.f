@@ -18,12 +18,12 @@
       nmod_coils = nc*nfper
       nmid = (nc+1)/2
       nodd = MOD(nc,2)
-      IF ((nodd.EQ.0) .AND. (.NOT.lsymm)) nmid = nmid + 1
+      IF ((nodd.eq.0) .and. (.not.lsymm)) nmid = nmid + 1
 
       nvariables = 0
       nmod_coeffs = 0
 
-      IF (nc .LE. 0) RETURN
+      IF (nc .le. 0) RETURN
 
 !     Initialize the variables to values of unique coil parameters
 !     and count the number of variables
@@ -34,7 +34,7 @@
 !     phi = 0 and phi = pi/nfp (lsymm = F). This implies that the number
 !     of coils per field period must be even (nodd = 0).
 
-      IF ((nodd .EQ. 0) .AND. (.NOT.lsymm)) THEN
+      IF ((nodd .eq. 0) .and. (.not.lsymm)) THEN
 
 !     Symmetry coil at phi = 0.
 
@@ -51,8 +51,9 @@
 
 !     Coils 2 through nmid-1.
         DO i = 2, nmid-1
+          modes = 0
           n = n + 1
-          xvariables(n) = phic(i,0)
+          xvariables(n) = phic(i,modes)
           DO modes = 1,nf_phi
             n = n + 1
             xvariables(n) = phic(i,modes)
@@ -60,11 +61,7 @@
             xvariables(n) = phis(i,modes)
           END DO
 
-          n = n + 1
-          xvariables(n) = rhoc(i,0)
           DO modes = 1,nf_rho
-            n = n + 1
-            xvariables(n) = rhoc(i,modes)
             n = n + 1
             xvariables(n) = rhos(i,modes)
           END DO
@@ -90,8 +87,9 @@
       ELSE
 
         DO i = 1, nmid-nodd
+          modes = 0
           n = n + 1
-          xvariables(n) = phic(i,0)
+          xvariables(n) = phic(i,modes)
           DO modes = 1,nf_phi
             n = n + 1
             xvariables(n) = phic(i,modes)
@@ -99,17 +97,13 @@
             xvariables(n) = phis(i,modes)
           END DO
 
-          n = n + 1
-          xvariables(n) = rhoc(i,0)
           DO modes = 1,nf_rho
-            n = n + 1
-            xvariables(n) = rhoc(i,modes)
             n = n + 1
             xvariables(n) = rhos(i,modes)
           END DO
         END DO
 
-        IF (nodd .EQ. 1) THEN
+        IF (nodd .eq. 1) THEN
           i = nmid
           DO modes = 1, nf_phi
             n = n + 1

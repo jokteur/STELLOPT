@@ -1,6 +1,6 @@
 !-------------------------------------------------------------------------------
 MODULE blocktridiagonalsolver_bst
-USE mpi_inc
+USE mpi
 USE parallel_include_module, ONLY: STOPMPI
 USE parallel_include_module, ONLY: TOFU
 USE parallel_include_module, ONLY: NS_COMM

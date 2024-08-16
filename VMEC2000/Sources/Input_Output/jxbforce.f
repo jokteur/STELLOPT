@@ -51,7 +51,7 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
 !RESET lbsubs DEFAULT FLAG TO FALSE TO CAPTURE CURRENT SHEETS!
-!      LOGICAL, PARAMETER :: lbsubs = .false.      !!False to use (correct)  bsubs calculation (from metrics)
+      LOGICAL, PARAMETER :: lbsubs = .false.      !!False to use (correct)  bsubs calculation (from metrics)
                                                   !!True  to use (modified) bsubs calculation (from mag. diff. eq.)
 !  J Hanson 2014-01-12. Commented out above line. Variable is now declared
 !    in module vmec_input, available here through module vmec_main.

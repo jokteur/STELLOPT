@@ -45,26 +45,26 @@ C   D u m m y   A r g u m e n t s
        rhobc(0,0) = one
 
        DO mcount = m_bdyn, 0
-         mb = IABS(mcount) + 1
-          DO ncount = -n_bdy, n_bdy
-          nb = -ncount
-             rbc( nb, mb) = rbc( nb, mb) + rhobc( ncount, mcount)
-             zbs( nb, mb) = zbs( nb, mb) + rhobc( ncount, mcount)
-          END DO
+       mb = IABS(mcount) + 1
+       DO ncount = -n_bdy, n_bdy
+       nb = -ncount
+       rbc( nb, mb) = rbc( nb, mb) + rhobc( ncount, mcount)
+       zbs( nb, mb) = zbs( nb, mb) + rhobc( ncount, mcount)
+       END DO
        END DO
        DO mcount = 1, m_bdyp
-          mb = mcount - 1
-          DO ncount = -n_bdy, n_bdy
-             nb =  ncount
-             rbc( nb, mb) = rbc( nb, mb) + rhobc( ncount, mcount)
-             zbs( nb, mb) = zbs( nb, mb) - rhobc( ncount, mcount)
-          END DO
+       mb = mcount - 1
+       DO ncount = -n_bdy, n_bdy
+       nb =  ncount
+       rbc( nb, mb) = rbc( nb, mb) + rhobc( ncount, mcount)
+       zbs( nb, mb) = zbs( nb, mb) - rhobc( ncount, mcount)
+       END DO
        END DO
        DO ncount = 1, ntor
-          rbc( ncount, 0 ) = rbc( ncount, 0 ) + rbc( -ncount, 0 )
-          rbc( -ncount, 0 ) = zero
-          zbs( ncount, 0 ) = zbs( ncount, 0 ) - zbs( -ncount, 0 )
-          zbs( -ncount, 0 ) = zero
+       rbc( ncount, 0 ) = rbc( ncount, 0 ) + rbc( -ncount, 0 )
+       rbc( -ncount, 0 ) = zero
+       zbs( ncount, 0 ) = zbs( ncount, 0 ) - zbs( -ncount, 0 )
+       zbs( -ncount, 0 ) = zero
        END DO
        zbs( 0, 0 ) = zero
 

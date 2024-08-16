@@ -3,7 +3,7 @@ MODULE parallel_vmec_module
   !------------------------------------------------
 
   USE stel_kinds
-  USE mpi_inc
+  USE mpi
   IMPLICIT NONE
   INTEGER :: TOFU
   INTEGER :: grank=0, gnranks=1
@@ -1094,7 +1094,7 @@ CONTAINS
 
 #if defined(SKS) 
       INTEGER :: i, j, k, l, cnt
-      REAL(dp), INTENT(INOUT), & 
+      REAL(dp), INTENT(INOUT), 
      &   DIMENSION(ntmaxblocksize,par_ns) :: outarr
 
       DO i=t1lglob, t1rglob
@@ -1133,7 +1133,7 @@ CONTAINS
         DIMENSION(0:par_ntor,0:par_mpol1,par_ns,3*par_ntmax) :: outarr
 
 #if defined(SKS) 
-      REAL(dp), INTENT(IN), &
+      REAL(dp), INTENT(IN), 
      &   DIMENSION(ntmaxblocksize,par_ns) :: inarr
       INTEGER :: i, j, k, l, cnt
 
@@ -1150,8 +1150,7 @@ CONTAINS
       END DO
 #else
       INTEGER :: js, t, m, n, lk
-      REAL(dp), INTENT(IN), & 
-     &   DIMENSION(ntmaxblocksize*par_ns) :: inarr
+      REAL(dp), INTENT(IN), DIMENSION(ntmaxblocksize*par_ns) :: inarr
       
       DO js=t1lglob, t1rglob
         DO t=1, 3*par_ntmax

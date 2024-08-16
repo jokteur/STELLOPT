@@ -1,7 +1,7 @@
       MODULE GMRES_LIB
       USE stel_kinds, ONLY: dp
       USE stel_constants, ONLY: one, zero
-      USE mpi_inc
+      USE mpi
       IMPLICIT NONE
 
       TYPE GMRES_INFO

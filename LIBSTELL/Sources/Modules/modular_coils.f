@@ -1,6 +1,6 @@
       MODULE modular_coils
-      USE vcoilpts
-      INTEGER, PARAMETER :: nfourier=20, nsurf_p=200
+      USE Vcoilpts
+      INTEGER, PARAMETER :: nfourier=20, nsurf_p=100
       INTEGER :: nf_rho, nf_phi, nstep, niter_opt, nmod_coils,
      1    nmid, nodd, nfper, nmod_coils_per_period,
      2    m_in, n_in, nmod_unique_coils, nmod_coeffs, nmod_currents
@@ -23,7 +23,8 @@
       REAL(rprec), DIMENSION(ncdim) :: mod_length
       REAL(rprec), DIMENSION(:,:,:), ALLOCATABLE :: x_mod, y_mod, z_mod
       REAL(rprec), DIMENSION(ncdim) :: curcon
-      REAL(rprec), DIMENSION(ncdim,0:nfourier) :: phic, phis, rhoc, rhos
+      REAL(rprec), DIMENSION(ncdim,0:nfourier) :: phic, phis
+      REAL(rprec), DIMENSION(ncdim,0:nfourier) :: rhoc, rhos
       REAL(rprec), DIMENSION(:,:), ALLOCATABLE :: rho , phi, 
      1                                            rcoil, zcoil
       INTEGER, DIMENSION(nsurf_p) :: m_num,n_num

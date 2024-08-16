@@ -9,7 +9,7 @@
       MODULE functions
       USE stel_kinds
 
-      PUBLIC :: two_power, two_power_gs, function_test
+      PUBLIC :: two_power, two_power_gs      !UNDEFINED, functions_test
       PRIVATE :: check
 
       CONTAINS
@@ -23,7 +23,7 @@
 !    b(0) * (1 - x ** b(1)) ** b(2)
 !
 !*******************************************************************************
-      REAL(rprec) PURE FUNCTION two_power(x, b)
+      REAL(rprec) FUNCTION two_power(x, b)
       IMPLICIT none
 
 !-------------------------------------------------------------------------------
@@ -44,7 +44,7 @@
 !    two_power(x)*(1 + Sum[b(i)*Exp(-(x - b(i+1))/b(i+2)) ** 2])
 !
 !*******************************************************************************
-      REAL(rprec) PURE FUNCTION two_power_gs(x, b)
+      REAL(rprec) FUNCTION two_power_gs(x, b)
       IMPLICIT none
 
 !-------------------------------------------------------------------------------
@@ -128,22 +128,22 @@
 !*******************************************************************************
 !  Check Test result
 !*******************************************************************************
-      FUNCTION check(expected, received, testNum, name)
+      FUNCTION check(expected, recieved, testNum, name)
 !-------------------------------------------------------------------------------
 !  Variable declarations.
 !-------------------------------------------------------------------------------
       LOGICAL :: check
-      REAL(rprec), INTENT(in) :: expected, received
+      REAL(rprec), INTENT(in) :: expected, recieved
       INTEGER, INTENT(in) :: testNum
       CHARACTER (LEN=*), INTENT(in) :: name
 !-------------------------------------------------------------------------------
 !  Start of executable code
 !-------------------------------------------------------------------------------
-      check = expected .eq. received
+      check = expected .eq. recieved
       IF (.not.check) THEN
          write(*,*) "functions.f: ", name, " test", testNum,                   
      &              "failed."
-         write(*,*) "Expected", expected, "Received", received
+         write(*,*) "Expected", expected, "Recieved", recieved
       END IF
 
       END FUNCTION

@@ -1,9 +1,9 @@
       SUBROUTINE ga_fitness_mpi (np, fvec, nopt, fcn, nfev, funcval)
       USE ga_mod
-      USE mpi_params, ONLY: master, myid, MPI_COMM_STEL
-      USE mpi_inc
+      USE mpi_params, ONLY: master, myid
       IMPLICIT NONE
 #if defined(MPI_OPT)
+      include 'mpif.h'                                       !mpi stuff
       REAL(rprec), DIMENSION(nparam) :: x
 #endif
 
@@ -24,9 +24,9 @@
 !
 !  mpi setup calls; set barrier so ALL processors get here before starting
 !
-      CALL MPI_COMM_RANK( MPI_COMM_STEL, myid, ierr )       !mpi stuff
-      CALL MPI_COMM_size( MPI_COMM_STEL, numprocs, ierr )   !mpi stuff
-      CALL MPI_BARRIER(MPI_COMM_STEL, ierr)                 !mpi stuff
+      CALL MPI_COMM_RANK( MPI_COMM_WORLD, myid, ierr )       !mpi stuff
+      CALL MPI_COMM_size( MPI_COMM_WORLD, numprocs, ierr )   !mpi stuff
+      CALL MPI_BARRIER(MPI_COMM_WORLD, ierr)                 !mpi stuff
 
 !******************************************
 !
@@ -42,7 +42,7 @@ c
          DO j = 1,MIN(numprocs-1,np)
             x(:) = parent(:,j)
             CALL MPI_SEND(x, nparam, MPI_REAL8, j,
-     1                  j, MPI_COMM_STEL, ierr)
+     1                  j, MPI_COMM_WORLD, ierr)
             IF (ierr .ne. 0) STOP 'MPI_SEND error(1) in ga_fitness_mpi'
             numsent = numsent+1
          END DO          !j = 1,MIN(numprocs-1,n)
@@ -54,7 +54,7 @@ c
          DO j = 1,np
             CALL MPI_RECV(fvec, nopt, MPI_REAL8,
      1           MPI_any_SOURCE, MPI_any_TAG,
-     2           MPI_COMM_STEL, status, ierr)
+     2           MPI_COMM_WORLD, status, ierr)
             IF (ierr .ne. 0) STOP 'MPI_RECV error(1) in ga_fitness_mpi'
             sender     = status(MPI_SOURCE)
             anstype    = status(MPI_TAG)       ! column is tag value
@@ -74,14 +74,14 @@ c
                x(:) = parent(:,numsent)
 
                CALL MPI_SEND(x, nparam, MPI_REAL8,
-     1                       sender, numsent, MPI_COMM_STEL, ierr)
+     1                       sender, numsent, MPI_COMM_WORLD, ierr)
                IF (ierr .ne. 0)
      1            STOP 'MPI_SEND error(2) in ga_fitness_mpi'
 
             ELSE                ! Tell worker that there is no more work to DO
 
                CALL MPI_SEND(MPI_BOTTOM, 0, MPI_REAL8,
-     1                       sender, 0, MPI_COMM_STEL, ierr)
+     1                       sender, 0, MPI_COMM_WORLD, ierr)
                IF (ierr .ne. 0)STOP 'MPI_end error(3) in ga_fitness_mpi'
             ENDIF      ! IF( myid .eq. master ) THEN
          END DO     ! DO j = 1,n
@@ -97,7 +97,7 @@ c        If the tag is zero, there are no more columns
 c        and worker skips to the END.
 c
  90      CALL MPI_RECV(x, nparam, MPI_REAL8, master,
-     1                 MPI_any_TAG, MPI_COMM_STEL, status, ierr)
+     1                 MPI_any_TAG, MPI_COMM_WORLD, status, ierr)
          IF (ierr .ne. 0) STOP 'MPI_RECV error(2) in ga_fitness_mpi'
 
          column = status(MPI_TAG)                !!ID of pseudo-processor issuing this message
@@ -115,7 +115,7 @@ c           Send this function evaluation back to the master process tagged
 c           with the column number so the master knows where to put it
 c
             CALL MPI_SEND(fvec, nopt, MPI_REAL8, master,
-     1                    column, MPI_COMM_STEL, ierr)
+     1                    column, MPI_COMM_WORLD, ierr)
             IF (ierr .ne. 0) STOP 'MPI_SEND error(4) in ga_fitness_mpi'
             GOTO 90    !Return to 90 and check IF master process has sent ANY more jobs
          END IF
@@ -126,7 +126,7 @@ c
 !     Broadcast the funcval array to ALL processors FROM master
 !
       CALL MPI_BCAST(funcval, np, MPI_REAL8, master,
-     1     MPI_COMM_STEL, ierr)
+     1     MPI_COMM_WORLD, ierr)
       IF (ierr .ne. 0) GOTO 100
 
       RETURN

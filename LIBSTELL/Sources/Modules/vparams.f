@@ -9,8 +9,7 @@
 !     MAXIMUM PARAMETERS FOR VMEC CODE (FOR READING INPUT)
 !     USER SHOULD NOT ALTER THESE
 !
-!      INTEGER, PARAMETER :: nsd = 1001     !maximum number of radial nodes
-      INTEGER, PARAMETER :: nsd = 10001     !maximum number of radial nodes SAL 05/22/12
+      INTEGER, PARAMETER :: nsd = 1001     !maximum number of radial nodes
       INTEGER, PARAMETER :: mpold = 101    !maximum number of poloidal harmonics (in r,z,lam fourier series)
       INTEGER, PARAMETER :: ntord = 101    !maximum number of toroidal harmonics
       INTEGER, PARAMETER :: ndatafmax  = 101
@@ -47,7 +46,5 @@
       REAL(rprec), PARAMETER :: c1pm13 = 1.0e-13_dp
       REAL(rprec), PARAMETER :: osqrt2 = 0.707106781186547462_dp
       REAL(rprec), PARAMETER :: epstan = EPSILON(zero)
-      
-      real(rprec), parameter :: dmu0   = 2.0e-7_dp*twopi                !SAL 09/26/11 for COBRA
 
       END MODULE vparams

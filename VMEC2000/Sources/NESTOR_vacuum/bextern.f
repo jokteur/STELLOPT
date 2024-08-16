@@ -32,7 +32,7 @@ c
 !     COMPUTE B FROM COILS ON THE PLASMA BOUNDARY
 !
 
-      CALL becoil (r1b,z1b,brad,bphi,bz,bvac(1,1),bvac(1,2),bvac(1,3),         &
+      CALL becoil (r1b,z1b,brad,bphi,bz,bvac(1,1),bvac(1,2),bvac(1,3),         
      &             lscreen)
 
 !

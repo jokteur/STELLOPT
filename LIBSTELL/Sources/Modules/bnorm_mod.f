@@ -1,6 +1,6 @@
       MODULE bnorm_mod
       USE stel_constants
-      USE vcoilpts
+      USE Vcoilpts
       INTEGER, PARAMETER :: bnorm_dim=1000
       INTEGER :: mnbn_max
       REAL(rprec) :: vacfld_wgt

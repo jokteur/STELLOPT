@@ -428,8 +428,7 @@ CONTAINS
     sts = nf_enddef(ncid)
     call cdfInqV(ncid,varnam,varid,dimlens,ndims,sts)
     if (sts .ne. 0) return
-    if (ndims .gt. 2) then
-!    if (ndims .ne. 2) then   !error if this 2d array has dimension 1 for second element
+    if (ndims .ne. 2) then
        print "('% cdfPutVar_2c: --E-- The variable ',a,               &
             &         ' was defined as',i2,' dimensional')",varnam,ndims
        return

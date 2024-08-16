@@ -23,7 +23,7 @@
       USE blocktridiagonalsolver_bst, ONLY: Initialize_bst
       USE blocktridiagonalsolver_bst, ONLY: Finalize_bst
       USE xstuff
-      USE mpi_inc
+      USE mpi
       IMPLICIT NONE
 C-----------------------------------------------
 C   D u m m y   A r g u m e n t s

@@ -9,8 +9,7 @@
       INTEGER :: nseq
       INTEGER, DIMENSION(nseqmax) :: nseq_select
       CHARACTER(LEN=120), DIMENSION(nseqmax) :: extension
-      INTEGER, DIMENSION(nseqmax) :: nseq_restart
 
-      NAMELIST /vseq/ nseq, nseq_select, extension, nseq_restart
+      NAMELIST /vseq/ nseq, nseq_select, extension
 
       END MODULE vmec_seq

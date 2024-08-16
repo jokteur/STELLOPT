@@ -251,10 +251,6 @@ end subroutine cdfInqVar
     integer, dimension(3)   :: dimids
     character*(nf_max_name) :: name
     !---------------------------------------------------------------------------
-!   Initialize values SAL 07012014
-    varid = 0 ! SAL 07012014
-    xtype=0; ndims=0; dimids=0; natts=0; dimlens=0 ! SAL 07012014
-
 !   replace any non-alphanumeric characters with underscores
     varnam_noalpha = varnam
     CALL alpha_numeric(varnam_noalpha)

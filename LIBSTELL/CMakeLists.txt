@@ -9,6 +9,7 @@ file(GLOB libstell_src RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     Sources/NumerMeth/*.f
     Sources/Optimization/*.f
     Sources/Pspline/*.f
+    Sources/QMRpack/*.f
 )
 file(GLOB libstell_freeform RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     Sources/Ezcdf/*.f90

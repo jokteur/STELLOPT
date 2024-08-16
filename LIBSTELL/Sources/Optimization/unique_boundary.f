@@ -1,5 +1,5 @@
       SUBROUTINE unique_boundary(rbc, zbs, rhobc, mmax, nmax, 
-     1                                            mpol, ntor, mrho,pexp)
+     1                                            mpol, ntor, mrho)
       USE stel_kinds
       IMPLICIT NONE
 !-----------------------------------------------
@@ -10,16 +10,15 @@ C   D u m m y   A r g u m e n t s
      1   rhobc
       REAL(rprec), DIMENSION(-nmax:nmax,0:mmax), INTENT(inout) ::
      1   rbc, zbs
-      INTEGER, INTENT(in), OPTIONAL :: pexp
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-!      INTEGER, PARAMETER :: pexp = 2
+      INTEGER, PARAMETER :: pexp = 4
       REAL(rprec), PARAMETER :: zero = 0, one = 1
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: mcount, ncount, mpol_max, texp
+      INTEGER :: mcount, ncount, mpol_max
       REAL(rprec), DIMENSION(1:mpol) :: t1, t2
 !-----------------------------------------------
 !
@@ -31,17 +30,14 @@ C   D u m m y   A r g u m e n t s
 !     MRHO: ACTUAL MAXIMUM POLOIDAL MODE NO. OF RHOBC
 !     NTOR: ACTUAL MAXIMUM TOROIDAL MODE NO. OF RBC, ZBC, RHOBC
 !
-      texp = 4
-      IF (PRESENT(pexp)) texp = pexp
-      
       IF (mpol .gt. mmax) STOP 'MPOL > MMAX in UNIQUE_BOUNDARY'
       IF (ntor .gt. nmax) STOP 'NTOR > NMAX in UNIQUE_BOUNDARY'
 
       DO mcount = 1, mpol
         t1(mcount) = ( REAL(mcount-1,rprec)/
-     1                 REAL(mcount,rprec) )**texp
+     1                 REAL(mcount,rprec) )**pexp
         t2(mcount) = ( REAL(mcount+1,rprec)/
-     1                 REAL(mcount,rprec) )**texp
+     1                 REAL(mcount,rprec) )**pexp
       END DO
       t1(1) = one
 

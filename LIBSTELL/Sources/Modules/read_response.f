@@ -160,8 +160,10 @@
 !  SPH 05.12.2005  Added MPI enabling code
 
       USE mpi_params
-      USE mpi_inc
       IMPLICIT NONE
+#if defined(MPI_OPT)
+      INCLUDE 'mpif.h'                                       !mpi stuff
+#endif
 
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -262,8 +264,10 @@
 ! SPH added istat error handler, in case file can not be opened
 ! SPH (05/12/05) added MPI_ logic
       USE mpi_params
-      USE mpi_inc
       IMPLICIT NONE
+#if defined(MPI_OPT)
+      INCLUDE 'mpif.h'                                       !mpi stuff
+#endif
 !      USE bsc
 
 !-----------------------------------------------

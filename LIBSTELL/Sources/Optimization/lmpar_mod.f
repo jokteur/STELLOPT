@@ -11,55 +11,37 @@
       CONTAINS
 
       SUBROUTINE levmarq_param_mp(x, wa1, wa2, wa3, wa4,
-     1     nfev, m, n, iflag, fcn, lev_step_range,fnorm_min,
-     2     xvmin,xvmax)
-!      SUBROUTINE levmarq_param_mp(x, wa1, wa2, wa3, wa4,
-!     1     nfev, m, n, iflag, fcn)
-      USE fdjac_mod, ONLY: flag_cleanup, flag_cleanup_lev, jac_index,
-     1                     n_red
+     1     nfev, m, n, iflag, fcn)
+      USE fdjac_mod, ONLY: flag_cleanup
       USE mpi_params
-      USE safe_open_mod
-      USE mpi_inc
       IMPLICIT NONE
+#if defined(MPI_OPT)
+      INCLUDE 'mpif.h'                                       !mpi stuff
+#endif
 C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
       INTEGER, INTENT(in) :: n, m
-      INTEGER :: iflag, nfev, lev_step_range                            !PPPL
-!      INTEGER :: iflag, nfev
-      REAL(rprec), INTENT(in) :: fnorm_min
+      INTEGER :: iflag, nfev
       REAL(rprec), INTENT(in) :: x(n)
       REAL(rprec) :: wa1(n), wa2(n), wa3(n), wa4(m)
-      REAL(rprec), INTENT(in), OPTIONAL :: xvmin(n)
-      REAL(rprec), INTENT(in), OPTIONAL :: xvmax(n)
       EXTERNAL fcn
-#ifdef MPI_OPT
+#if defined(MPI_OPT)
 C-----------------------------------------------
 C   L o c a l   P a r a m e t e r s
 C-----------------------------------------------
       REAL(rprec), PARAMETER :: zero = 0, one = 1
-C      REAL(rprec), DIMENSION(11), PARAMETER :: factors =
-C     1  (/ 1.0_dp, 0.5_dp, 0.25_dp, 0.128_dp, 0.75_dp,
-C     2      1.25_dp, 1.5_dp, 0.9_dp, 1.1_dp, 1.75_dp, 2.1_dp /)
-!      real(rprec), dimension(11), parameter :: factors =
-!     1  (/ 1.0_dp, 0.5_dp, 0.25_dp, 0.128_dp, 2.1_dp, 0.75_dp,
-!     2      1.25_dp, 1.5_dp, 0.9_dp, 1.1_dp, 1.75_dp /)                 !PPPL
-      real(rprec), dimension(11), parameter :: factors =
-     1  (/ 0.128_dp, 0.250_dp, 0.500_dp, 0.750_dp, 0.900_dp,
-     2     1.000_dp, 0.110_dp, 1.250_dp, 1.500_dp, 1.750_dp,
-     3     2.000_dp /)                                                 !SAL
+      REAL(rprec), DIMENSION(11), PARAMETER :: factors =
+     1  (/ 1.0_dp, 0.5_dp, 0.25_dp, 0.128_dp, 0.75_dp,
+     2      1.25_dp, 1.5_dp, 0.9_dp, 1.1_dp, 1.75_dp, 2.1_dp /)
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
       INTEGER :: iproc, iproc_min, nfact, num_lev, istat, ierr, j,
-     1           iflag_min(1), i, iunit, nfev_output
+     1           iflag_min(1)
       INTEGER, ALLOCATABLE, DIMENSION(:) :: iflag_array
       REAL(rprec) :: scale_factor
-!      REAL(rprec), DIMENSION(:), ALLOCATABLE :: fnorm_array
-      REAL(rprec), DIMENSION(:), ALLOCATABLE :: fnorm_array,
-     1                                          delta_array,
-     2                                          par_array,
-     3                                          diag_red !PPPL
+      REAL(rprec), DIMENSION(:), ALLOCATABLE :: fnorm_array
       CHARACTER(LEN=1) :: ext, low_mark
 C-----------------------------------------------
 C   E x t e r n a l   F u n c t i o n s
@@ -74,168 +56,86 @@ C-----------------------------------------------
 
       nfact = SIZE(factors)
       num_lev = numprocs
-      iproc = myid + 1
       ALLOCATE (iflag_array(numprocs), fnorm_array(numprocs),
-     1          delta_array(numprocs), par_array(numprocs),
-     2          diag_red(n_red),stat=istat)   !PPPL
-      IF (istat .ne. 0) THEN
-         IF (myid == master) THEN
-            WRITE(6,*) 'ALLOCATION ERROR in levmarq_param_mp'
-            WRITE(6,*) 'STAT = ',istat
-            CALL FLUSH(6)
-         END IF
-         CALL MPI_BARRIER(MPI_COMM_STEL,ierr)
-         CALL mpi_stel_abort(0)
-      END IF
-            
-      
+     1          stat=istat)
+      IF (istat .ne. 0) STOP 'Allocation error in levmarq_param_mp'
+
+      iproc = myid
+      IF (lfirst_lm .and. num_lev > 2) THEN
 !
 !       Do an exponential spread the first call (lfirst_lm=.true.) to see where we are
-!     
-      IF (lfirst_lm .and. num_lev > 2) THEN
-         scale_factor = exp((iproc-1)*log(spread_ratio)/num_lev)          !PPPL
+!
+         scale_factor = 10._dp**(-iproc)
+!        scale_factor = 10._dp**(one-iproc)
          lfirst_lm = .false.
       ELSE IF (num_lev > 2*nfact) THEN
-         scale_factor = (iproc*MAXVAL(factors))/num_lev
-      ELSE IF (iproc .le. nfact) THEN
-         scale_factor = factors(iproc)
+         scale_factor = ((iproc+1)*MAXVAL(factors))/num_lev
+      ELSE IF (iproc .lt. nfact) THEN
+         scale_factor = factors(iproc+1)
       ELSE
          scale_factor = ((iproc-nfact)*MINVAL(factors))/
      1                   (num_lev-nfact)
       END IF
 
       delta = scale_factor*delta
-      
-      DO i = 1, n_red
-         j = jac_index(i)
-         diag_red(i) = diag(j)
-      END DO
 
-      CALL lmpar (n_red, fjac, ldfjac, ipvt, diag_red, qtf,
+      CALL lmpar (n, fjac, ldfjac, ipvt, diag, qtf,
      1            delta, par, wa1, wa2, wa3, wa4)
-     
 !
 !     store the direction p and x + p. calculate the norm of p.
 !
-
       IF (par .eq. zero) wa1 = wa1*scale_factor
       wa1 = -wa1
-      wa2 = x
-      wa3 = 0
-      DO i = 1, n_red
-         j = jac_index(i)
-         wa2(j) = x(j) + wa1(i)
-         wa3(j) = diag(j)*wa1(i)
-      END DO
-      IF (PRESENT(xvmin)) THEN
-         WHERE(wa2 < xvmin) wa3 = 0
-         WHERE(wa2 < xvmin) wa2 = xvmin
-      END IF
-      IF (PRESENT(xvmax)) THEN
-         WHERE(wa2 > xvmax) wa3 = 0
-         WHERE(wa2 > xvmax) wa2 = xvmax
-      END IF
+      wa2 = x + wa1
+      wa3 = diag*wa1
       pnorm = enorm(n,wa3)
-      
 !
 !     evaluate the function at x + p and calculate its norm.
 !     Only do for 0 < myid < n processors (the MPI_COMM_WORKERS group),
+!     which the v3post routines are expecting. To use other processors, must
+!     pass the communicator id (maybe through hi bits of iflag, using IAND...)
+!
+      MPI_COMM_WORKERS = MPI_COMM_WORLD
       iflag = iproc
-      CALL MPI_BARRIER(MPI_COMM_STEL,ierr)
-      IF (ierr .ne. 0) CALL mpi_stel_abort(ierr)   
       CALL fcn (m, n, wa2, wa4, iflag, nfev)
-      CALL MPI_BARRIER(MPI_COMM_STEL,ierr)
-      IF (ierr .ne. 0) CALL mpi_stel_abort(ierr)      
-      fnorm1 = enorm(m,wa4)
-     
-
-!
-!     Create the xvec.dat file
-!
-      j=0; iunit = 27; istat = 0
-      DO j = 0, numprocs-1
-         IF (myid == j) THEN
-            CALL safe_open(iunit,istat,'xvec.dat','unknown',
-     1                     'formatted', ACCESS_IN='APPEND')
-            WRITE(iunit,'(2(2X,I5.5))') n,nfev+j+1 ! +1 necessary to because j is PID not iteration number
-            WRITE(iunit,'(10ES22.12E3)') wa2(1:n)
-            WRITE(iunit,'(ES22.12E3)') fnorm1
-            CLOSE(iunit)
-         END IF
-         CALL MPI_BARRIER(MPI_COMM_STEL,ierr)
-         IF (ierr .ne. 0) CALL mpi_stel_abort(ierr)
-      END DO
 
 !
 !     Gather iflag information to all processors and check for iflag < 0
 !
       CALL MPI_ALLGATHER(iflag, 1, MPI_INTEGER, iflag_array, 1,
-     1     MPI_INTEGER, MPI_COMM_STEL, ierr)
-      IF (ierr .ne. 0) CALL mpi_stel_abort(ierr)
+     1     MPI_INTEGER, MPI_COMM_WORLD, ierr)
+      IF (ierr .ne. 0) STOP 'MPI_ALLGATHER failed in levmarq_param_mp'
 
-      iflag = minval(iflag_array)
-      if (iflag .lt. 0) return
+      fnorm1 = enorm(m,wa4)
 
 !
 !     Find processor with minimum fnorm1 value
 !
       CALL MPI_ALLGATHER(fnorm1, 1, MPI_REAL8, fnorm_array, 1,
-     1     MPI_REAL8, MPI_COMM_STEL, ierr)
-      IF (ierr .ne. 0) CALL mpi_stel_abort(ierr)
-      iflag_array(1:1) = MINLOC(fnorm_array)
-      iproc_min = iflag_array(1) - 1
-      CALL MPI_ALLGATHER(delta, 1, MPI_REAL8, delta_array, 1,
-     1     MPI_REAL8, MPI_COMM_STEL, ierr)                             !PPPL
-      IF (ierr .ne. 0) CALL mpi_stel_abort(ierr)             !PPPL
-      CALL MPI_ALLGATHER(par, 1, MPI_REAL8, par_array, 1,
-     1     MPI_REAL8, MPI_COMM_STEL, ierr)                             !PPPL
-      IF (ierr .ne. 0) CALL mpi_stel_abort(ierr)             !PPPL
+     1     MPI_REAL8, MPI_COMM_WORLD, ierr)
+      IF (ierr .ne. 0) STOP 'MPI_ALLGATHER failed in LMDIF'
+      iflag_min = MINLOC(fnorm_array)
+      iproc_min = iflag_min(1) - 1
 
-      !PPPL WAY
-      IF( myid .eq. master) THEN
-         DO j=1, num_lev
-            ext = ' '
-            IF (j == 0) ext = '*'
-            low_mark = ' '
-            IF (j == iproc_min+1) low_mark = '*'
+!      iflag = MINVAL(iflag_array)
+!      IF (iflag .lt. 0) GOTO 100
 
-            WRITE(6, '(2x,i6,8x,i3,4x,2(3x,es12.4,a),(3x,es12.4))')
-     1         j+nfev, j, fnorm_array(j)**2, low_mark,
-     2         par_array(j), ext, delta_array(j)
-         END DO
-         WRITE(6, '(a)') '  '
+      ext = ' '
+      low_mark = ' '
+      IF (myid .eq. master) ext = '*'
+      IF (iproc .eq. iproc_min) low_mark = '*'
+      iproc = iproc+1
+      WRITE(6, '(2x,i6,8x,i3,4x,2(3x,1es12.4,a),3x,1es12.4)')
+     1         iproc+nfev, iproc, fnorm1**2, low_mark, par, ext,
+     2         delta
 
-         CALL flush(6)
-      END IF
-      
-      fnorm1 = fnorm_array(iproc_min+1)                                 !PPPL
-      !delta  = delta_array(iproc_min+1)                                 !PPPL
-      !par    = par_array(iproc_min+1)                                   !PPPL
-                                  !PPPL
-      
-      
-!
-!     Calc lev_step_range (PPPL)
-!
-      lev_step_range = 0                                                
-      iflag_array(1:1) = maxloc(delta_array)                             
-      if( iproc_min == iflag_array(1) - 1 ) then
-         lev_step_range = 1
-      else if( iproc_min == iflag_array(numprocs) - 1 ) then
-         lev_step_range = -1
-      endif
-      
-      ! Only update delta and par if actual minimum found
-      IF (fnorm1**2 < 1.0E12) 
-     1      delta  = delta_array(iproc_min+1)                                 !PPPL
-      IF (fnorm1**2 < 1.0E12)
-     1      par    = par_array(iproc_min+1) 
-      IF (fnorm1**2 >= 1.0E12)  lev_step_range = 0     
+      CALL flush(6)
+
+      fnorm1 = MINVAL(fnorm_array)
 
  100  CONTINUE
- 
-      DEALLOCATE (iflag_array, fnorm_array, delta_array, par_array,
-     1            diag_red)     !PPPL
+
+      DEALLOCATE (iflag_array, fnorm_array)
 
 !
 !     Broadcast all relevant scalars and arrays from the
@@ -244,45 +144,49 @@ C-----------------------------------------------
 !     ALL processors. wa3 is overwritten...
 !
       CALL MPI_BCAST(pnorm,1,MPI_REAL8,iproc_min,
-     1     MPI_COMM_STEL,ierr)
+     1     MPI_COMM_WORLD,ierr)
       IF (ierr .ne. 0) GOTO 3000
-      CALL MPI_BCAST(x,n,MPI_REAL8,iproc_min,
-     1     MPI_COMM_STEL,ierr)
+      CALL MPI_BCAST(par,1,MPI_REAL8,iproc_min,
+     1     MPI_COMM_WORLD,ierr)
+      IF (ierr .ne. 0) GOTO 3000
+      CALL MPI_BCAST(delta,1,MPI_REAL8,iproc_min,
+     1     MPI_COMM_WORLD,ierr)
       IF (ierr .ne. 0) GOTO 3000
       CALL MPI_BCAST(wa1,n,MPI_REAL8,iproc_min,
-     1     MPI_COMM_STEL,ierr)
+     1     MPI_COMM_WORLD,ierr)
       IF (ierr .ne. 0) GOTO 3000
       CALL MPI_BCAST(wa2,n,MPI_REAL8,iproc_min,
-     1     MPI_COMM_STEL,ierr)
+     1     MPI_COMM_WORLD,ierr)
       IF (ierr .ne. 0) GOTO 3000
       CALL MPI_BCAST(wa4,m,MPI_REAL8,iproc_min,
-     1     MPI_COMM_STEL,ierr)
+     1     MPI_COMM_WORLD,ierr)
       IF (ierr .ne. 0) GOTO 3000
+
+!
+!     BROADCAST JACOBIAN fjac(:n,j), j=1,n ROW BY ROW (CHANGED IN LMPAR) TO OTHER PROCESSES
+!
+      DO j = 1, n
+         IF (myid .eq. iproc_min) wa3(:n) = fjac(:n,j)
+         CALL MPI_BCAST(wa3, n, MPI_REAL8, iproc_min,
+     1        MPI_COMM_WORLD, ierr)
+         IF (ierr .ne. 0) GOTO 3000
+         IF (myid .ne. iproc_min) fjac(:n,j) = wa3(:n)
+      END DO
 
 !
 !     CLEANUP AFTER LEVENBERG-MARQUARDT LOOP AS NEEDED (WA4 IS NOT CHANGED)
 !
-   
-      nfev_output = nfev
-      IF (myid == iproc_min .and. fnorm_min > fnorm1) THEN
-         iflag = flag_cleanup_lev        ! SAL 6/26/12
-         nfev_output  = nfev+iproc_min+1
-      ELSE
-         iflag = -3  ! This is a dummy so everyone else does nothing.
-      END IF
-      CALL fcn (m, n, wa2, wa4, iflag, nfev_output)             !Contains Bcast Barrier
-      CALL MPI_BARRIER(MPI_COMM_STEL,ierr)
-      IF (ierr .ne. 0) CALL mpi_stel_abort(ierr)
+      iflag = flag_cleanup
+      CALL fcn (m, n, x, wa4, iflag, nfev)             !Contains Bcast Barrier
 
       nfev = nfev + num_lev
-
 
       RETURN
 
  3000 CONTINUE
 
       WRITE (6, *) 'MPI_BCAST error in LEVMARQ_PARAM_MP, ierr = ', ierr
-      CALL mpi_stel_abort(ierr)
+      STOP
 #endif
       END SUBROUTINE levmarq_param_mp
 
@@ -297,7 +201,7 @@ C-----------------------------------------------
       REAL(rprec) :: time
       REAL(rprec), TARGET :: x(n1), wa1(n1), wa2(n1), wa3(n1), wa4(m1)
       EXTERNAL fcn
-#ifndef MPI_OPT
+#if !defined(MPI_OPT)
 C-----------------------------------------------
 C   L o c a l   P a r a m e t e r s
 C-----------------------------------------------
@@ -305,7 +209,7 @@ C-----------------------------------------------
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
-      INTEGER :: j, k, istat, iread, ic1, ic2, irate, count_max,
+      INTEGER :: j, istat, iread, ic1, ic2, irate, count_max,
      1     jmin
       REAL(rprec), DIMENSION(num_lm_params) ::
      1      fnorm_min, pnorm_min, delta_min, par_min

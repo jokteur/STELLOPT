@@ -1,113 +1,127 @@
       SUBROUTINE de_mpi(np, fcn, funcval)
-      USE de_mod, ONLY: rprec, n_free,nopt,ui_XC,nfev
+      USE de_mod
       USE mpi_params
-      USE mpi_inc
       IMPLICIT NONE
-      INTEGER, INTENT(in) :: np
-      REAL(rprec),INTENT(inout) :: funcval(np)
+#if defined(MPI_OPT)
+      include 'mpif.h'                                       !mpi stuff
+#endif
+      INTEGER :: np
+      REAL(rprec) :: funcval(np)
       EXTERNAL fcn
 
 #if defined(MPI_OPT)
       INTEGER :: status(MPI_STATUS_size)                     !mpi stuff
-      INTEGER :: i,  j, iflag, ikey                                !mpi stuff
+      INTEGER :: i,  j, iflag                                !mpi stuff
       INTEGER :: numsent, sender, ierr                       !mpi stuff
       INTEGER :: anstype, column                             !mpi stuff
-      REAL(rprec) :: chisq_temp
       REAL(rprec), DIMENSION(n_free) :: x
       REAL(rprec), DIMENSION(nopt) :: fvec
 
-      
-      fvec = 0; x=0; ierr = 0; ierr_mpi = 0; iflag = 0
-!
 !******************************************
 !
 !  mpi : set barrier so ALL processors get here before starting
 !
-      CALL MPI_BARRIER(MPI_COMM_STEL, ierr_mpi)                 !mpi stuff
-      IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
-      call MPI_COMM_RANK( MPI_COMM_STEL, myid, ierr_mpi )       !mpi stuff
-      IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
-      call MPI_COMM_SIZE( MPI_COMM_STEL, numprocs, ierr_mpi )   !mpi stuff
-      IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
+      CALL MPI_BARRIER(MPI_COMM_WORLD, ierr)                 !mpi stuff
 
 !******************************************
 !
 !     ****Master node controls this portion of the code****
-!     
+!
       IF (myid .eq. master) THEN
-         numsent = 0
+         numsent = 0    !numsent is a counter used to track how many
+                        !jobs have been sent to workers
+c
+c     SEND forward difference displacements from master to each
+c           worker process. Tag with these with the column number.
+c
          DO j = 1,MIN(numprocs-1,np)
-             CALL MPI_SEND(j,1,MPI_INTEGER,j,j,MPI_COMM_STEL,ierr_mpi)
-             IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
-             numsent = numsent + 1
-         END DO
-
-         ! Now Enter the que loop
-         DO j = 1, np
-            CALL MPI_RECV(chisq_temp,1, MPI_REAL8, MPI_ANY_SOURCE,
-     1                    MPI_ANY_TAG,MPI_COMM_STEL,status,ierr_mpi)
-            IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
+            x(:) = ui_XC(j,:)
+            CALL MPI_SEND(x, n_free, MPI_REAL8, j,
+     1                  j, MPI_COMM_WORLD, ierr)
+            IF (ierr .ne. 0) STOP 'MPI_SEND error(1) in de_mpi'
+            numsent = numsent+1
+         END DO          !j = 1,MIN(numprocs-1,n)
+c
+c      Looping through the columns, collect answers from the workers.
+c      As answers are received, new uncalculated columns are sent
+c      out to these same workers.
+c
+         DO j = 1,np
+            CALL MPI_RECV(fvec, nopt, MPI_REAL8,
+     1           MPI_any_SOURCE, MPI_any_TAG,
+     2           MPI_COMM_WORLD, status, ierr)
+            IF (ierr .ne. 0) STOP 'MPI_RECV error(1) in de_mpi'
             sender     = status(MPI_SOURCE)
-            anstype    = status(MPI_TAG)
+            anstype    = status(MPI_TAG)       ! column is tag value
             IF (anstype .gt. np) STOP 'ANSTYPE > NP IN de_mpi'
 
-            funcval(anstype) = chisq_temp
-            write (6, '(2x,i6,8x,i3,7x,1es12.4)') anstype,
-     1             sender, funcval(anstype)
-            CALL FLUSH(6)
+            funcval(anstype) = SUM(fvec(:nopt)**2)
+c           WRITE(6,'(a,1pe10.3,a,i3,a,i3)')' FUNCVAL = ',
+c    1       funcval(anstype),
+c    2      ' for iteration ', anstype+nfev,' processor = ', sender
 
-            ! Send more work
+c
+c           If more columns are left, then send another column to the worker(sender)
+c           that just sent in an answer
+c
             IF (numsent .lt. np) THEN
                numsent = numsent+1
-               CALL MPI_SEND(numsent, 1, MPI_INTEGER,
-     1                      sender, numsent, MPI_COMM_STEL, ierr_mpi)
-               IF (ierr_mpi /= MPI_SUCCESS)
-     1              CALL mpi_stel_abort(ierr_mpi)
-            ELSE
-               column = 0
-               CALL MPI_SEND(column, 1, MPI_INTEGER,
-     1                      sender, numsent, MPI_COMM_STEL, ierr_mpi)
-               IF (ierr_mpi /= MPI_SUCCESS) 
-     1             CALL mpi_stel_abort(ierr_mpi)
-            ENDIF
-         END DO
+               x(:) = ui_XC(numsent,:)
+
+               CALL MPI_SEND(x, n_free, MPI_REAL8,
+     1                       sender, numsent, MPI_COMM_WORLD, ierr)
+               IF (ierr .ne. 0) STOP 'MPI_SEND error(2) in de_mpi'
+
+            ELSE                ! Tell worker that there is no more work to DO
+
+               CALL MPI_SEND(MPI_BOTTOM, 0, MPI_REAL8,
+     1                       sender, 0, MPI_COMM_WORLD, ierr)
+               IF (ierr .ne. 0) STOP 'MPI_end error(3) in de_mpi'
+            ENDIF      ! IF( myid .eq. master ) THEN
+         END DO     ! DO j = 1,n
+c
 c     ****Worker portion of the code****
 c        Skip this when processor id exceeds work to be done
-      ELSE IF (myid .le. np) THEN
-         DO
-            j=-1
-            CALL MPI_RECV(j,1,MPI_INTEGER,master,MPI_ANY_TAG,
-     1                 MPI_COMM_STEL,status,ierr_mpi)
-            PRINT *,j
-            IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
-            IF (j .gt. 0) THEN
-               x(:) = ui_XC(j,:)
-               fvec(:) = 0
-               iflag   = j
-               !PRINT *,'myid',nopt, n_free, x, fvec, iflag, nfev
-               !CALL fcn(nopt, n_free, x, fvec, iflag, nfev)
-               chisq_temp = SUM(fvec*fvec)
-               chisq_temp = 5*i+chisq_temp*.25
-               CALL MPI_SEND(chisq_temp,1, MPI_REAL8, master,
-     1                       j, MPI_COMM_STEL, ierr_mpi)
-               IF (ierr_mpi /= MPI_SUCCESS)
-     1                  CALL mpi_stel_abort(ierr_mpi)
-            ELSE 
-               EXIT
-            END IF
-         END DO
-      END IF
+c
+      ELSE IF (myid .le. np) THEN               !!IF( myid .ne. master )
+c
+c        Otherwise accept the next available column, check the tag,
+c        and IF the tag is non-zero CALL SUBROUTINE fcn.
+c        If the tag is zero, there are no more columns
+c        and worker skips to the END.
+c
+ 90      CALL MPI_RECV(x, n_free, MPI_REAL8, master,
+     1                 MPI_any_TAG, MPI_COMM_WORLD, status, ierr)
+         IF (ierr .ne. 0) STOP 'MPI_RECV error(2) in de_mpi'
+
+         column = status(MPI_TAG)                !!ID of pseudo-processor issuing this message
+         IF (column .eq. 0) THEN
+            GOTO 200
+         ELSE
+            iflag = column
+c           CALL the chisq fcn for the portion of displacement vector which
+c           was just received. Note that WA stores the local fvec_min array
+
+            CALL fcn(nopt, n_free, x, fvec, iflag, nfev)
+            IF (iflag.ne.0) GOTO 300
+c
+c           Send this function evaluation back to the master process tagged
+c           with the column number so the master knows where to put it
+c
+            CALL MPI_SEND(fvec, nopt, MPI_REAL8, master,
+     1                    column, MPI_COMM_WORLD, ierr)
+            IF (ierr .ne. 0) STOP 'MPI_SEND error(4) in de_mpi'
+            GOTO 90    !Return to 90 and check IF master process has sent any more jobs
+         END IF
+ 200     CONTINUE
+      ENDIF       ! IF( myid .ne. master )
 
 !
 !     Broadcast the funcval array to all processors FROM master
 !
-      PRINT *,myid,' AT BARRIER'; CALL FLUSH(6)
-      CALL MPI_BARRIER(MPI_COMM_STEL, ierr_mpi)                 !mpi stuff
-      IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
       CALL MPI_BCAST(funcval, np, MPI_REAL8, master,
-     1     MPI_COMM_STEL, ierr_mpi)
-      IF (ierr_mpi /= MPI_SUCCESS) CALL mpi_stel_abort(ierr_mpi)
-      IF (ierr_mpi .ne. 0) GOTO 100
+     1     MPI_COMM_WORLD, ierr)
+      IF (ierr .ne. 0) GOTO 100
 
       RETURN
 

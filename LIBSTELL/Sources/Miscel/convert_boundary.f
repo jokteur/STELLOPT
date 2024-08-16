@@ -1,4 +1,4 @@
-      SUBROUTINE convert_boundary(rbc, zbs, rhobc, mpol, ntor,pexp)
+      SUBROUTINE convert_boundary(rbc, zbs, rhobc, mpol, ntor)
       USE stel_kinds
       IMPLICIT NONE
 !-----------------------------------------------
@@ -9,17 +9,16 @@
      1   rbc, zbs
       REAL(rprec), DIMENSION(-ntor:ntor,0:mpol), INTENT(out) ::
      1   rhobc
-      INTEGER, INTENT(in), OPTIONAL :: pexp
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-!      INTEGER, PARAMETER :: pexp = 2
+      INTEGER, PARAMETER :: pexp = 4
       REAL(rprec), PARAMETER :: p25 = 0.25_dp, p50 = 0.50_dp,
      1  zero = 0, one = 1
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: mcount, ncount, m_bdy, n_bdy, texp
+      INTEGER :: mcount, ncount, m_bdy, n_bdy
       REAL(rprec), DIMENSION(0:mpol) :: t1, t2
 !-----------------------------------------------
 !
@@ -40,10 +39,6 @@
 !     First determine maximum m-number in boundary representation
 !     DO NOT exceed this mmax-1 in rhobc
 !
-   
-      texp = 4
-      IF (PRESENT(pexp)) texp = pexp
-         
       m_bdy = 0
       n_bdy = 0
       DO mcount = 1, mpol
@@ -60,9 +55,9 @@
 
       DO mcount = 1, mpol
         t1(mcount) = ( REAL(mcount-1,rprec)
-     1        /REAL(mcount,rprec) )**texp
+     1        /REAL(mcount,rprec) )**pexp
         t2(mcount) = ( REAL(mcount+1,rprec)
-     1        /REAL(mcount,rprec) )**texp
+     1        /REAL(mcount,rprec) )**pexp
       END DO
       t1(1) = one
 

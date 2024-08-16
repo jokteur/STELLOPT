@@ -48,6 +48,6 @@ C-----------------------------------------------
  101  FORMAT (2x,a,l2)
  110  FORMAT (2x, 16i5)
  200  FORMAT (2x,a,i5)
- 210  FORMAT (2x,a,1pe21.14)
+ 210  FORMAT (2x,a,1pe20.14)
 
       END SUBROUTINE write_gade_nml
