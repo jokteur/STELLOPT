@@ -21,7 +21,7 @@ c  exterior Neumann problem
 c
       CALL second0(tbexon)
 
-      IF (.not.associated(bvac)) STOP 'BVAC unallocated in bextern'
+      IF (.not.ALLOCATED(bvac)) STOP 'BVAC unallocated in bextern'
       ALLOCATE (brad(nuv3), bphi(nuv3), bz(nuv3), stat=i)
       IF (i .ne. 0) STOP 'allocation error in bextern'
 
@@ -32,7 +32,7 @@ c
 !     COMPUTE B FROM COILS ON THE PLASMA BOUNDARY
 !
 
-      CALL becoil (r1b,z1b,brad,bphi,bz,bvac(1,1),bvac(1,2),bvac(1,3),         
+      CALL becoil (r1b,z1b,brad,bphi,bz,bvac(1,1),bvac(1,2),bvac(1,3),         &
      &             lscreen)
 
 !

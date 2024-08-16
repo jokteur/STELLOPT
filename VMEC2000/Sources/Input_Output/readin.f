@@ -350,10 +350,6 @@ C-----------------------------------------------
       ENDIF
 
       ns_maxval = nsmin
-
-#ifdef _FLOW
-      print *, 'hello world'
-#endif
 !
 !     WRITE OUT DATA TO THREED1 FILE
 !
@@ -413,14 +409,14 @@ C-----------------------------------------------
          IF (nextcur .gt. 0) THEN
             WRITE(nthreed, "(' EXTERNAL CURRENTS',/,1x,17('-'))")
             ni = 0
-            IF (associated(curlabel))
+            IF (ALLOCATED(curlabel))
      1         ni = MAXVAL(LEN_TRIM(curlabel(1:nextcur)))
             ni = MAX(ni+4, 14)
             WRITE (line,  '(a,i2.2,a)') "(5a",ni,")"
             WRITE (line2, '(a,i2.2,a)') "(5(",ni-12,"x,1p,e12.4))"
             DO i = 1,nextcur,5
                ni = MIN(i+4, nextcur)
-               IF (associated(curlabel))
+               IF (ALLOCATED(curlabel))
      1         WRITE (nthreed, line, iostat=mj) 
      2               (TRIM(curlabel(n)),n=i,ni)
                WRITE (nthreed, line2,iostat=mj) 
@@ -520,60 +516,24 @@ C-----------------------------------------------
  150  FORMAT(/' NORMALIZED TOROIDAL FLUX COEFFICIENTS aphi',
      1   ' (EXPANSION IN S):',/,1x,35('-'))
 #ifdef _ANIMEC
-      SELECT CASE(TRIM(ph_type))
-      CASE ('Akima_spline','cubic_spline')
-         WRITE(nthreed,"(' ah_aux_s is' )")
-         n = NonZeroLen(ah_aux_s,SIZE(ah_aux_s))
-         WRITE(nthreed,135)(ah_aux_s(i),i=1, n)
-         n = NonZeroLen(ah_aux_f,SIZE(ah_aux_f))
-         WRITE(nthreed,"(' ah_aux_f is' )")
-         WRITE(nthreed,135)(ah_aux_f(i),i=1, n)
-      CASE DEFAULT
-         n = NonZeroLen(ah,SIZE(ah))
-         WRITE(nthreed,135)(ah(i-1),i=1,n)
-      END SELECT
-      SELECT CASE(TRIM(pt_type))
-      CASE ('Akima_spline','cubic_spline')
-         WRITE(nthreed,"(' at_aux_s is' )")
-         n = NonZeroLen(at_aux_s,SIZE(at_aux_s))
-         WRITE(nthreed,135)(at_aux_s(i),i=1, n)
-         n = NonZeroLen(at_aux_f,SIZE(at_aux_f))
-         WRITE(nthreed,"(' at_aux_f is' )")
-         WRITE(nthreed,135)(at_aux_f(i),i=1, n)
-      CASE DEFAULT
-         n = NonZeroLen(at,SIZE(at))
-         WRITE(nthreed,135)(at(i-1),i=1,n)
-      END SELECT
+      IF (ANY(ah .ne. zero)) THEN
+         WRITE(nthreed,160)
+         WRITE(nthreed,135)(ah(i-1),i=1, SIZE(ah))
+         WRITE(nthreed,165)
+         WRITE(nthreed,135)(at(i-1),i=1, SIZE(at))
+      END IF
 
  160  FORMAT(' HOT PARTICLE PRESSURE COEFFICIENTS ah',
      1  ' (EXPANSION IN TOROIDAL FLUX):',/,1x,35('-'))
  165  FORMAT(' HOT PARTICLE TPERP/T|| COEFFICIENTS at',
      1  ' (EXPANSION IN TOROIDAL FLUX):',/,1x,35('-'))
 #elif defined _FLOW
-      SELECT CASE(TRIM(ph_type))
-      CASE ('Akima_spline','cubic_spline')
-         WRITE(nthreed,"(' ah_aux_s is' )")
-         n = NonZeroLen(ah_aux_s,SIZE(ah_aux_s))
-         WRITE(nthreed,135)(ah_aux_s(i),i=1, n)
-         n = NonZeroLen(ah_aux_f,SIZE(ah_aux_f))
-         WRITE(nthreed,"(' ah_aux_f is' )")
-         WRITE(nthreed,135)(ah_aux_f(i),i=1, n)
-      CASE DEFAULT
-         n = NonZeroLen(ah,SIZE(ah))
-         WRITE(nthreed,135)(ah(i-1),i=1,n)
-      END SELECT
-      SELECT CASE(TRIM(pt_type))
-      CASE ('Akima_spline','cubic_spline')
-         WRITE(nthreed,"(' at_aux_s is' )")
-         n = NonZeroLen(at_aux_s,SIZE(at_aux_s))
-         WRITE(nthreed,135)(at_aux_s(i),i=1, n)
-         n = NonZeroLen(at_aux_f,SIZE(at_aux_f))
-         WRITE(nthreed,"(' at_aux_f is' )")
-         WRITE(nthreed,135)(at_aux_f(i),i=1, n)
-      CASE DEFAULT
-         n = NonZeroLen(at,SIZE(at))
-         WRITE(nthreed,135)(at(i-1),i=1,n)
-      END SELECT
+      IF (ANY(ah .ne. zero)) THEN
+         WRITE(nthreed,170)
+         WRITE(nthreed,135)(ah(i-1),i=1, SIZE(ah))
+         WRITE(nthreed,175)
+         WRITE(nthreed,135)(at(i-1),i=1, SIZE(at))
+      END IF
 
  170  FORMAT(' TOROIDAL FLOW FREQUENCY COEFFICIENTS ah',
      1  ' (EXPANSION IN TOROIDAL FLUX):',/,1x,35('-'))
@@ -797,7 +757,7 @@ C-----------------------------------------------
       CALL second0(treadoff)
       timer(tread) = timer(tread) + (treadoff-treadon)
 #if defined(SKS)
-      CALL MPI_Bcast(LPRECOND,1,MPI_LOGICAL,0,RUNVMEC_COMM_WORLD,            
+      CALL MPI_Bcast(LPRECOND,1,MPI_LOGICAL,0,RUNVMEC_COMM_WORLD,            &
      &               MPI_ERR)
         readin_time = timer(tread)
 #endif

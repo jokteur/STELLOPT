@@ -15,12 +15,12 @@ MODULE parallel_vmec_module
   INTEGER :: blocksize, ntmaxblocksize
   INTEGER :: tlglob, trglob, t1lglob, t1rglob, t2lglob, t2rglob
   INTEGER :: nuvmin, nuvmax, nuv3min, nuv3max 
-  INTEGER(kind=4) :: MPI_ERR
+  INTEGER :: MPI_ERR
 #if defined(MPI_OPT)
   INTEGER :: MPI_STAT(MPI_STATUS_SIZE)
 #endif
   INTEGER :: RUNVMEC_COMM_WORLD
-  INTEGER(kind=4) :: NS_COMM
+  INTEGER :: NS_COMM
   INTEGER :: VAC_COMM
   INTEGER :: TWODCOMM, px, py
   INTEGER :: NS_RESLTN=0

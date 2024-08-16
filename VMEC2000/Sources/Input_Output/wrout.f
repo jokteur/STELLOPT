@@ -37,23 +37,21 @@
       USE read_wout_mod, ONLY: Compute_Currents,
 	1  vn_version, vn_extension, vn_mgrid,
      1  vn_magen, 
-#ifdef _ANIMEC
+#IFDEF _ANIMEC
      &   vn_wpar, vn_bcrit,
-#else
+#ELSE
      &   vn_therm,
-#endif
+#ENDIF
      &   vn_gam, vn_maxr, vn_minr, vn_maxz, vn_fp,
-#ifdef _FLOW
+#IFDEF _FLOW
      &   vn_machsq,
-#endif
+#ENDIF
      2  vn_radnod, vn_polmod, vn_tormod, vn_maxmod, vn_maxit, vn_actit,
      3  vn_asym, vn_recon, vn_free, vn_error, vn_aspect, vn_beta, 
      4  vn_pbeta, vn_tbeta, vn_abeta, vn_b0, vn_rbt0, vn_maxmod_nyq,
      5  vn_rbt1, vn_sgs, vn_lar, vn_modB, vn_ctor, vn_amin, vn_Rmaj, 
      5  vn_potsin, vn_potcos, vn_maxpot, vn_xmpot, vn_xnpot,             !diagno/extender output (SPH071414)
      6  vn_vol, vn_mse, vn_thom, vn_ac, vn_ai, vn_am, vn_ah, vn_atuname,  
-     6  vn_ah_aux_s, vn_ah_aux_f, vn_ph_type,
-     6  vn_at_aux_s, vn_at_aux_f, vn_pt_type,
      6  vn_rfp, vn_pmass_type, vn_pcurr_type, vn_piota_type,
      6  vn_am_aux_s, vn_am_aux_f, vn_ac_aux_s, vn_ac_aux_f, 
      6  vn_ai_aux_s, vn_ai_aux_f, 
@@ -62,15 +60,15 @@
      7  vn_racc, vn_zacs, vn_racs, vn_zacc, vn_iotaf, vn_qfact,
      8  vn_presf, vn_phi, vn_phipf, vn_jcuru, vn_jcurv, vn_iotah,
      8  vn_chi, vn_chipf, 
-#ifdef _FLOW
+#IFDEF _FLOW
      &  vn_bucof, vn_bvcof, 
-#endif
+#ENDIF
      9  vn_mass, 
-#ifdef _FLOW
+#IFDEF _FLOW
      &  vn_pmap,  vn_omega, vn_tpotb, vn_presh,  vn_rotfot, 
-#else
+#ELSE
      &  vn_presh,
-#endif
+#ENDIF
      &  vn_betah, vn_buco, vn_bvco, vn_vp, vn_specw, 
      A  vn_phip, vn_jdotb, vn_bdotb, vn_overr, vn_bgrv, vn_merc, 
      B  vn_mshear, vn_mwell, vn_mcurr, vn_mgeo, vn_equif, vn_fsq, 
@@ -98,15 +96,15 @@
 
 
      1   ln_magen, 
-#ifdef _ANIMEC
+#IFDEF _ANIMEC
      &   ln_wpar, ln_bcrit,
-#else
+#ELSE
      &   ln_therm,
-#endif
+#ENDIF
      &   ln_gam, ln_maxr, ln_minr, ln_maxz, ln_fp,
-#ifdef _FLOW
+#IFDEF _FLOW
      &   ln_machsq,
-#endif
+#ENDIF
      2  ln_radnod, ln_polmod, ln_tormod, ln_maxmod, ln_maxit, ln_actit,
      2  ln_maxpot, ln_potsin, ln_potcos,
      3  ln_asym, ln_recon, ln_free, ln_error, ln_aspect, ln_beta, 
@@ -119,15 +117,15 @@
      7  ln_am_aux_s, ln_am_aux_f, ln_ac_aux_s, ln_ac_aux_f, 
      7  ln_ai_aux_s, ln_ai_aux_f, ln_chi, ln_chipf, 
      8  ln_presf, ln_phi, ln_phipf, ln_jcuru, ln_jcurv, ln_iotah,
-#ifdef _FLOW
+#IFDEF _FLOW
      &  ln_bucof, ln_bvcof, 
-#endif
+#ENDIF
      9  ln_mass, 
-#ifdef _FLOW
+#IFDEF _FLOW
      &  ln_pmap,  ln_omega, ln_tpotb, ln_presh,  ln_rotfot, 
-#else
+#ELSE
      &  ln_presh,
-#endif
+#ENDIF
      &  ln_betah, ln_buco, ln_bvco, ln_vp, ln_specw, 
      A  ln_vol, ln_phip, ln_jdotb, ln_bdotb, ln_bgrv, ln_merc, 
      B  ln_mshear, ln_mwell, ln_mcurr, ln_mgeo, ln_equif, ln_fsq, 
@@ -152,7 +150,7 @@
      &  ln_bsupumns_sur, ln_bsupvmns_sur,
      &  ln_currumnc, ln_currumns, ln_currvmnc, ln_currvmns
 
-!------------------DEC$ else !to use safe_open_mod in any case (J.Geiger)
+!------------------DEC$ ELSE !to use safe_open_mod in any case (J.Geiger)
 #endif
       USE safe_open_mod
       USE mgrid_mod
@@ -180,7 +178,7 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
       REAL(dp), PARAMETER :: c1p5 = 1.5_dp
-      ! LOGICAL :: lnyquist = .FALSE.                               !=false, suppress nyquist stuff
+      LOGICAL :: lnyquist = .FALSE.                               !=false, suppress nyquist stuff
 #ifdef NETCDF
       CHARACTER(LEN=*), PARAMETER, DIMENSION(1) ::
      1             r1dim = (/'radius'/), mn1dim = (/'mn_mode'/),
@@ -285,7 +283,7 @@
          mnyq0 = mnyq
          nnyq0 = nnyq
          xm_nyq0 => xm_nyq; xn_nyq0 => xn_nyq
-      else
+      ELSE
          mnmax_nyq0 = mnmax
          mnyq0 = mpol1
          nnyq0 = ntor
@@ -311,9 +309,9 @@
          ALLOCATE (bsubumnc_sur(mnmax_nyq0), bsubvmnc_sur(mnmax_nyq0))
          ALLOCATE (bsupumnc_sur(mnmax_nyq0), bsupvmnc_sur(mnmax_nyq0))
          IF (lasym) THEN
-            ALLOCATE (bsubumns_sur(mnmax_nyq0),                                
+            ALLOCATE (bsubumns_sur(mnmax_nyq0),                                &
      &                bsubvmns_sur(mnmax_nyq0))
-            ALLOCATE (bsupumns_sur(mnmax_nyq0),                                
+            ALLOCATE (bsupumns_sur(mnmax_nyq0),                                &
      &                bsupvmns_sur(mnmax_nyq0))
          END IF
       END IF
@@ -415,21 +413,21 @@
       CALL cdf_define(nwout, vn_pmass_type, pmass_type)
       CALL cdf_define(nwout, vn_piota_type, piota_type)
       CALL cdf_define(nwout, vn_magen, wb)
-#ifdef _ANIMEC
+#IFDEF _ANIMEC
       CALL cdf_define(nwout, vn_wpar, wpar)
       CALL cdf_define(nwout, vn_bcrit, bcrit)
       CALL cdf_setatt(nwout, vn_bcrit, ln_bcrit)
-#else
+#ELSE
       CALL cdf_define(nwout, vn_therm, wp)
-#endif
+#ENDIF
       CALL cdf_define(nwout, vn_gam, gamma)
       CALL cdf_define(nwout, vn_maxr, rmax_surf)
       CALL cdf_define(nwout, vn_minr, rmin_surf)
       CALL cdf_define(nwout, vn_maxz, zmax_surf)
-#ifdef _FLOW
+#IFDEF _FLOW
       CALL cdf_define(nwout, vn_machsq, bcrit)
       CALL cdf_setatt(nwout, vn_machsq, ln_machsq)
-#endif
+#ENDIF
       CALL cdf_define(nwout, vn_fp, nfp)
       CALL cdf_define(nwout, vn_radnod, ns)
       CALL cdf_define(nwout, vn_polmod, mpol)
@@ -570,12 +568,12 @@
       CALL cdf_define(nwout, vn_chipf, 
      1                phipf, dimname=r1dim)
       CALL cdf_setatt(nwout, vn_chipf, ln_chipf)
-#ifdef _FLOW
+#IFDEF _FLOW
       CALL cdf_define(nwout, vn_bucof, 
      1                bucof, dimname=r1dim)
       CALL cdf_define(nwout, vn_bvcof, 
      1                bvcof, dimname=r1dim)
-#endif
+#ENDIF
       CALL cdf_define(nwout, vn_jcuru, 
      1                jcuru, dimname=r1dim)
       CALL cdf_define(nwout, vn_jcurv, 
@@ -587,7 +585,7 @@
       CALL cdf_define(nwout, vn_mass, mass, 
      1                dimname=r1dim)
       CALL cdf_setatt(nwout, vn_mass, ln_mass)
-#ifdef _FLOW
+#IFDEF _FLOW
       CALL cdf_define(nwout, vn_pmap, pmap(1:ns), 
      1                dimname=r1dim)
       CALL cdf_setatt(nwout, vn_pmap, ln_pmap, units='not sure yet')
@@ -603,11 +601,11 @@
       CALL cdf_define(nwout, vn_rotfot, rotfot(1:ns), 
      1                dimname=r1dim)
       CALL cdf_setatt(nwout, vn_rotfot, ln_rotfot, units='not sure yet')
-#else
+#ELSE
       CALL cdf_define(nwout, vn_presh, pres(1:ns), 
      1                dimname=r1dim)
       CALL cdf_setatt(nwout, vn_presh, ln_presh, units='Pa')
-#endif
+#ENDIF
 
       CALL cdf_define(nwout, vn_betah, beta_vol, 
      1                dimname=r1dim)
@@ -663,7 +661,7 @@
             CALL cdf_setatt(nwout, vn_potcos, ln_potcos)
          END IF
 
-         IF (nextcur.gt.0 .and. associated(curlabel)) THEN
+         IF (nextcur.gt.0 .and. ALLOCATED(curlabel)) THEN
          CALL cdf_define(nwout, vn_curlab,
      1        curlabel(1:nextcur), dimname=currl)
          END IF
@@ -718,16 +716,16 @@
       CALL cdf_setatt(nwout, vn_currvmnc, ln_currvmnc)
 
       IF (lfreeb) THEN
-         CALL cdf_define(nwout, vn_bsubumnc_sur, bsubumnc_sur,                 
+         CALL cdf_define(nwout, vn_bsubumnc_sur, bsubumnc_sur,                 &
      &                   dimname=mn2dim)
          CALL cdf_setatt(nwout, vn_bsubumnc_sur, ln_bsubumnc_sur)
-         CALL cdf_define(nwout, vn_bsubvmnc_sur, bsubvmnc_sur,                 
+         CALL cdf_define(nwout, vn_bsubvmnc_sur, bsubvmnc_sur,                 &
      &                   dimname=mn2dim)
          CALL cdf_setatt(nwout, vn_bsubvmnc_sur, ln_bsubvmnc_sur)
-         CALL cdf_define(nwout, vn_bsupumnc_sur, bsupumnc_sur,                 
+         CALL cdf_define(nwout, vn_bsupumnc_sur, bsupumnc_sur,                 &
      &                   dimname=mn2dim)
          CALL cdf_setatt(nwout, vn_bsupumnc_sur, ln_bsupumnc_sur)
-         CALL cdf_define(nwout, vn_bsupvmnc_sur, bsupvmnc_sur,                 
+         CALL cdf_define(nwout, vn_bsupvmnc_sur, bsupvmnc_sur,                 &
      &                   dimname=mn2dim)
          CALL cdf_setatt(nwout, vn_bsupvmnc_sur, ln_bsupvmnc_sur)
       END IF
@@ -798,16 +796,16 @@
       CALL cdf_setatt(nwout, vn_currvmns, ln_currvmns)
 
       IF (lfreeb) THEN
-         CALL cdf_define(nwout, vn_bsubumns_sur, bsubumns_sur,                 
+         CALL cdf_define(nwout, vn_bsubumns_sur, bsubumns_sur,                 &
      &                   dimname=mn2dim)
          CALL cdf_setatt(nwout, vn_bsubumns_sur, ln_bsubumns_sur)
-         CALL cdf_define(nwout, vn_bsubvmns_sur, bsubvmns_sur,                 
+         CALL cdf_define(nwout, vn_bsubvmns_sur, bsubvmns_sur,                 &
      &                   dimname=mn2dim)
          CALL cdf_setatt(nwout, vn_bsubvmns_sur, ln_bsubvmns_sur)
-         CALL cdf_define(nwout, vn_bsupumns_sur, bsupumns_sur,                 
+         CALL cdf_define(nwout, vn_bsupumns_sur, bsupumns_sur,                 &
      &                   dimname=mn2dim)
          CALL cdf_setatt(nwout, vn_bsupumns_sur, ln_bsupumns_sur)
-         CALL cdf_define(nwout, vn_bsupvmns_sur, bsupvmns_sur,                 
+         CALL cdf_define(nwout, vn_bsupvmns_sur, bsupvmns_sur,                 &
      &                   dimname=mn2dim)
          CALL cdf_setatt(nwout, vn_bsupvmns_sur, ln_bsupvmns_sur)
       END IF
@@ -835,22 +833,20 @@
       CALL cdf_write(nwout, vn_pcurr_type, pcurr_type)
       CALL cdf_write(nwout, vn_piota_type, piota_type)
       CALL cdf_write(nwout, vn_pmass_type, pmass_type)
-      CALL cdf_write(nwout, vn_ph_type, ph_type)
-      CALL cdf_write(nwout, vn_pt_type, pt_type)
       CALL cdf_write(nwout, vn_magen, wb)
-#ifdef _ANIMEC
+#IFDEF _ANIMEC
       CALL cdf_write(nwout, vn_wpar, wpar)
       CALL cdf_write(nwout, vn_bcrit, bcrit)
-#else
+#ELSE
       CALL cdf_write(nwout, vn_therm, wp)
-#endif
+#ENDIF
       CALL cdf_write(nwout, vn_gam, gamma)
       CALL cdf_write(nwout, vn_maxr, rmax_surf)
       CALL cdf_write(nwout, vn_minr, rmin_surf)
       CALL cdf_write(nwout, vn_maxz, zmax_surf)
-#ifdef _FLOW
+#IFDEF _FLOW
       CALL cdf_write(nwout, vn_machsq, bcrit)
-#endif
+#ENDIF
       CALL cdf_write(nwout, vn_fp, nfp)
       CALL cdf_write(nwout, vn_radnod, ns)
       CALL cdf_write(nwout, vn_polmod, mpol)
@@ -900,7 +896,7 @@
          CALL cdf_write(nwout, vn_maxpot, mnpd)
          CALL cdf_write(nwout, vn_nobd, nobd)
          CALL cdf_write(nwout, vn_nbset, nbsets)
-         IF (nextcur.gt.0 .and. associated(curlabel))
+         IF (nextcur.gt.0 .and. ALLOCATED(curlabel))
      1   CALL cdf_write(nwout, vn_curlab, curlabel(1:nextcur))
       END IF
 
@@ -916,7 +912,7 @@
 
       IF (lfreeb) THEN
          CALL cdf_write(nwout, vn_potsin, potvac(1:mnpd))
-         IF (lasym)                                                            
+         IF (lasym)                                                            &
      &      CALL cdf_write(nwout, vn_potcos, potvac(1+mnpd:2*mnpd))
          CALL cdf_write(nwout, vn_xmpot, xmpot)
          CALL cdf_write(nwout, vn_xnpot, xnpot)
@@ -933,12 +929,12 @@
 
          IF (lasym) THEN
             iasym = 1                                  ! asymmetric mode
-         else
+         ELSE
             iasym = 0
          END IF
          IF (lrecon) THEN
             ireconstruct = 1
-         else
+         ELSE
             itse = 0
             imse2 = 0
             ireconstruct = 0
@@ -1030,7 +1026,7 @@
       DO js = ns,2,-1
          WHERE (MOD(NINT(xm),2) .eq. 0) 
             lmns(:,js) = p5*(lmns(:,js) + lmns(:,js-1))
-         elseWHERE
+         ELSEWHERE
             lmns(:,js) = p5*(sm(js)*lmns(:,js) + sp(js-1)*lmns(:,js-1))
          END WHERE
       END DO
@@ -1045,7 +1041,7 @@
       DO js = ns,2,-1
          WHERE (MOD(NINT(xm),2) .eq. 0) 
             lmnc(:,js) = p5*(lmnc(:,js) + lmnc(:,js-1))
-         elseWHERE
+         ELSEWHERE
             lmnc(:,js) = p5*(sm(js)*lmnc(:,js) + sp(js-1)*lmnc(:,js-1))
          END WHERE
       END DO
@@ -1095,7 +1091,7 @@
      &             (pd(js) + onembc(js,lk) * pmap(js) / (omtbc+eps))
            ppprim(js,lk) =  (pperp(js,lk)-pres(js)) *
      &            (pd(js) + optbc * pmap(js) / (omtbc * tpotb(js)+eps))
-        else
+        ELSE
           densit(js,lk) = hotdam * (one - onembc(js,lk)) *
      &  (optbc - 2*(tpotb(js)*onembc(js,lk))**c1p5) / (omtbc*optbc+eps)
           pbprim(js,lk) =  (ppar(js,lk) -pres(js)) * pd(js) +
@@ -1182,9 +1178,9 @@
      A                    )
 
          IF (lfreeb) THEN     !MRC  10-15-15
-            CALL symoutput_sur(bsubu_sur, bsubv_sur,                           
-     &                         bsupu_sur, bsupv_sur,                           
-     &                         bsubua_sur, bsubva_sur,                         
+            CALL symoutput_sur(bsubu_sur, bsubv_sur,                           &
+     &                         bsupu_sur, bsupv_sur,                           &
+     &                         bsubua_sur, bsubva_sur,                         &
      &                         bsupua_sur, bsupva_sur)
          END IF
       END IF
@@ -1299,13 +1295,13 @@
                   lk = lk + 1
                   tcosi = dmult*(cosmui(j,m)*cosnv(k,n1) +
      1                       sgn*sinmui(j,m)*sinnv(k,n1))
-                  bsubumnc_sur(mn) = bsubumnc_sur(mn)                          
+                  bsubumnc_sur(mn) = bsubumnc_sur(mn)                          &
      &                             + tcosi*bsubu_sur(lk)
-                  bsubvmnc_sur(mn) = bsubvmnc_sur(mn)                          
+                  bsubvmnc_sur(mn) = bsubvmnc_sur(mn)                          &
      &                             + tcosi*bsubv_sur(lk)
-                  bsupumnc_sur(mn) = bsupumnc_sur(mn)                          
+                  bsupumnc_sur(mn) = bsupumnc_sur(mn)                          &
      &                             + tcosi*bsupu_sur(lk)
-                  bsupvmnc_sur(mn) = bsupvmnc_sur(mn)                          
+                  bsupvmnc_sur(mn) = bsupvmnc_sur(mn)                          &
      &                             + tcosi*bsupv_sur(lk)
                END DO
             END DO
@@ -1445,13 +1441,13 @@
                   lk = lk + 1
                   tsini = dmult*(sinmui(j,m)*cosnv(k,n1) -
      1                       sgn*cosmui(j,m)*sinnv(k,n1))
-                  bsubumns_sur(mn) = bsubumns_sur(mn)                          
+                  bsubumns_sur(mn) = bsubumns_sur(mn)                          &
      &                             + tsini*bsubua_sur(lk)
-                  bsubvmns_sur(mn) = bsubvmns_sur(mn)                          
+                  bsubvmns_sur(mn) = bsubvmns_sur(mn)                          &
      &                             + tsini*bsubva_sur(lk)
-                  bsupumns_sur(mn) = bsupumns_sur(mn)                          
+                  bsupumns_sur(mn) = bsupumns_sur(mn)                          &
      &                             + tsini*bsupua_sur(lk)
-                  bsupvmns_sur(mn) = bsupvmns_sur(mn)                          
+                  bsupvmns_sur(mn) = bsupvmns_sur(mn)                          &
      &                             + tsini*bsupva_sur(lk)
                END DO
             END DO
@@ -1482,37 +1478,37 @@
 
       WRITE(333,*) version_
       IF (lasym) THEN
-         WRITE(333,2002) 'mn', 'rmnc', 'rmns', 'zmnc', 'zmns',                 
-     &                         'lmnc', 'lmns', 'gmnc', 'gmns',                 
-     &                         'bmnc', 'bmns',                                 
-     &                         'bsubumnc', 'bsubumns',                         
-     &                         'bsubvmnc', 'bsubvmns',                         
-     &                         'bsubsmnc', 'bsubsmns',                         
-     &                         'bsupumnc', 'bsupumns',                         
+         WRITE(333,2002) 'mn', 'rmnc', 'rmns', 'zmnc', 'zmns',                 &
+     &                         'lmnc', 'lmns', 'gmnc', 'gmns',                 &
+     &                         'bmnc', 'bmns',                                 &
+     &                         'bsubumnc', 'bsubumns',                         &
+     &                         'bsubvmnc', 'bsubvmns',                         &
+     &                         'bsubsmnc', 'bsubsmns',                         &
+     &                         'bsupumnc', 'bsupumns',                         &
      &                         'bsupvmnc', 'bsupvmns'
-      else
-         WRITE(333,2000) 'mn', 'rmnc', 'lmns', 'gmnc', 'bmnc',                 
-     &                         'bsubumnc', 'bsubvmnc',                         
-     &                         'bsubsmns',                                     
+      ELSE
+         WRITE(333,2000) 'mn', 'rmnc', 'lmns', 'gmnc', 'bmnc',                 &
+     &                         'bsubumnc', 'bsubvmnc',                         &
+     &                         'bsubsmns',                                     &
      &                         'bsupumnc', 'bsupvmnc'
       END IF
       DO mn = 1, mnmax
          IF (lasym) THEN
-            WRITE(333,2003) mn, rmnc(mn,ns/2), rmns(mn,ns/2),                  
-     &                          zmnc(mn,ns/2), zmns(mn,ns/2),                  
-     &                          lmnc(mn,ns/2), lmns(mn,ns/2),                  
-     &                          gmnc(mn,ns/2), gmns(mn,ns/2),                  
-     &                          bmnc(mn,ns/2), bmns(mn,ns/2),                  
-     &                          bsubumnc(mn,ns/2), bsubumns(mn,ns/2),          
-     &                          bsubvmnc(mn,ns/2), bsubvmns(mn,ns/2),          
-     &                          bsubsmnc(mn,ns/2), bsubsmns(mn,ns/2),          
-     &                          bsupumnc(mn,ns/2), bsupumns(mn,ns/2),          
+            WRITE(333,2003) mn, rmnc(mn,ns/2), rmns(mn,ns/2),                  &
+     &                          zmnc(mn,ns/2), zmns(mn,ns/2),                  &
+     &                          lmnc(mn,ns/2), lmns(mn,ns/2),                  &
+     &                          gmnc(mn,ns/2), gmns(mn,ns/2),                  &
+     &                          bmnc(mn,ns/2), bmns(mn,ns/2),                  &
+     &                          bsubumnc(mn,ns/2), bsubumns(mn,ns/2),          &
+     &                          bsubvmnc(mn,ns/2), bsubvmns(mn,ns/2),          &
+     &                          bsubsmnc(mn,ns/2), bsubsmns(mn,ns/2),          &
+     &                          bsupumnc(mn,ns/2), bsupumns(mn,ns/2),          &
      &                          bsupvmnc(mn,ns/2), bsupvmns(mn,ns/2)
-         else
-            WRITE(333,2001) mn, rmnc(mn,ns/2), lmns(mn,ns/2),                  
-     &                          gmnc(mn,ns/2), bmnc(mn,ns/2),                  
-     &                          bsubumnc(mn,ns/2), bsubvmnc(mn,ns/2),          
-     &                          bsubsmns(mn,ns/2),                             
+         ELSE
+            WRITE(333,2001) mn, rmnc(mn,ns/2), lmns(mn,ns/2),                  &
+     &                          gmnc(mn,ns/2), bmnc(mn,ns/2),                  &
+     &                          bsubumnc(mn,ns/2), bsubvmnc(mn,ns/2),          &
+     &                          bsubsmns(mn,ns/2),                             &
      &                          bsupumnc(mn,ns/2), bsupvmnc(mn,ns/2)
          END IF
       END DO
@@ -1590,14 +1586,6 @@
       CALL cdf_write(nwout, vn_ai_aux_s, ai_aux_s(1:j))
       j = SIZE(ai_aux_f)
       CALL cdf_write(nwout, vn_ai_aux_f, ai_aux_f(1:j))
-      j = SIZE(ah_aux_s)
-      CALL cdf_write(nwout, vn_ah_aux_s, ah_aux_s(1:j))
-      j = SIZE(ah_aux_f)
-      CALL cdf_write(nwout, vn_ah_aux_f, ah_aux_f(1:j))
-      j = SIZE(at_aux_s)
-      CALL cdf_write(nwout, vn_at_aux_s, at_aux_s(1:j))
-      j = SIZE(at_aux_f)
-      CALL cdf_write(nwout, vn_at_aux_f, at_aux_f(1:j))
 
       CALL cdf_write(nwout, vn_iotaf, iotaf(1:ns))
       CALL cdf_write(nwout, vn_qfact, qfact(1:ns))
@@ -1606,10 +1594,10 @@
       CALL cdf_write(nwout, vn_phipf, twopi*signgs*phipf)
       CALL cdf_write(nwout, vn_chi, chi) 
       CALL cdf_write(nwout, vn_chipf, twopi*signgs*chipf)
-!#ifdef _FLOW
+!#IFDEF _FLOW
 !      CALL cdf_write(nwout, vn_bucof, bucof)
 !      CALL cdf_write(nwout, vn_bvcof, bvcof)
-!#endif
+!#ENDIF
       CALL cdf_write(nwout, vn_jcuru, jcuru/mu0)
       CALL cdf_write(nwout, vn_jcurv, jcurv/mu0)
       CALL cdf_write(nwout, vn_jdotb, jdotb)
@@ -1622,15 +1610,15 @@
       beta_vol(1) = 0
       CALL cdf_write(nwout, vn_iotah, iotas(1:ns))
       CALL cdf_write(nwout, vn_mass, mass/mu0)
-#ifdef _FLOW
+#IFDEF _FLOW
       CALL cdf_write(nwout, vn_pmap, pmap(1:ns)/mu0)
       CALL cdf_write(nwout, vn_omega, omega(1:ns))
       CALL cdf_write(nwout, vn_tpotb, tpotb(1:ns))
       CALL cdf_write(nwout,  vn_presh, pres(1:ns))
       CALL cdf_write(nwout, vn_rotfot, rotfot(1:ns))
-#else
+#ELSE
       CALL cdf_write(nwout,  vn_presh, pres(1:ns)/mu0)
-#endif 
+#ENDIF 
       CALL cdf_write(nwout, vn_betah, beta_vol)
       CALL cdf_write(nwout, vn_buco, buco)
       CALL cdf_write(nwout, vn_bvco, bvco) 
@@ -1747,7 +1735,7 @@
 
          IF (nextcur.gt.0) THEN
             WRITE (nwout2, *) (extcur(i),i=1,nextcur)
-            lcurr = associated(curlabel) .and. lfreeb
+            lcurr = ALLOCATED(curlabel) .and. lfreeb
             WRITE (nwout2, *) lcurr
             IF (lcurr) WRITE (nwout2, *) (curlabel(i),i=1,nextcur)
          ENDIF
@@ -1912,7 +1900,7 @@
             write(21,*) zmns(1:ntor+1,1)
 
             close(unit=21)
-         else
+         ELSE
             write(6,*)"Diagno-file request not completed!"
             write(6,*)"VMEC2000 not running in free-boundary mode!"
             write(6,*)"-or- LASYM = .true. !"
